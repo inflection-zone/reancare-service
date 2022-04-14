@@ -1,5 +1,5 @@
 import express from 'express';
-import { AddressController } from '../controllers/address.controller';
+import { AddressController } from './address.controller';
 import { Loader } from '../../startup/loader';
 
 ///////////////////////////////////////////////////////////////////////////////////

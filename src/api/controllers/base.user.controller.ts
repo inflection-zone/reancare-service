@@ -7,7 +7,7 @@ import { PersonService } from '../../services/person.service';
 import { RoleService } from '../../services/role.service';
 import { UserService } from '../../services/user/user.service';
 import { Loader } from '../../startup/loader';
-import { AddressValidator } from '../validators/address.validator';
+import { AddressValidator } from '../address/address.validator';
 import { BaseController } from './base.controller';
 
 ///////////////////////////////////////////////////////////////////////////////////////

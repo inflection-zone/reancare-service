@@ -1,6 +1,6 @@
 import express from "express";
 import { Logger } from "../../common/logger";
-import { register as registerAddressRoutes } from "./address.routes";
+import { register as registerAddressRoutes } from "../address/address.routes";
 import { register as registerClientRoutes } from "./api.client.routes";
 import { register as registerAllergyRoutes } from './clinical/allergy.routes';
 import { register as registerBloodGlucoseRoutes } from './clinical/biometrics/blood.glucose.routes';

@@ -7,8 +7,8 @@ import { OrganizationService } from '../../services/organization.service';
 import { PersonService } from '../../services/person.service';
 import { RoleService } from '../../services/role.service';
 import { Loader } from '../../startup/loader';
-import { AddressValidator } from '../validators/address.validator';
-import { BaseController } from './base.controller';
+import { AddressValidator } from './address.validator';
+import { BaseController } from '../controllers/base.controller';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
