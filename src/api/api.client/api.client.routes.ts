@@ -1,5 +1,5 @@
 import express from 'express';
-import { ApiClientController } from '../controllers/api.client.controller';
+import { ApiClientController } from './api.client.controller';
 import { Loader } from '../../startup/loader';
 
 export const register = (app: express.Application): void => {

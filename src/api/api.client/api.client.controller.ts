@@ -4,7 +4,7 @@ import { ApiClientService } from '../../services/api.client.service';
 import { ResponseHandler } from '../../common/response.handler';
 import { Loader } from '../../startup/loader';
 import { Authorizer } from '../../auth/authorizer';
-import { ApiClientValidator } from '../validators/api.client.validator';
+import { ApiClientValidator } from './api.client.validator';
 import { ApiError } from '../../common/api.error';
 
 ///////////////////////////////////////////////////////////////////////////////////////
