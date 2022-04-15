@@ -1,7 +1,7 @@
 import express from 'express';
 import { AllergyDomainModel } from '../../../domain.types/clinical/allergy/allergy.domain.model';
 import { AllergySearchFilters } from '../../../domain.types/clinical/allergy/allergy.search.types';
-import { BaseValidator, Where } from '../base.validator';
+import { BaseValidator, Where } from '../../base.validator';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

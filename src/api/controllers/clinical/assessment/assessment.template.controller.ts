@@ -10,8 +10,8 @@ import { AssessmentTemplateService } from '../../../../services/clinical/assessm
 import { FileResourceService } from '../../../../services/file.resource.service';
 import { Loader } from '../../../../startup/loader';
 import { AssessmentTemplateValidator } from '../../../validators/clinical/assessment/assessment.template.validator';
-import { FileResourceValidator } from '../../../validators/file.resource.validator';
-import { BaseController } from '../../base.controller';
+import { FileResourceValidator } from '../../../file.resource/file.resource.validator';
+import { BaseController } from '../../../base.controller';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

@@ -5,7 +5,7 @@ import { uuid } from '../../../../domain.types/miscellaneous/system.types';
 import { BloodGlucoseService } from '../../../../services/clinical/biometrics/blood.glucose.service';
 import { Loader } from '../../../../startup/loader';
 import { BloodGlucoseValidator } from '../../../validators/clinical/biometrics/blood.glucose.validator';
-import { BaseController } from '../../base.controller';
+import { BaseController } from '../../../base.controller';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

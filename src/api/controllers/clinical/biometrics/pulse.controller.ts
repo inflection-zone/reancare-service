@@ -5,7 +5,7 @@ import { ResponseHandler } from '../../../../common/response.handler';
 import { PulseService } from '../../../../services/clinical/biometrics/pulse.service';
 import { Loader } from '../../../../startup/loader';
 import { PulseValidator } from '../../../validators/clinical/biometrics/pulse.validator';
-import { BaseController } from '../../base.controller';
+import { BaseController } from '../../../base.controller';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

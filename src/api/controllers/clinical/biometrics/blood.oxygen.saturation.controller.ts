@@ -5,7 +5,7 @@ import { ResponseHandler } from '../../../../common/response.handler';
 import { BloodOxygenSaturationService } from '../../../../services/clinical/biometrics/blood.oxygen.saturation.service';
 import { Loader } from '../../../../startup/loader';
 import { BloodOxygenSaturationValidator } from '../../../validators/clinical/biometrics/blood.oxygen.saturation.validator';
-import { BaseController } from '../../base.controller';
+import { BaseController } from '../../../base.controller';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

@@ -1,7 +1,7 @@
 import express from 'express';
 import { PulseDomainModel } from '../../../../domain.types/clinical/biometrics/pulse/pulse.domain.model';
 import { PulseSearchFilters } from '../../../../domain.types/clinical/biometrics/pulse/pulse.search.types';
-import { BaseValidator, Where } from '../../base.validator';
+import { BaseValidator, Where } from '../../../base.validator';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

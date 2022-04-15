@@ -1,7 +1,7 @@
 import express from 'express';
 import { MedicalConditionDomainModel } from '../../../domain.types/clinical/medical.condition/medical.condition.domain.model';
 import { MedicalConditionSearchFilters } from '../../../domain.types/clinical/medical.condition/medical.condition.search.types';
-import { BaseValidator, Where } from '../base.validator';
+import { BaseValidator, Where } from '../../base.validator';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

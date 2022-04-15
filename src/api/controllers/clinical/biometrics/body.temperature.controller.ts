@@ -5,7 +5,7 @@ import { ResponseHandler } from '../../../../common/response.handler';
 import { BodyTemperatureService } from '../../../../services/clinical/biometrics/body.temperature.service';
 import { Loader } from '../../../../startup/loader';
 import { BodyTemperatureValidator } from '../../../validators/clinical/biometrics/body.temperature.validator';
-import { BaseController } from '../../base.controller';
+import { BaseController } from '../../../base.controller';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

@@ -5,7 +5,7 @@ import { ResponseHandler } from '../../../../common/response.handler';
 import { BloodPressureService } from '../../../../services/clinical/biometrics/blood.pressure.service';
 import { Loader } from '../../../../startup/loader';
 import { BloodPressureValidator } from '../../../validators/clinical/biometrics/blood.pressure.validator';
-import { BaseController } from '../../base.controller';
+import { BaseController } from '../../../base.controller';
 import { Logger } from '../../../../common/logger';
 
 ///////////////////////////////////////////////////////////////////////////////////////

@@ -1,5 +1,5 @@
 import express from 'express';
-import { BaseValidator, Where } from '../../base.validator';
+import { BaseValidator, Where } from '../../../base.validator';
 import { ThirdpartyApiCredentialsDomainModel } from '../../../../domain.types/thirdparty/thirdparty.api.credentials';
 
 ///////////////////////////////////////////////////////////////////////////////////////

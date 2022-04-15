@@ -5,7 +5,7 @@ import { ResponseHandler } from '../../../common/response.handler';
 import { OrderService } from '../../../services/clinical/order.service';
 import { Loader } from '../../../startup/loader';
 import { OrderValidator } from '../../validators/clinical/order.validator';
-import { BaseController } from '../base.controller';
+import { BaseController } from '../../base.controller';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

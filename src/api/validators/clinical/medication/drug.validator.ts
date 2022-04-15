@@ -1,7 +1,7 @@
 import express from 'express';
 import { DrugDomainModel } from '../../../../domain.types/clinical/medication/drug/drug.domain.model';
 import { DrugSearchFilters } from '../../../../domain.types/clinical/medication/drug/drug.search.types';
-import { BaseValidator, Where } from '../../base.validator';
+import { BaseValidator, Where } from '../../../base.validator';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

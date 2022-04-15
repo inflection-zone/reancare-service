@@ -7,7 +7,7 @@ import { CareplanService } from '../../../../services/clinical/careplan.service'
 import { UserTaskService } from '../../../../services/user/user.task.service';
 import { Loader } from '../../../../startup/loader';
 import { AssessmentValidator } from '../../../validators/clinical/assessment/assessment.validator';
-import { BaseController } from '../../base.controller';
+import { BaseController } from '../../../base.controller';
 import { AssessmentQuestionResponseDto } from '../../../../domain.types/clinical/assessment/assessment.question.response.dto';
 import { AssessmentType } from '../../../../domain.types/clinical/assessment/assessment.types';
 

@@ -1,7 +1,7 @@
 import express from 'express';
 import { SymptomTypeDomainModel } from '../../../../domain.types/clinical/symptom/symptom.type/symptom.type.domain.model';
 import { SymptomTypeSearchFilters } from '../../../../domain.types/clinical/symptom/symptom.type/symptom.type.search.types';
-import { BaseValidator, Where } from '../../base.validator';
+import { BaseValidator, Where } from '../../../base.validator';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

@@ -4,7 +4,7 @@ import { ApiError } from '../../../../common/api.error';
 import { ResponseHandler } from '../../../../common/response.handler';
 import { Loader } from '../../../../startup/loader';
 import { CareplanValidator } from '../../../validators/clinical/careplan/careplan.validator';
-import { BaseController } from '../../base.controller';
+import { BaseController } from '../../../base.controller';
 import { UserService } from '../../../../services/user/user.service';
 import { TimeHelper } from '../../../../common/time.helper';
 import { DurationType } from '../../../../domain.types/miscellaneous/time.types';

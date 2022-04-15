@@ -5,7 +5,7 @@ import { uuid } from '../../../../domain.types/miscellaneous/system.types';
 import { SymptomAssessmentService } from '../../../../services/clinical/symptom/symptom.assessment.service';
 import { Loader } from '../../../../startup/loader';
 import { SymptomAssessmentValidator } from '../../../validators/clinical/symptom/symptom.assessment.validator';
-import { BaseController } from '../../base.controller';
+import { BaseController } from '../../../base.controller';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

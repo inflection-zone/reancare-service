@@ -7,7 +7,7 @@ import { DoctorService } from '../../../services/doctor.service';
 import { PatientService } from '../../../services/patient/patient.service';
 import { Loader } from '../../../startup/loader';
 import { ComplaintValidator } from '../../validators/clinical/complaint.validator';
-import { BaseController } from '../base.controller';
+import { BaseController } from '../../base.controller';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

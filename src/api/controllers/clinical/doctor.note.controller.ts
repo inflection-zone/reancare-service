@@ -5,7 +5,7 @@ import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import { DoctorNoteService } from '../../../services/clinical/doctor.note.service';
 import { Loader } from '../../../startup/loader';
 import { DoctorNoteValidator } from '../../validators/clinical/doctor.note.validator';
-import { BaseController } from '../base.controller';
+import { BaseController } from '../../base.controller';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

@@ -1,7 +1,7 @@
 import express from 'express';
 import { BloodGlucoseDomainModel } from '../../../../domain.types/clinical/biometrics/blood.glucose/blood.glucose.domain.model';
 import { BloodGlucoseSearchFilters } from '../../../../domain.types/clinical/biometrics/blood.glucose/blood.glucose.search.types';
-import { BaseValidator, Where } from '../../base.validator';
+import { BaseValidator, Where } from '../../../base.validator';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

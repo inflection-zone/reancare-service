@@ -1,6 +1,6 @@
 import express from 'express';
 import { ComplaintDomainModel } from '../../../domain.types/clinical/complaint/complaint.domain.model';
-import { BaseValidator, Where } from '../base.validator';
+import { BaseValidator, Where } from '../../base.validator';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

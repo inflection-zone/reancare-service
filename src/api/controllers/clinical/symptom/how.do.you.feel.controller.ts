@@ -5,7 +5,7 @@ import { ResponseHandler } from '../../../../common/response.handler';
 import { HowDoYouFeelService } from '../../../../services/clinical/symptom/how.do.you.feel.service';
 import { Loader } from '../../../../startup/loader';
 import { HowDoYouFeelValidator } from '../../../validators/clinical/symptom/how.do.you.feel.validator';
-import { BaseController } from '../../base.controller';
+import { BaseController } from '../../../base.controller';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

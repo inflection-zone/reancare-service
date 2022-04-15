@@ -1,7 +1,7 @@
 import express from 'express';
 import { OrderDomainModel } from '../../../domain.types/clinical/order/order.domain.model';
 import { OrderSearchFilters } from '../../../domain.types/clinical/order/order.search.types';
-import { BaseValidator, Where } from '../base.validator';
+import { BaseValidator, Where } from '../../base.validator';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

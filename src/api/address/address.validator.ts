@@ -1,7 +1,7 @@
 import express from 'express';
 import { AddressDomainModel } from '../../domain.types/address/address.domain.model';
 import { AddressSearchFilters } from '../../domain.types/address/address.search.types';
-import { BaseValidator, Where } from '../validators/base.validator';
+import { BaseValidator, Where } from '../base.validator';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

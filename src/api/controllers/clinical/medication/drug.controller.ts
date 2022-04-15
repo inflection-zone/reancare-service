@@ -5,7 +5,7 @@ import { ResponseHandler } from '../../../../common/response.handler';
 import { DrugService } from '../../../../services/clinical/medication/drug.service';
 import { Loader } from '../../../../startup/loader';
 import { DrugValidator } from '../../../validators/clinical/medication/drug.validator';
-import { BaseController } from '../../base.controller';
+import { BaseController } from '../../../base.controller';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

@@ -8,7 +8,7 @@ import { AllergyService } from '../../../services/clinical/allergy.service';
 import { UserService } from '../../../services/user/user.service';
 import { Loader } from '../../../startup/loader';
 import { AllergyValidator } from '../../validators/clinical/allergy.validator';
-import { BaseController } from '../base.controller';
+import { BaseController } from '../../base.controller';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

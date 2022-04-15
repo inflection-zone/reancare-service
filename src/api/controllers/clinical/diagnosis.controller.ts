@@ -6,7 +6,7 @@ import { DiagnosisService } from '../../../services/clinical/diagnosis.service';
 import { UserService } from '../../../services/user/user.service';
 import { Loader } from '../../../startup/loader';
 import { DiagnosisValidator } from '../../validators/clinical/diagnosis.validator';
-import { BaseController } from '../base.controller';
+import { BaseController } from '../../base.controller';
 ///////////////////////////////////////////////////////////////////////////////////////
 
 export class DiagnosisController extends BaseController {

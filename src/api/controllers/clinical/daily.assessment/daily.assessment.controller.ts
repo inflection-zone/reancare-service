@@ -4,7 +4,7 @@ import { ResponseHandler } from '../../../../common/response.handler';
 import { DailyAssessmentService } from '../../../../services/clinical/daily.assessment/daily.assessment.service';
 import { Loader } from '../../../../startup/loader';
 import { DailyAssessmentValidator } from '../../../validators/clinical/daily.assessment/daily.assessment.validator';
-import { BaseController } from '../../base.controller';
+import { BaseController } from '../../../base.controller';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

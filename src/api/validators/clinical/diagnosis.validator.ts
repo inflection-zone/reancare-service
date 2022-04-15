@@ -1,7 +1,7 @@
 import express from 'express';
 import { DiagnosisDomainModel } from '../../../domain.types/clinical/diagnosis/diagnosis.domain.model';
 import { DiagnosisSearchFilters } from '../../../domain.types/clinical/diagnosis/diagnosis.search.types';
-import { BaseValidator, Where } from '../base.validator';
+import { BaseValidator, Where } from '../../base.validator';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

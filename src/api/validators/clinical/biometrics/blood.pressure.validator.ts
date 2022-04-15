@@ -1,7 +1,7 @@
 import express from 'express';
 import { BloodPressureDomainModel } from '../../../../domain.types/clinical/biometrics/blood.pressure/blood.pressure.domain.model';
 import { BloodPressureSearchFilters } from '../../../../domain.types/clinical/biometrics/blood.pressure/blood.pressure.search.types';
-import { BaseValidator, Where } from '../../base.validator';
+import { BaseValidator, Where } from '../../../base.validator';
  
 ///////////////////////////////////////////////////////////////////////////////////////
  

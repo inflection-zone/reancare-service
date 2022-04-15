@@ -1,7 +1,7 @@
 import express from 'express';
 import { BodyTemperatureDomainModel } from '../../../../domain.types/clinical/biometrics/body.temperature/body.temperature.domain.model';
 import { BodyTemperatureSearchFilters } from '../../../../domain.types/clinical/biometrics/body.temperature/body.temperature.search.types';
-import { BaseValidator, Where } from '../../base.validator';
+import { BaseValidator, Where } from '../../../base.validator';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

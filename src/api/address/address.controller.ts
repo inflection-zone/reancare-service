@@ -8,7 +8,7 @@ import { PersonService } from '../../services/person.service';
 import { RoleService } from '../../services/role.service';
 import { Loader } from '../../startup/loader';
 import { AddressValidator } from './address.validator';
-import { BaseController } from '../controllers/base.controller';
+import { BaseController } from '../base.controller';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

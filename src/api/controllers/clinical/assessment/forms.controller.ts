@@ -11,8 +11,8 @@ import { FormsService } from '../../../../services/clinical/assessment/forms.ser
 import { ThirdpartyApiService } from '../../../../services/thirdparty/thirdparty.api.service';
 import { Loader } from '../../../../startup/loader';
 import { FormsValidator } from '../../../validators/clinical/assessment/forms.validator';
-import { FileResourceValidator } from '../../../validators/file.resource.validator';
-import { BaseController } from '../../base.controller';
+import { FileResourceValidator } from '../../../file.resource/file.resource.validator';
+import { BaseController } from '../../../base.controller';
 import { Logger } from '../../../../common/logger';
 import { PatientDetailsDto } from '../../../../domain.types/patient/patient/patient.dto';
 import { PatientDomainModel } from '../../../../domain.types/patient/patient/patient.domain.model';

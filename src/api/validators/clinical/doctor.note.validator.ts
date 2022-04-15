@@ -1,7 +1,7 @@
 import express from 'express';
 import { DoctorNoteDomainModel } from '../../../domain.types/clinical/doctor.note/doctor.note.domain.model';
 import { DoctorNoteSearchFilters } from '../../../domain.types/clinical/doctor.note/doctor.note.search.types';
-import { BaseValidator, Where } from '../base.validator';
+import { BaseValidator, Where } from '../../base.validator';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

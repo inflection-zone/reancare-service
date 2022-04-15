@@ -1,7 +1,7 @@
 import express from 'express';
 import { BodyWeightDomainModel } from '../../../../domain.types/clinical/biometrics/body.weight/body.weight.domain.model';
 import { BodyWeightSearchFilters } from '../../../../domain.types/clinical/biometrics/body.weight/body.weight.search.types';
-import { BaseValidator, Where } from '../../base.validator';
+import { BaseValidator, Where } from '../../../base.validator';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

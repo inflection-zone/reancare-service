@@ -6,7 +6,7 @@ import { Severity } from '../../../../domain.types/miscellaneous/system.types';
 import { SymptomAssessmentService } from '../../../../services/clinical/symptom/symptom.assessment.service';
 import { SymptomTypeService } from '../../../../services/clinical/symptom/symptom.type.service';
 import { Loader } from '../../../../startup/loader';
-import { BaseValidator, Where } from '../../base.validator';
+import { BaseValidator, Where } from '../../../base.validator';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

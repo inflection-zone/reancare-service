@@ -2,7 +2,7 @@ import express from 'express';
 import { QueryResponseType } from '../../../../domain.types/clinical/assessment/assessment.types';
 import { AssessmentDomainModel } from '../../../../domain.types/clinical/assessment/assessment.domain.model';
 import { AssessmentSearchFilters } from '../../../../domain.types/clinical/assessment/assessment.search.types';
-import { BaseValidator, Where } from '../../base.validator';
+import { BaseValidator, Where } from '../../../base.validator';
 import { AssessmentAnswerDomainModel } from '../../../../domain.types/clinical/assessment/assessment.answer.domain.model';
 
 ///////////////////////////////////////////////////////////////////////////////////////
