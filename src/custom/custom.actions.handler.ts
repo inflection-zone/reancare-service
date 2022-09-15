@@ -14,10 +14,10 @@ export class CustomActionsHandler {
 
     //#region Public
 
-    public performActions_PostRegistration = async (patient: PatientDetailsDto) => {
+    public performActions_PostRegistration = async (patient: PatientDetailsDto, clientCode: string) => {
         try {
             if (this.isForAHA()) {
-                await this._ahaActions.performActions_PostRegistration(patient);
+                await this._ahaActions.performActions_PostRegistration(patient, clientCode);
             }
         }
         catch (error) {
@@ -32,7 +32,7 @@ export class CustomActionsHandler {
             }
         }
         catch (error) {
-            Logger.instance().log(`Error performing post registration custom actions.`);
+            Logger.instance().log(`[KCCQTask] Error performing post registration custom actions.`);
         }
     };
 
