@@ -19,6 +19,7 @@ export class CourseModuleValidator extends BaseValidator {
             Description    : request.body.Description,
             ImageUrl       : request.body.ImageUrl,
             DurationInMins : request.body.DurationInMins,
+            Sequence       : request.body.Sequence,
         };
  
         return CourseModuleModel;
@@ -34,6 +35,7 @@ export class CourseModuleValidator extends BaseValidator {
         await this.validateString(request, 'name', Where.Query, false, false);
         await this.validateUuid(request, 'courseId', Where.Query, false, false);
         await this.validateDecimal(request, 'durationInMins', Where.Query, false, false);
+        await this.validateDecimal(request, 'sequence', Where.Query, false, false);
         
         await this.validateBaseSearchFilters(request);
         
@@ -57,6 +59,7 @@ export class CourseModuleValidator extends BaseValidator {
         await this.validateString(request, 'Description', Where.Body, false, true);
         await this.validateString(request, 'ImageUrl', Where.Body, false, true);
         await this.validateDecimal(request, 'DurationInMins', Where.Body, false, true);
+        await this.validateDecimal(request, 'Sequence', Where.Body, false, true);
     
         this.validateRequest(request);
     }
@@ -68,6 +71,7 @@ export class CourseModuleValidator extends BaseValidator {
         await this.validateString(request, 'Description', Where.Body, false, false);
         await this.validateString(request, 'ImageUrl', Where.Body, false, false);
         await this.validateDecimal(request, 'DurationInMins', Where.Body, false, false);
+        await this.validateDecimal(request, 'Sequence', Where.Body, false, false);
         
         this.validateRequest(request);
     }

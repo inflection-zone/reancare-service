@@ -68,6 +68,12 @@ export default class CourseModule extends Model {
     })
     DurationInMins: number;
 
+    @Column({
+        type      : DataType.INTEGER,
+        allowNull : true,
+    })
+    Sequence: number;
+
     @Column
     @CreatedAt
     CreatedAt: Date;

@@ -7,4 +7,5 @@ export interface CourseModuleDto {
     Description?    : string;
     ImageUrl?       : string;
     DurationInMins? : number;
+    Sequence?       : number;
 }
