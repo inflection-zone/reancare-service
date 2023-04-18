@@ -60,12 +60,6 @@ export class LearningPathRepo implements ILearningPathRepo {
                         model    : LearningCourses,
                         as       : 'LearningCourses',
                         required : true,
-                        // include  : [
-                        //     {
-                        //         model    : Course,
-                        //         required : true
-                        //     }
-                        // ]
                     }
                 ]
             };
