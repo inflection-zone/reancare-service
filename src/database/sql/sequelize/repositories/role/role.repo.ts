@@ -15,7 +15,7 @@ export class RoleRepo implements IRoleRepo {
         try {
             const entity = {
                 RoleName    : roleEntity.RoleName,
-                Description : roleEntity.Description,
+                Description : roleEntity.Description ?? null,
             };
             const role = await Role.create(entity);
             const dto = RoleMapper.toDto(role);

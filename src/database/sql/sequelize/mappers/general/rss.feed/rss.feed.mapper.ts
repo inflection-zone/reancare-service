@@ -54,6 +54,7 @@ export class RssfeedMapper {
             Title          : feedItem.Title,
             Description    : feedItem.Description,
             Link           : feedItem.Link,
+            Content        : feedItem.Content,
             Image          : feedItem.Image,
             Tags           : JSON.parse(feedItem.Tags),
             PublishingDate : feedItem.PublishingDate,
