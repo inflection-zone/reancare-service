@@ -83,7 +83,7 @@ export default class Organization extends Model {
     })
     ContactEmail: string;
 
-    @Length({ min: 12, max: 512 })
+    // @Length({ min: 12, max: 512 })
     @Column({
         type      : DataType.STRING(512),
         allowNull : true,
