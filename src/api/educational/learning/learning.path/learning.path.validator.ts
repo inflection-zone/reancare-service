@@ -16,8 +16,8 @@ export class LearningPathValidator extends BaseValidator {
             Name             : request.body.Name,
             Description      : request.body.Description,
             ImageUrl         : request.body.ImageUrl,
-            DurationInDays   : request.body.DurationInDays,
-            PreferenceWeight : request.body.PreferenceWeight,
+            DurationInDays   : request.body.DurationInDays ?? null,
+            PreferenceWeight : request.body.PreferenceWeight ?? null,
             Enabled          : request.body.Enabled,
             CourseIds        : request.body.CourseIds ?? [],
         };
@@ -57,12 +57,12 @@ export class LearningPathValidator extends BaseValidator {
 
     private async validateUpdateBody(request) {
         await this.validateString(request, 'Name', Where.Body, false, false);
-        await this.validateString(request, 'Description', Where.Body, false, false);
-        await this.validateString(request, 'ImageUrl', Where.Body, false, false);
-        await this.validateDecimal(request, 'DurationInDays', Where.Body, false, false);
-        await this.validateDecimal(request, 'PreferenceWeight', Where.Body, false, false);
-        await this.validateBoolean(request, 'Enabled', Where.Body, false, false);
-        await this.validateArray(request, 'CourseIds', Where.Body, false, false);
+        await this.validateString(request, 'Description', Where.Body, false, true);
+        await this.validateString(request, 'ImageUrl', Where.Body, false, true);
+        await this.validateDecimal(request, 'DurationInDays', Where.Body, false, true);
+        await this.validateDecimal(request, 'PreferenceWeight', Where.Body, false, true);
+        await this.validateBoolean(request, 'Enabled', Where.Body, false, true);
+        await this.validateArray(request, 'CourseIds', Where.Body, false, true);
         this.validateRequest(request);
     }
 

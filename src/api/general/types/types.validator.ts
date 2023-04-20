@@ -108,59 +108,59 @@ export class TypesValidator extends BaseValidator {
 
     private async validateCreatePriorityTypeBody(request) {
         await this.validateString(request, 'Type', Where.Body, true, false);
-        await this.validateArray(request, 'Tags', Where.Body, false, false);
+        await this.validateArray(request, 'Tags', Where.Body, false, true);
         await this.validateRequest(request);
     }
 
     private async validateUpdatePriorityTypeBody(request) {
         await this.validateString(request, 'Type', Where.Body, false, false);
-        await this.validateArray(request, 'Tags', Where.Body, false, false);
+        await this.validateArray(request, 'Tags', Where.Body, false, true);
         await this.validateRequest(request);
     }
 
     private async validateCreateRoleTypeBody(request) {
         await this.validateString(request, 'RoleName', Where.Body, true, false);
-        await this.validateString(request, 'Description', Where.Body, false, false);
+        await this.validateString(request, 'Description', Where.Body, false, true);
         await this.validateRequest(request);
     }
 
     private async validateUpdateRoleTypeBody(request) {
         await this.validateString(request, 'RoleName', Where.Body, false, false);
-        await this.validateString(request, 'Description', Where.Body, false, false);
+        await this.validateString(request, 'Description', Where.Body, false, true);
         await this.validateRequest(request);
     }
 
     private async validateCreateLabRecordTypeBody(request) {
         await this.validateString(request, 'TypeName', Where.Body, true, false);
         await this.validateString(request, 'DisplayName', Where.Body, true, false);
-        await this.validateString(request, 'SnowmedCode ', Where.Body, false, false);
-        await this.validateString(request, 'LoincCode', Where.Body, false, false);
-        await this.validateDecimal(request, 'NormalRangeMin', Where.Body, false, false);
-        await this.validateDecimal(request, 'NormalRangeMax', Where.Body, false, false);
-        await this.validateString(request, 'Unit', Where.Body, false, false);
+        await this.validateString(request, 'SnowmedCode ', Where.Body, false, true);
+        await this.validateString(request, 'LoincCode', Where.Body, false, true);
+        await this.validateDecimal(request, 'NormalRangeMin', Where.Body, false, true);
+        await this.validateDecimal(request, 'NormalRangeMax', Where.Body, false, true);
+        await this.validateString(request, 'Unit', Where.Body, false, true);
         await this.validateRequest(request);
     }
 
     private async validateUpdateLabRecordTypeBody(request) {
         await this.validateString(request, 'TypeName', Where.Body, false, false);
         await this.validateString(request, 'DisplayName', Where.Body, false, false);
-        await this.validateString(request, 'SnowmedCode ', Where.Body, false, false);
-        await this.validateString(request, 'LoincCode', Where.Body, false, false);
-        await this.validateDecimal(request, 'NormalRangeMin', Where.Body, false, false);
-        await this.validateDecimal(request, 'NormalRangeMax', Where.Body, false, false);
-        await this.validateString(request, 'Unit', Where.Body, false, false);
+        await this.validateString(request, 'SnowmedCode ', Where.Body, false, true);
+        await this.validateString(request, 'LoincCode', Where.Body, false, true);
+        await this.validateDecimal(request, 'NormalRangeMin', Where.Body, false, true);
+        await this.validateDecimal(request, 'NormalRangeMax', Where.Body, false, true);
+        await this.validateString(request, 'Unit', Where.Body, false, true);
         await this.validateRequest(request);
     }
 
     private async validateCreateGoalTypeBody(request) {
         await this.validateString(request, 'Type', Where.Body, true, false);
-        await this.validateArray(request, 'Tags', Where.Body, false, false);
+        await this.validateArray(request, 'Tags', Where.Body, false, true);
         await this.validateRequest(request);
     }
 
     private async validateUpdateGoalTypeBody(request) {
         await this.validateString(request, 'Type', Where.Body, false, false);
-        await this.validateArray(request, 'Tags', Where.Body, false, false);
+        await this.validateArray(request, 'Tags', Where.Body, false, true);
         await this.validateRequest(request);
     }
 

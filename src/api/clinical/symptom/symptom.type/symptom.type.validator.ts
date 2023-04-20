@@ -58,8 +58,8 @@ export class SymptomTypeValidator extends BaseValidator {
 
         await this.validateUuid(request, 'ImageResourceId', Where.Body, false, false);
         await this.validateString(request, 'Symptom', Where.Body, true, false);
-        await this.validateString(request, 'Description', Where.Body, false, false);
-        await this.validateArray(request, 'Tags', Where.Body, false, false);
+        await this.validateString(request, 'Description', Where.Body, false, true);
+        await this.validateArray(request, 'Tags', Where.Body, false, true);
         await this.validateString(request, 'Language', Where.Body, true, false);
 
         this.validateRequest(request);
@@ -67,10 +67,10 @@ export class SymptomTypeValidator extends BaseValidator {
 
     private  async validateUpdateBody(request) {
 
-        await this.validateUuid(request, 'ImageResourceId', Where.Body, false, false);
+        await this.validateUuid(request, 'ImageResourceId', Where.Body, false, true);
         await this.validateString(request, 'Symptom', Where.Body, false, false);
-        await this.validateString(request, 'Description', Where.Body, false, false);
-        await this.validateArray(request, 'Tags', Where.Body, false, false);
+        await this.validateString(request, 'Description', Where.Body, false, true);
+        await this.validateArray(request, 'Tags', Where.Body, false, true);
         await this.validateString(request, 'Language', Where.Body, false, false);
 
         this.validateRequest(request);

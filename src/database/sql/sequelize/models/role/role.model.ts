@@ -38,7 +38,7 @@ export default class Role extends Model {
     })
     RoleName: string;
 
-    @Length({ min: 1, max: 256 })
+    @Length({ min: 0, max: 256 })
     @Column({
         type      : DataType.STRING(256),
         allowNull : true,

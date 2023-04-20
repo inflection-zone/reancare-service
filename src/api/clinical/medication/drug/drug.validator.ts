@@ -68,12 +68,12 @@ export class DrugValidator extends BaseValidator{
     private  async validateUpdateBody(request) {
 
         await this.validateString(request, 'DrugName', Where.Body, false, false);
-        await this.validateString(request, 'GenericName', Where.Body, false, false);
-        await this.validateString(request, 'Ingredients', Where.Body, false, false);
-        await this.validateString(request, 'Strength', Where.Body, false, false);
+        await this.validateString(request, 'GenericName', Where.Body, false, true);
+        await this.validateString(request, 'Ingredients', Where.Body, false, true);
+        await this.validateString(request, 'Strength', Where.Body, false, true);
         await this.validateString(request, 'OtherCommercialNames', Where.Body, false, true);
-        await this.validateString(request, 'Manufacturer', Where.Body, false, false);
-        await this.validateString(request, 'OtherInformation', Where.Body, false, false);
+        await this.validateString(request, 'Manufacturer', Where.Body, false, true);
+        await this.validateString(request, 'OtherInformation', Where.Body, false, true);
 
         this.validateRequest(request);
     }
