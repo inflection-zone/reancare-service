@@ -205,7 +205,6 @@ export class OrganizationValidator {
             .run(request);
 
         await body('About').optional()
-            .trim()
             .escape()
             .run(request);
 

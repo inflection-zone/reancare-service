@@ -66,9 +66,9 @@ export class CourseModuleValidator extends BaseValidator {
 
         await this.validateUuid(request, 'CourseId', Where.Body, false, false);
         await this.validateString(request, 'Name', Where.Body, false, false);
-        await this.validateString(request, 'Description', Where.Body, false, false);
-        await this.validateString(request, 'ImageUrl', Where.Body, false, false);
-        await this.validateDecimal(request, 'DurationInMins', Where.Body, false, false);
+        await this.validateString(request, 'Description', Where.Body, false, true);
+        await this.validateString(request, 'ImageUrl', Where.Body, false, true);
+        await this.validateDecimal(request, 'DurationInMins', Where.Body, false, true);
 
         this.validateRequest(request);
     }
