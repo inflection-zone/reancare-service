@@ -145,15 +145,15 @@ export class RssfeedValidator extends BaseValidator {
 
         await this.validateUuid(request, 'FeedId', Where.Body, true, false);
         await this.validateString(request, 'Title', Where.Body, true, false);
-        await this.validateString(request, 'Description', Where.Body, false, false);
-        await this.validateString(request, 'Link', Where.Body, false, false);
+        await this.validateString(request, 'Description', Where.Body, false, true);
+        await this.validateString(request, 'Link', Where.Body, false, true);
         await this.validateString(request, 'Content', Where.Body, true, false);
-        await this.validateString(request, 'Image', Where.Body, false, false);
-        await this.validateArray(request, 'Tags', Where.Body, false, false);
-        await this.validateString(request, 'AuthorName', Where.Body, false, false);
-        await this.validateString(request, 'AuthorEmail', Where.Body, false, false);
-        await this.validateString(request, 'AuthorLink', Where.Body, false, false);
-        await this.validateString(request, 'PublishingDate', Where.Body, false, false);
+        await this.validateString(request, 'Image', Where.Body, false, true);
+        await this.validateArray(request, 'Tags', Where.Body, false, true);
+        await this.validateString(request, 'AuthorName', Where.Body, false, true);
+        await this.validateString(request, 'AuthorEmail', Where.Body, false, true);
+        await this.validateString(request, 'AuthorLink', Where.Body, false, true);
+        await this.validateString(request, 'PublishingDate', Where.Body, false, true);
 
         this.validateRequest(request);
 
