@@ -98,6 +98,7 @@
             "AssessmentTemplate.SearchNode",
             "AssessmentTemplate.AddScoringCondition",
             "AssessmentTemplate.GetScoringCondition",
+            "AssessmentTemplate.UpdateScoringCondition",
             "Forms.Connect",
             "Forms.ExportAssessmentTemplateAsForm",
             "Forms.AddAssessmentTemplateAsForm",
