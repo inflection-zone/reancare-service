@@ -1,6 +1,6 @@
 import express from 'express';
 import { Loader } from '../../../../startup/loader';
-import { StatisticsController } from './statistics.controller';
+import { StatisticsController } from './patient.statistics.controller';
 
 ///////////////////////////////////////////////////////////////////////////////////
 
