@@ -83,6 +83,7 @@ import { RssfeedItemRepo } from './repositories/general/rss.feed/rss.feed.item.r
 import { PatientDonorsRepo } from './repositories/clinical/donation/patient.donors.repo';
 import { DonationRecordRepo } from './repositories/clinical/donation/donation.record.repo';
 import { WebhookRawDataRepo } from './repositories/webhook/webhook.rawdata.repo';
+import { StatisticsRepo } from './repositories/statistics/statistics.repo';
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -175,6 +176,7 @@ export class SequelizeInjector {
         container.register('IPatientDonorsRepo', PatientDonorsRepo);
         container.register('IDonationRecordRepo', DonationRecordRepo);
         container.register('IWebhookRawDataRepo', WebhookRawDataRepo);
+        container.register('IStatisticsRepo', StatisticsRepo);
 
     }
 

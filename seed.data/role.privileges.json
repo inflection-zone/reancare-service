@@ -225,7 +225,11 @@
             "GoalType.GetById",
             "GoalType.GetGoalTypes",
             "GoalType.Update",
-            "GoalType.Delete"
+            "GoalType.Delete",
+            "Statistics.GetTotalUsers",
+            "Statistics.GetActiveUsers",
+            "Statistics.GetGenderWiseUsers",
+            "Statistics.GetAgeWiseUsers"
 
         ]
     },
