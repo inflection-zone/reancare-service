@@ -5,6 +5,8 @@ import { IStatisticsRepo } from '../../../../repository.interfaces/statistics/st
 import Person from '../../models/person/person.model';
 import Patient from '../../models/users/patient/patient.model';
 import { Helper } from '../../../../../common/helper';
+import User from '../../models/users/user/user.model';
+import HealthProfile from '../../models/users/patient/health.profile.model';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -31,10 +33,16 @@ export class StatisticsRepo implements IStatisticsRepo {
                 includesObj.where['CreatedAt'] = {
                     [Op.between] : [minDate, maxDate],
                 };
+                includesObj.where['DeletedAt'] = {
+                    [Op.eq] : null
+                };
             }
             else {
                 includesObj.where['Phone'] = {
                     [Op.notBetween] : [1000000000, 1000000100],
+                };
+                includesObj.where['DeletedAt'] = {
+                    [Op.eq] : null
                 };
             }
             search.include.push(includesObj);
@@ -67,6 +75,47 @@ export class StatisticsRepo implements IStatisticsRepo {
                     
                 },
             };
+
+            const includesObjs =
+            {
+                model    : User,
+                required : true,
+                where    : {
+                    
+                },
+            };
+
+            // const includesLoginSession =  {
+            //     model    : UserLoginSession,
+            //     required : true,
+            //     where    : {
+                    
+            //     },
+            // };
+
+            // const includesObjs =
+            // {
+            //     model    : User,
+            //     required : true,
+            //     where    : {
+                    
+            //     },
+            //     include : {
+            //         model    : UserLoginSession,
+            //         required : true,
+            //         where    : {
+            //             LastLogin : { [Op.ne]: null, }
+            //         },
+            //     }
+            // };
+
+            // includesLoginSession.where['ValidTill'] = {
+            //     [Op.lt] : new Date(),
+            // };
+
+            includesObjs.where['LastLogin'] = {
+                [Op.ne] : null,
+            };
      
             if (filters.Year != null)  {
                 includesObj.where['Phone'] = {
@@ -87,7 +136,7 @@ export class StatisticsRepo implements IStatisticsRepo {
                     [Op.eq] : null
                 };
             }
-            search.include.push(includesObj);
+            search.include.push(includesObj,includesObjs);
     
             const totalActiveUsers = await Patient.findAndCountAll(search);
     
@@ -315,17 +364,17 @@ export class StatisticsRepo implements IStatisticsRepo {
                 Ratio : usersBelowThirtyfiveRatio,
             };
 
-            const totalUsersBetweenThirtyfiveToSeventy = totalUsresWithAge.filter(x => x > 35 && x < 70);
+            const totalUsersBetweenThirtysixToSeventy = totalUsresWithAge.filter(x => x >= 36 && x <= 70);
 
-            const usersBetweenThirtyfiveToSeventyRatio =
-            ((totalUsersBetweenThirtyfiveToSeventy.length) / (totalUsers.length) * 100).toFixed(2);
+            const usersBetweenThirtysixToSeventyRatio =
+            ((totalUsersBetweenThirtysixToSeventy.length) / (totalUsers.length) * 100).toFixed(2);
     
-            const usersBetweenThirtyfiveToSeventy = {
-                Count : totalUsersBetweenThirtyfiveToSeventy.length,
-                Ratio : usersBetweenThirtyfiveToSeventyRatio,
+            const usersBetweenThirtysixToSeventy = {
+                Count : totalUsersBetweenThirtysixToSeventy.length,
+                Ratio : usersBetweenThirtysixToSeventyRatio,
             };
 
-            const totalUsersAboveSeventy = totalUsresWithAge.filter(x => x >= 70);
+            const totalUsersAboveSeventy = totalUsresWithAge.filter(x => x >= 71);
             const usersAboveSeventyRatio =
             ((totalUsersAboveSeventy.length) / (totalUsers.length) * 100).toFixed(2);
     
@@ -335,14 +384,72 @@ export class StatisticsRepo implements IStatisticsRepo {
             };
     
             const ageWiseUsers = {
-                UsersBelowThirtyfive            : usersBelowThirtyfive,
-                UsersBetweenThirtyfiveToSeventy : usersBetweenThirtyfiveToSeventy,
-                UsersAboveSeventy               : usersAboveSeventy,
-                UsersBetweenTwoNumbers          : usersBetweenTwoNumbers,
-                AgeNotSpecifiedUsers            : ageNotSpecifiedUsers,
+                UsersBelowThirtyfive           : usersBelowThirtyfive,
+                UsersBetweenThirtysixToSeventy : usersBetweenThirtysixToSeventy,
+                UsersAboveSeventy              : usersAboveSeventy,
+                UsersBetweenTwoNumbers         : usersBetweenTwoNumbers,
+                AgeNotSpecifiedUsers           : ageNotSpecifiedUsers,
             };
     
             return ageWiseUsers;
+    
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    getUsersByMaritalStatus = async (filters): Promise<any> => {
+        try {
+            const { minDate, maxDate } = getMinMaxDates(filters);
+            const search: any = { where: {}, include: [] };
+
+            if (filters.Year != null) {
+                search.where['CreatedAt'] = { [Op.between]: [minDate, maxDate] };
+            }
+            
+            const totalHealthProfileUsers_ = await HealthProfile.findAndCountAll(search);
+    
+            const totalHealthProfileUsers = totalHealthProfileUsers_.rows.map(x => x.MaritalStatus);
+            const marriedUsers = totalHealthProfileUsers.filter(x => x === "Married");
+            const singleUsers = totalHealthProfileUsers.filter(x => x === "Single");
+            const divorcedUsers = totalHealthProfileUsers.filter(x => x === "Divorced");
+            const widowedUsers = totalHealthProfileUsers.filter(x => x === "Widowed");
+            const statusNotSpecifiedUsers = totalHealthProfileUsers.filter(x => x === "Unknown");
+
+            const  marriedUsersDetails = {
+                status : "Married",
+                count  : marriedUsers.length
+            };
+
+            const  singleUsersDetails = {
+                status : "Single",
+                count  : singleUsers.length
+            };
+
+            const  divorcedUsersDetails = {
+                status : "Divorced",
+                count  : divorcedUsers.length
+            };
+
+            const widowedUsersDetails = {
+                status : "Widowed",
+                count  : widowedUsers.length
+            };
+
+            const statusNotSpecifiedUsersDetails = {
+                status : "Not Specified",
+                count  : statusNotSpecifiedUsers.length
+            };
+    
+            const  maritalStatusWiseUsers =
+                [marriedUsersDetails,
+                    singleUsersDetails,
+                    divorcedUsersDetails,
+                    widowedUsersDetails,
+                    statusNotSpecifiedUsersDetails];
+               
+            return maritalStatusWiseUsers;
     
         } catch (error) {
             Logger.instance().log(error.message);

@@ -83,4 +83,19 @@ export class StatisticsController extends BaseController {
         }
     };
 
+    getUsersByMaritalStatus = async (request: express.Request, response: express.Response): Promise<void> => {
+        try {
+            
+            await this.setContext('Statistics.GetUsersByMaritalStatus', request, response);
+            const filters = await this._validator.searchFilterForAge(request);
+            const maritalStatusWiseUsers = await this._service.getUsersByMaritalStatus(filters);
+            const message = 'Marital status wise users retrieved successfully!';
+            ResponseHandler.success(request, response,message, 200, {
+                MaritalStatusWiseUsers : maritalStatusWiseUsers });
+
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
 }

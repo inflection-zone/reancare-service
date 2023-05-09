@@ -9,4 +9,6 @@ export interface IStatisticsRepo {
 
     getAgeWiseUsers(filters): Promise<any>;
 
+    getUsersByMaritalStatus(filters): Promise<any>;
+
 }

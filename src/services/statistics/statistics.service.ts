@@ -26,4 +26,8 @@ export class StatisticsService {
         return await this._statisticsRepo.getAgeWiseUsers(filters);
     };
 
+    getUsersByMaritalStatus = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getUsersByMaritalStatus(filters);
+    };
+
 }
