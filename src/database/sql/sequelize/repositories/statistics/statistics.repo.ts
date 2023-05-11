@@ -5,8 +5,9 @@ import { IStatisticsRepo } from '../../../../repository.interfaces/statistics/st
 import Person from '../../models/person/person.model';
 import Patient from '../../models/users/patient/patient.model';
 import { Helper } from '../../../../../common/helper';
-import User from '../../models/users/user/user.model';
 import HealthProfile from '../../models/users/patient/health.profile.model';
+import UserLoginSession from '../../models/users/user/user.login.session.model';
+import UserDeviceDetails from '../../models/users/user/user.device.details.model';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -61,9 +62,55 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
-    getActiveUsers = async (filters): Promise<any> => {
+    getDeletedUsers = async (filters): Promise<any> => {
         try {
             const totalUsers = await this.getTotalUsers(filters);
+            const { minDate, maxDate } = getMinMaxDates(filters);
+            const search: any = { where: {}, include: [],  paranoid: false };
+
+            const includesObj =
+            {
+                model    : Person,
+                required : true,
+                where    : {},
+                paranoid : false
+            };
+
+            includesObj.where['Phone'] = {
+                [Op.notBetween] : [1000000000, 1000000100],
+            };
+
+            includesObj.where['DeletedAt'] = {
+                [Op.not] : null
+            };
+     
+            if (filters.Year != null)  {
+                includesObj.where['CreatedAt'] = {
+                    [Op.between] : [minDate, maxDate],
+                };
+            }
+            
+            search.include.push(includesObj);
+    
+            const deletedUsers = await Patient.findAndCountAll(search);
+
+            const deletedUsersRatio =  ((deletedUsers.count) / (totalUsers.Count) * 100).toFixed(2);
+    
+            const  deletedUsersDetails = {
+                Count : deletedUsers.count,
+                Ratio : deletedUsersRatio
+            };
+    
+            return deletedUsersDetails;
+            
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    getActiveUsers = async (filters): Promise<any> => {
+        try {
             const { minDate, maxDate } = getMinMaxDates(filters);
             const search: any = { where: {}, include: [] };
 
@@ -71,52 +118,9 @@ export class StatisticsRepo implements IStatisticsRepo {
             {
                 model    : Person,
                 required : true,
-                where    : {
-                    
-                },
+                where    : {},
             };
 
-            const includesObjs =
-            {
-                model    : User,
-                required : true,
-                where    : {
-                    
-                },
-            };
-
-            // const includesLoginSession =  {
-            //     model    : UserLoginSession,
-            //     required : true,
-            //     where    : {
-                    
-            //     },
-            // };
-
-            // const includesObjs =
-            // {
-            //     model    : User,
-            //     required : true,
-            //     where    : {
-                    
-            //     },
-            //     include : {
-            //         model    : UserLoginSession,
-            //         required : true,
-            //         where    : {
-            //             LastLogin : { [Op.ne]: null, }
-            //         },
-            //     }
-            // };
-
-            // includesLoginSession.where['ValidTill'] = {
-            //     [Op.lt] : new Date(),
-            // };
-
-            includesObjs.where['LastLogin'] = {
-                [Op.ne] : null,
-            };
-     
             if (filters.Year != null)  {
                 includesObj.where['Phone'] = {
                     [Op.notBetween] : [1000000000, 1000000100],
@@ -136,14 +140,26 @@ export class StatisticsRepo implements IStatisticsRepo {
                     [Op.eq] : null
                 };
             }
-            search.include.push(includesObj,includesObjs);
+            search.include.push(includesObj);
     
-            const totalActiveUsers = await Patient.findAndCountAll(search);
+            const totalUsers_ = await Patient.findAndCountAll(search);
+            const totalUsers  = totalUsers_.rows.map(x => x.UserId);
+
+            const loginSessions = [];
+            for (const u of totalUsers) {
+                const loginSession = await UserLoginSession.findOne({ where : {
+                    UserId    : u,
+                    ValidTill : { [Op.gte]: new Date() },
+                } });
+                loginSessions.push(loginSession);
+            }
     
-            const activeUsersRatio = ((totalActiveUsers.count) / (totalUsers.Count) * 100).toFixed(2);
+            const activeUsersFromLoginSession = loginSessions.filter(x => x != null);
+
+            const activeUsersRatio = ((activeUsersFromLoginSession.length) / (totalUsers_.count) * 100).toFixed(2);
     
             const  _activeUsers = {
-                Count : totalActiveUsers.count,
+                Count : activeUsersFromLoginSession.length,
                 Ratio : activeUsersRatio,
             };
 
@@ -170,9 +186,7 @@ export class StatisticsRepo implements IStatisticsRepo {
             {
                 model    : Person,
                 required : true,
-                where    : {
-                    
-                },
+                where    : {},
             };
      
             includesObj.where['Phone'] = {
@@ -301,9 +315,7 @@ export class StatisticsRepo implements IStatisticsRepo {
             {
                 model    : Person,
                 required : true,
-                where    : {
-                    
-                },
+                where    : {},
             };
      
             includesObj.where['Phone'] = {
@@ -457,10 +469,93 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
+    getDeviceDetailWiseUsers = async (filters): Promise<any> => {
+        try {
+            const { minDate, maxDate } = getMinMaxDates(filters);
+            const search: any = { where: {}, include: [] };
+
+            const includesObj =
+            {
+                model    : Person,
+                required : true,
+                where    : {},
+            };
+
+            includesObj.where['DeletedAt'] = {
+                [Op.eq] : null
+            };
+
+            includesObj.where['Phone'] = {
+                [Op.notBetween] : [1000000000, 1000000100],
+            };
+     
+            if (filters.Year != null)  {
+                includesObj.where['CreatedAt'] = {
+                    [Op.between] : [minDate, maxDate],
+                };
+            }
+         
+            search.include.push(includesObj);
+    
+            const _totalUsers = await Patient.findAndCountAll(search);
+
+            const totalUsers  = _totalUsers.rows.map(x => x.UserId);
+
+            const deviceDetails = [];
+            for (const u of totalUsers) {
+                const deviceDetail = await UserDeviceDetails.findOne({ where : {
+                    UserId : u,
+                } });
+                deviceDetails.push(deviceDetail);
+            }
+
+            const deviceDatilUsers = deviceDetails.filter(x => x !== null);
+
+            const androidUsers = deviceDatilUsers.filter(x => x.OSType === 'Android');
+
+            const androidUsersRatio = ((androidUsers.length) / (_totalUsers.count) * 100).toFixed(2);
+
+            const iOSUsers = deviceDatilUsers.filter(x => x.OSType === 'iOS');
+
+            const iOSUsersRatio = ((iOSUsers.length) / (_totalUsers.count) * 100).toFixed(2);
+
+            const deviceDetailNotSpecifiedUsers = deviceDetails.filter(x => x === null);
+
+            const deviceDetailNotSpecifiedUsersRatio =
+             ((deviceDetailNotSpecifiedUsers.length) / (_totalUsers.count) * 100).toFixed(2);
+
+            const  androidUsersDetails = {
+                Count : androidUsers.length,
+                Ratio : androidUsersRatio
+            };
+
+            const  iOSUsersDetails = {
+                Count : iOSUsers.length,
+                Ratio : iOSUsersRatio
+            };
+            
+            const  deviceDetailNotSpecifiedUsersDetails = {
+                Count : deviceDetailNotSpecifiedUsers.length,
+                Ratio : deviceDetailNotSpecifiedUsersRatio
+            };
+
+            const  deviceDetailsWiseUsers = {
+                AndroidUsers         : androidUsersDetails,
+                IOSUsers             : iOSUsersDetails,
+                MissingDeviceDetails : deviceDetailNotSpecifiedUsersDetails
+            };
+    
+            return deviceDetailsWiseUsers;
+            
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
 }
 
 function getMinMaxDates(filters) {
-    
     const minDate = new Date();
     minDate.setUTCFullYear(filters.Year, 0, 1);
     minDate.setUTCHours(0, 0, 0, 0);

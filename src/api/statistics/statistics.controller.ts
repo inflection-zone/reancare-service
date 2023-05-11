@@ -25,7 +25,6 @@ export class StatisticsController extends BaseController {
 
     getTotalUsers = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
-            
             await this.setContext('Statistics.GetTotalUsers', request, response);
             const filters = await this._validator.searchFilter(request);
             const totalUsers = await this._service.getTotalUsers(filters);
@@ -40,7 +39,6 @@ export class StatisticsController extends BaseController {
 
     getActiveUsers = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
-            
             await this.setContext('Statistics.GetActiveUsers', request, response);
             const filters = await this._validator.searchFilter(request);
             const activeUsers = await this._service.getActiveUsers(filters);
@@ -53,9 +51,22 @@ export class StatisticsController extends BaseController {
         }
     };
 
+    getDeletedUsers = async (request: express.Request, response: express.Response): Promise<void> => {
+        try {
+            await this.setContext('Statistics.GetDeletdUsers', request, response);
+            const filters = await this._validator.searchFilter(request);
+            const deletedUsers = await this._service.getDeletedUsers(filters);
+            const message = 'Deleted users retrieved successfully!';
+            ResponseHandler.success(request, response,message, 200, {
+                DeletedUsers : deletedUsers });
+
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
     getGenderWiseUsers = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
-            
             await this.setContext('Statistics.GetGenderWiseUsers', request, response);
             const filters = await this._validator.searchFilter(request);
             const genderWiseUsers = await this._service.getGenderWiseUsers(filters);
@@ -70,7 +81,6 @@ export class StatisticsController extends BaseController {
 
     getAgeWiseUsers = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
-            
             await this.setContext('Statistics.GetAgeWiseUsers', request, response);
             const filters = await this._validator.searchFilterForAge(request);
             const ageWiseUsers = await this._service.getAgeWiseUsers(filters);
@@ -85,13 +95,26 @@ export class StatisticsController extends BaseController {
 
     getUsersByMaritalStatus = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
-            
             await this.setContext('Statistics.GetUsersByMaritalStatus', request, response);
             const filters = await this._validator.searchFilterForAge(request);
             const maritalStatusWiseUsers = await this._service.getUsersByMaritalStatus(filters);
             const message = 'Marital status wise users retrieved successfully!';
             ResponseHandler.success(request, response,message, 200, {
                 MaritalStatusWiseUsers : maritalStatusWiseUsers });
+
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    getDeviceDetailWiseUsers = async (request: express.Request, response: express.Response): Promise<void> => {
+        try {
+            await this.setContext('Statistics.GetDeviceDetailWiseUsers', request, response);
+            const filters = await this._validator.searchFilterForAge(request);
+            const deviceDetailWiseUsers = await this._service.getDeviceDetailWiseUsers(filters);
+            const message = 'Device detail wise users retrieved successfully!';
+            ResponseHandler.success(request, response,message, 200, {
+                DeviceDetailWiseUsers : deviceDetailWiseUsers });
 
         } catch (error) {
             ResponseHandler.handleError(request, response, error);

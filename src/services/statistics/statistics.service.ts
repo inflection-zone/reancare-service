@@ -18,6 +18,10 @@ export class StatisticsService {
         return await this._statisticsRepo.getActiveUsers(filters);
     };
 
+    getDeletedUsers = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getDeletedUsers(filters);
+    };
+
     getGenderWiseUsers = async (filters): Promise<any> => {
         return await this._statisticsRepo.getGenderWiseUsers(filters);
     };
@@ -28,6 +32,10 @@ export class StatisticsService {
 
     getUsersByMaritalStatus = async (filters): Promise<any> => {
         return await this._statisticsRepo.getUsersByMaritalStatus(filters);
+    };
+
+    getDeviceDetailWiseUsers = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getDeviceDetailWiseUsers(filters);
     };
 
 }

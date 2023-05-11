@@ -230,7 +230,9 @@
             "Statistics.GetActiveUsers",
             "Statistics.GetGenderWiseUsers",
             "Statistics.GetAgeWiseUsers",
-            "Statistics.GetUsersByMaritalStatus"
+            "Statistics.GetUsersByMaritalStatus",
+            "Statistics.GetDeletdUsers",
+            "Statistics.GetDeviceDetailWiseUsers"
 
         ]
     },
