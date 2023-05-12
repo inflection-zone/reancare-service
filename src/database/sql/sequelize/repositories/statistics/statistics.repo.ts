@@ -27,33 +27,23 @@ export class StatisticsRepo implements IStatisticsRepo {
                 },
             };
      
+            includesObj.where['Phone'] = {
+                [Op.notBetween] : [1000000000, 1000000100],
+            };
+            includesObj.where['DeletedAt'] = {
+                [Op.eq] : null
+            };
+
             if (filters.Year != null)  {
-                includesObj.where['Phone'] = {
-                    [Op.notBetween] : [1000000000, 1000000100],
-                };
                 includesObj.where['CreatedAt'] = {
                     [Op.between] : [minDate, maxDate],
                 };
-                includesObj.where['DeletedAt'] = {
-                    [Op.eq] : null
-                };
             }
-            else {
-                includesObj.where['Phone'] = {
-                    [Op.notBetween] : [1000000000, 1000000100],
-                };
-                includesObj.where['DeletedAt'] = {
-                    [Op.eq] : null
-                };
-            }
+          
             search.include.push(includesObj);
     
-            const _totalUsers = await Patient.findAndCountAll(search);
-    
-            const  totalUsers = {
-                Count : _totalUsers.count
-            };
-    
+            const totalUsers = await Patient.findAndCountAll(search);
+
             return totalUsers;
             
         } catch (error) {
@@ -94,7 +84,7 @@ export class StatisticsRepo implements IStatisticsRepo {
     
             const deletedUsers = await Patient.findAndCountAll(search);
 
-            const deletedUsersRatio =  ((deletedUsers.count) / (totalUsers.Count) * 100).toFixed(2);
+            const deletedUsersRatio =  ((deletedUsers.count) / (totalUsers.count) * 100).toFixed(2);
     
             const  deletedUsersDetails = {
                 Count : deletedUsers.count,
@@ -111,38 +101,7 @@ export class StatisticsRepo implements IStatisticsRepo {
 
     getActiveUsers = async (filters): Promise<any> => {
         try {
-            const { minDate, maxDate } = getMinMaxDates(filters);
-            const search: any = { where: {}, include: [] };
-
-            const includesObj =
-            {
-                model    : Person,
-                required : true,
-                where    : {},
-            };
-
-            if (filters.Year != null)  {
-                includesObj.where['Phone'] = {
-                    [Op.notBetween] : [1000000000, 1000000100],
-                };
-                includesObj.where['DeletedAt'] = {
-                    [Op.eq] : null
-                };
-                includesObj.where['CreatedAt'] = {
-                    [Op.between] : [minDate, maxDate],
-                };
-            }
-            else {
-                includesObj.where['Phone'] = {
-                    [Op.notBetween] : [1000000000, 1000000100],
-                };
-                includesObj.where['DeletedAt'] = {
-                    [Op.eq] : null
-                };
-            }
-            search.include.push(includesObj);
-    
-            const totalUsers_ = await Patient.findAndCountAll(search);
+            const totalUsers_ = await this.getTotalUsers(filters);
             const totalUsers  = totalUsers_.rows.map(x => x.UserId);
 
             const loginSessions = [];
@@ -177,114 +136,42 @@ export class StatisticsRepo implements IStatisticsRepo {
 
     getGenderWiseUsers = async (filters): Promise<any> => {
         try {
-            
-            const { minDate, maxDate } = getMinMaxDates(filters);
             const totalUsers = await this.getTotalUsers(filters);
-            const search: any = { where: {}, include: [] };
+        
+            const totalUsers_ = totalUsers.rows.map(x => x.Person.Gender);
 
-            const includesObj =
-            {
-                model    : Person,
-                required : true,
-                where    : {},
-            };
-     
-            includesObj.where['Phone'] = {
-                [Op.notBetween] : [1000000000, 1000000100],
-            };
+            const totalMaleUsers = totalUsers_.filter(x => x === "Male");
     
-            if (filters.Year != null)  {
-                includesObj.where['Gender'] = {
-                    [Op.like] : "Male",
-                };
-                includesObj.where['CreatedAt'] = {
-                    [Op.between] : [minDate, maxDate],
-                };
-            }
-            else {
-                includesObj.where['Gender'] = {
-                    [Op.like] : "Male",
-                };
-            }
-            search.include.push(includesObj);
-    
-            const totalMaleUsers = await Patient.findAndCountAll(search);
-    
-            const maleUsersRatio = ((totalMaleUsers.count) / (totalUsers.Count) * 100).toFixed(2);
+            const maleUsersRatio = ((totalMaleUsers.length) / (totalUsers.count) * 100).toFixed(2);
     
             const maleUsers = {
-                Count : totalMaleUsers.count,
+                Count : totalMaleUsers.length,
                 Ratio : maleUsersRatio,
             };
-    
-            if (filters.Year != null)  {
-                includesObj.where['Gender'] = {
-                    [Op.like] : "Female",
-                };
-                includesObj.where['CreatedAt'] = {
-                    [Op.between] : [minDate, maxDate],
-                };
-            }
-            else {
-                includesObj.where['Gender'] = {
-                    [Op.like] : "Female",
-                };
-            }
-            search.include.push(includesObj);
-    
-            const totalFemaleUsers = await Patient.findAndCountAll(search);
 
-            const femaleUsersRatio = ((totalFemaleUsers.count) / (totalUsers.Count) * 100).toFixed(2);
+            const totalFemaleUsers = totalUsers_.filter(x => x === "Female");
+            const femaleUsersRatio = ((totalFemaleUsers.length) / (totalUsers.count) * 100).toFixed(2);
     
             const femaleUsers = {
-                Count : totalFemaleUsers.count,
+                Count : totalFemaleUsers.length,
                 Ratio : femaleUsersRatio,
             };
-    
-            if (filters.Year != null)  {
-                includesObj.where['Gender'] = {
-                    [Op.like] : "Intersex",
-                };
-                includesObj.where['CreatedAt'] = {
-                    [Op.between] : [minDate, maxDate],
-                };
-            }
-            else {
-                includesObj.where['Gender'] = {
-                    [Op.like] : "Intersex",
-                };
-            }
-            search.include.push(includesObj);
-    
-            const totalIntersexUsers = await Patient.findAndCountAll(search);
-            const IntersexUsersRatio = ((totalIntersexUsers.count) / (totalUsers.Count) * 100).toFixed(2);
+
+            const totalIntersexUsers = totalUsers_.filter(x => x === "Intersex");
+            const IntersexUsersRatio = ((totalIntersexUsers.length) / (totalUsers.count) * 100).toFixed(2);
     
             const intersexUsers = {
-                Count : totalIntersexUsers.count,
+                Count : totalIntersexUsers.length,
                 Ratio : IntersexUsersRatio,
             };
-    
-            if (filters.Year != null)  {
-                includesObj.where['Gender'] = {
-                    [Op.or] : [{ [Op.like]: 'Unknown' },{ [Op.like]: 'Other' }],
-                };
-                includesObj.where['CreatedAt'] = {
-                    [Op.between] : [minDate, maxDate] };
-            }
-            else {
-                includesObj.where['Gender'] = {
-                    [Op.or] : [{ [Op.like]: 'Unknown' },{ [Op.like]: 'Other' }],
-                };
-            }
-            search.include.push(includesObj);
-    
-            const totalGenderNotSpecifiedUsers = await Patient.findAndCountAll(search);
+
+            const totalGenderNotSpecifiedUsers = totalUsers_.filter(x => x === "Other" || x === "Unknown" );
 
             const genderNotSpecifiedUsersRatio =
-            ((totalGenderNotSpecifiedUsers.count) / (totalUsers.Count) * 100).toFixed(2);
+            ((totalGenderNotSpecifiedUsers.length) / (totalUsers.count) * 100).toFixed(2);
 
             const genderNotSpecifiedUsers = {
-                Count : totalGenderNotSpecifiedUsers.count,
+                Count : totalGenderNotSpecifiedUsers.length,
                 Ratio : genderNotSpecifiedUsersRatio,
             };
     
@@ -293,7 +180,6 @@ export class StatisticsRepo implements IStatisticsRepo {
                 FemaleUsers             : femaleUsers,
                 IntersexUsers           : intersexUsers,
                 GenderNotSpecifiedUsers : genderNotSpecifiedUsers
-           
             };
     
             return genderWiseUsers;
@@ -306,38 +192,14 @@ export class StatisticsRepo implements IStatisticsRepo {
 
     getAgeWiseUsers = async (filters): Promise<any> => {
         try {
-
-            const { minDate, maxDate } = getMinMaxDates(filters);
-
-            const search: any = { where: {}, include: [] };
-
-            const includesObj =
-            {
-                model    : Person,
-                required : true,
-                where    : {},
-            };
-     
-            includesObj.where['Phone'] = {
-                [Op.notBetween] : [1000000000, 1000000100],
-            };
-    
-            if (filters.Year != null)  {
-                includesObj.where['CreatedAt'] = {
-                    [Op.between] : [minDate, maxDate],
-                };
-            }
-
-            search.include.push(includesObj);
-    
-            const totalUsers_ = await Patient.findAndCountAll(search);
-
+            const totalUsers_ = await this.getTotalUsers(filters);
             const totalUsers = totalUsers_.rows.map(x => x.Person.BirthDate);
+
             const usersWithBirthDate = totalUsers.filter(x => x != null);
 
             const totalAgeNotSpecifiedUsers = (totalUsers.length) - (usersWithBirthDate.length);
 
-            const ageNotSpecifiedUsersRatio = ((totalAgeNotSpecifiedUsers) / (totalUsers.length) * 100).toFixed(2);
+            const ageNotSpecifiedUsersRatio = ((totalAgeNotSpecifiedUsers) / (totalUsers_.count) * 100).toFixed(2);
     
             const ageNotSpecifiedUsers = {
                 Count : totalAgeNotSpecifiedUsers,
@@ -359,17 +221,16 @@ export class StatisticsRepo implements IStatisticsRepo {
                 const totalUsersBetweenTwoNumbers =
                     totalUsresWithAge.filter(x => x > filters.AgeFrom && x < filters.AgeTo);
                 const usersBetweenTwoNumbersRatio =
-                    ((totalUsersBetweenTwoNumbers.length) / (totalUsers.length) * 100).toFixed(2);
+                    ((totalUsersBetweenTwoNumbers.length) / (totalUsers_.count) * 100).toFixed(2);
 
                 usersBetweenTwoNumbers = {
                     Count : totalUsersBetweenTwoNumbers.length,
                     Ratio : usersBetweenTwoNumbersRatio,
                 };
-         
             }
        
             const totalUsersBelowThirtyfive = totalUsresWithAge.filter(x => x <= 35);
-            const usersBelowThirtyfiveRatio = ((totalUsersBelowThirtyfive.length) / (totalUsers.length) * 100).toFixed(2);
+            const usersBelowThirtyfiveRatio = ((totalUsersBelowThirtyfive.length) / (totalUsers_.count) * 100).toFixed(2);
     
             const usersBelowThirtyfive = {
                 Count : totalUsersBelowThirtyfive.length,
@@ -379,7 +240,7 @@ export class StatisticsRepo implements IStatisticsRepo {
             const totalUsersBetweenThirtysixToSeventy = totalUsresWithAge.filter(x => x >= 36 && x <= 70);
 
             const usersBetweenThirtysixToSeventyRatio =
-            ((totalUsersBetweenThirtysixToSeventy.length) / (totalUsers.length) * 100).toFixed(2);
+            ((totalUsersBetweenThirtysixToSeventy.length) / (totalUsers_.count) * 100).toFixed(2);
     
             const usersBetweenThirtysixToSeventy = {
                 Count : totalUsersBetweenThirtysixToSeventy.length,
@@ -388,7 +249,7 @@ export class StatisticsRepo implements IStatisticsRepo {
 
             const totalUsersAboveSeventy = totalUsresWithAge.filter(x => x >= 71);
             const usersAboveSeventyRatio =
-            ((totalUsersAboveSeventy.length) / (totalUsers.length) * 100).toFixed(2);
+            ((totalUsersAboveSeventy.length) / (totalUsers_.count) * 100).toFixed(2);
     
             const usersAboveSeventy = {
                 Count : totalUsersAboveSeventy.length,
@@ -471,33 +332,7 @@ export class StatisticsRepo implements IStatisticsRepo {
 
     getDeviceDetailWiseUsers = async (filters): Promise<any> => {
         try {
-            const { minDate, maxDate } = getMinMaxDates(filters);
-            const search: any = { where: {}, include: [] };
-
-            const includesObj =
-            {
-                model    : Person,
-                required : true,
-                where    : {},
-            };
-
-            includesObj.where['DeletedAt'] = {
-                [Op.eq] : null
-            };
-
-            includesObj.where['Phone'] = {
-                [Op.notBetween] : [1000000000, 1000000100],
-            };
-     
-            if (filters.Year != null)  {
-                includesObj.where['CreatedAt'] = {
-                    [Op.between] : [minDate, maxDate],
-                };
-            }
-         
-            search.include.push(includesObj);
-    
-            const _totalUsers = await Patient.findAndCountAll(search);
+            const _totalUsers = await this.getTotalUsers(filters);
 
             const totalUsers  = _totalUsers.rows.map(x => x.UserId);
 
