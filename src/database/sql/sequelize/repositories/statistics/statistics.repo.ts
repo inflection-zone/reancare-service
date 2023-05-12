@@ -8,6 +8,7 @@ import { Helper } from '../../../../../common/helper';
 import HealthProfile from '../../models/users/patient/health.profile.model';
 import UserLoginSession from '../../models/users/user/user.login.session.model';
 import UserDeviceDetails from '../../models/users/user/user.device.details.model';
+import CareplanEnrollment from '../../models/clinical/careplan/enrollment.model';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -274,16 +275,17 @@ export class StatisticsRepo implements IStatisticsRepo {
 
     getUsersByMaritalStatus = async (filters): Promise<any> => {
         try {
-            const { minDate, maxDate } = getMinMaxDates(filters);
-            const search: any = { where: {}, include: [] };
+            const totalUsers = await this.getTotalUsers(filters);
 
-            if (filters.Year != null) {
-                search.where['CreatedAt'] = { [Op.between]: [minDate, maxDate] };
+            const healthProfileDetails = [];
+            for (const u of totalUsers.rows) {
+                const healthProfileDetail = await HealthProfile.findOne({ where : {
+                    PatientUserId : u.UserId,
+                } });
+                healthProfileDetails.push(healthProfileDetail);
             }
             
-            const totalHealthProfileUsers_ = await HealthProfile.findAndCountAll(search);
-    
-            const totalHealthProfileUsers = totalHealthProfileUsers_.rows.map(x => x.MaritalStatus);
+            const totalHealthProfileUsers = healthProfileDetails.map(x => x.MaritalStatus);
             const marriedUsers = totalHealthProfileUsers.filter(x => x === "Married");
             const singleUsers = totalHealthProfileUsers.filter(x => x === "Single");
             const divorcedUsers = totalHealthProfileUsers.filter(x => x === "Divorced");
@@ -381,6 +383,40 @@ export class StatisticsRepo implements IStatisticsRepo {
             };
     
             return deviceDetailsWiseUsers;
+            
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    getEnrollmentUsers = async (filters): Promise<any> => {
+        try {
+            const totalUsers = await this.getTotalUsers(filters);
+
+            const enrollmentDetails = [];
+            for (const u of totalUsers.rows) {
+                const enrollmentDetail = await CareplanEnrollment.findOne({ where : {
+                    PatientUserId : u.UserId,
+                } });
+                enrollmentDetails.push(enrollmentDetail);
+            }
+
+            const totalEnrollnemtUsers = enrollmentDetails.filter(x => x !== null);
+
+            const totalEnrollnemtUsersRatio =
+             ((totalEnrollnemtUsers.length) / (totalUsers.count) * 100).toFixed(2);
+
+            const  totalEnrollnemtUsersDetails = {
+                Count : totalEnrollnemtUsers.length,
+                Ratio : totalEnrollnemtUsersRatio,
+            };
+
+            const  enrollmentUsers = {
+                TotalEnrollnemtUsers : totalEnrollnemtUsersDetails
+            };
+    
+            return enrollmentUsers;
             
         } catch (error) {
             Logger.instance().log(error.message);

@@ -15,4 +15,6 @@ export interface IStatisticsRepo {
 
     getDeviceDetailWiseUsers(filters): Promise<any>;
 
+    getEnrollmentUsers(filters): Promise<any>;
+
 }

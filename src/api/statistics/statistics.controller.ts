@@ -96,7 +96,7 @@ export class StatisticsController extends BaseController {
     getUsersByMaritalStatus = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
             await this.setContext('Statistics.GetUsersByMaritalStatus', request, response);
-            const filters = await this._validator.searchFilterForAge(request);
+            const filters = await this._validator.searchFilter(request);
             const maritalStatusWiseUsers = await this._service.getUsersByMaritalStatus(filters);
             const message = 'Marital status wise users retrieved successfully!';
             ResponseHandler.success(request, response,message, 200, {
@@ -110,7 +110,7 @@ export class StatisticsController extends BaseController {
     getDeviceDetailWiseUsers = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
             await this.setContext('Statistics.GetDeviceDetailWiseUsers', request, response);
-            const filters = await this._validator.searchFilterForAge(request);
+            const filters = await this._validator.searchFilter(request);
             const deviceDetailWiseUsers = await this._service.getDeviceDetailWiseUsers(filters);
             const message = 'Device detail wise users retrieved successfully!';
             ResponseHandler.success(request, response,message, 200, {
@@ -120,5 +120,19 @@ export class StatisticsController extends BaseController {
             ResponseHandler.handleError(request, response, error);
         }
     };
+
+    getEnrollmentUsers = async (request: express.Request, response: express.Response): Promise<void> => {
+        try {
+            await this.setContext('Statistics.GetEnrollmentUsers', request, response);
+            const filters = await this._validator.searchFilter(request);
+            const enrollmentUsers = await this._service.getEnrollmentUsers(filters);
+            const message = 'Enrollment users retrieved successfully!';
+            ResponseHandler.success(request, response,message, 200, {
+                EnrollmentUsers : enrollmentUsers });
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
 
 }

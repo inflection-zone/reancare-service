@@ -38,4 +38,8 @@ export class StatisticsService {
         return await this._statisticsRepo.getDeviceDetailWiseUsers(filters);
     };
 
+    getEnrollmentUsers = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getEnrollmentUsers(filters);
+    };
+
 }
