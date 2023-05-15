@@ -407,13 +407,42 @@ export class StatisticsRepo implements IStatisticsRepo {
             const totalEnrollnemtUsersRatio =
              ((totalEnrollnemtUsers.length) / (totalUsers.count) * 100).toFixed(2);
 
+            const deviceDetails = [];
+            for (const u of totalEnrollnemtUsers) {
+                const deviceDetail  = await UserDeviceDetails.findOne({ where : {
+                    UserId : u.PatientUserId,
+                } });
+                deviceDetails.push(deviceDetail);
+            }
+
+            const deviceDatilUsers = deviceDetails.filter(x => x !== null);
+
+            const androidUsers = deviceDatilUsers.filter(x => x.OSType === 'Android');
+
+            const androidUsersRatio = ((androidUsers.length) / (totalEnrollnemtUsers.length) * 100).toFixed(2);
+
+            const iOSUsers = deviceDatilUsers.filter(x => x.OSType === 'iOS');
+
+            const iOSUsersRatio = ((iOSUsers.length) / (totalEnrollnemtUsers.length) * 100).toFixed(2);
+
+            const  androidUsersDetails = {
+                Count : androidUsers.length,
+                Ratio : androidUsersRatio
+            };
+
+            const  iOSUsersDetails = {
+                Count : iOSUsers.length,
+                Ratio : iOSUsersRatio
+            };
             const  totalEnrollnemtUsersDetails = {
                 Count : totalEnrollnemtUsers.length,
                 Ratio : totalEnrollnemtUsersRatio,
             };
 
             const  enrollmentUsers = {
-                TotalEnrollnemtUsers : totalEnrollnemtUsersDetails
+                TotalEnrollnemtUsers : totalEnrollnemtUsersDetails,
+                AndroidUsers         : androidUsersDetails,
+                IOSUsers             : iOSUsersDetails,
             };
     
             return enrollmentUsers;
