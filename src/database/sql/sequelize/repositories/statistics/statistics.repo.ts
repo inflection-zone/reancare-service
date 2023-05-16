@@ -9,6 +9,10 @@ import HealthProfile from '../../models/users/patient/health.profile.model';
 import UserLoginSession from '../../models/users/user/user.login.session.model';
 import UserDeviceDetails from '../../models/users/user/user.device.details.model';
 import CareplanEnrollment from '../../models/clinical/careplan/enrollment.model';
+import { AppDownloadDomainModel } from '../../../../../domain.types/statistics/app.download.domain.model';
+import { AppDownloadDto } from '../../../../../domain.types/statistics/app.download.dto';
+import AppDownloadsModel from '../../models/statistics/app.downloads.model';
+import { AppDownloadMapper } from '../../mappers/statistics/app.download.mapper';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -447,6 +451,36 @@ export class StatisticsRepo implements IStatisticsRepo {
     
             return enrollmentUsers;
             
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    addAppDownloads = async (createModel: AppDownloadDomainModel):
+    Promise<AppDownloadDto> => {
+
+        try {
+            const entity = {
+                AppName          : createModel.AppName,
+                TotalDownloads   : createModel.TotalDownloads,
+                IOSDownloads     : createModel.IOSDownloads,
+                AndroidDownloads : createModel.AndroidDownloads,
+            };
+
+            const download = await AppDownloadsModel.create(entity);
+            return await AppDownloadMapper.toDto(download);
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    getAppDownlods= async (): Promise<any> => {
+        try {
+            const appDownload = await AppDownloadsModel.findAndCountAll();
+            // const IOSDownloads = 
+            return appDownload;
         } catch (error) {
             Logger.instance().log(error.message);
             throw new ApiError(500, error.message);

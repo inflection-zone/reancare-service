@@ -1,5 +1,7 @@
 import { inject, injectable } from "tsyringe";
 import { IStatisticsRepo } from "../../database/repository.interfaces/statistics/statistics.repo.interface";
+import { AppDownloadDto } from "../../domain.types/statistics/app.download.dto";
+import { AppDownloadDomainModel } from "../../domain.types/statistics/app.download.domain.model";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -40,6 +42,14 @@ export class StatisticsService {
 
     getEnrollmentUsers = async (filters): Promise<any> => {
         return await this._statisticsRepo.getEnrollmentUsers(filters);
+    };
+
+    addAppDownloads = async (appDownloadDomainModel: AppDownloadDomainModel ): Promise<AppDownloadDto> => {
+        return await this._statisticsRepo.addAppDownloads(appDownloadDomainModel);
+    };
+
+    getAppDownlods = async (): Promise<any> => {
+        return await this._statisticsRepo.getAppDownlods();
     };
 
 }

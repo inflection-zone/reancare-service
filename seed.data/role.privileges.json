@@ -233,7 +233,9 @@
             "Statistics.GetUsersByMaritalStatus",
             "Statistics.GetDeletdUsers",
             "Statistics.GetDeviceDetailWiseUsers",
-            "Statistics.GetEnrollmentUsers"
+            "Statistics.GetEnrollmentUsers",
+            "Statistics.AddAppDownloads",
+            "Statistics.GetAppDownlods"
 
         ]
     },

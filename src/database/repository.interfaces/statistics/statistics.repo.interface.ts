@@ -1,3 +1,6 @@
+import { uuid } from "../../../domain.types/miscellaneous/system.types";
+import { AppDownloadDomainModel } from "../../../domain.types/statistics/app.download.domain.model";
+import { AppDownloadDto } from "../../../domain.types/statistics/app.download.dto";
 
 export interface IStatisticsRepo {
 
@@ -16,5 +19,9 @@ export interface IStatisticsRepo {
     getDeviceDetailWiseUsers(filters): Promise<any>;
 
     getEnrollmentUsers(filters): Promise<any>;
+
+    addAppDownloads(appDownloadDomainModel: AppDownloadDomainModel): Promise<AppDownloadDto>;
+
+    getAppDownlods(): Promise<any>;
 
 }

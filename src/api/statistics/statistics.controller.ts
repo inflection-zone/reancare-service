@@ -4,6 +4,8 @@ import { Loader } from '../../startup/loader';
 import { BaseController } from '../base.controller';
 import { StatisticsService } from '../../services/statistics/statistics.service';
 import { StatistcsValidator } from './statistics.validator';
+import { uuid } from '../../domain.types/miscellaneous/system.types';
+import { ApiError } from '../../common/api.error';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -134,5 +136,41 @@ export class StatisticsController extends BaseController {
         }
     };
 
+    addAppDownloads = async (request: express.Request, response: express.Response): Promise<void> => {
+        try {
+            
+            await this.setContext('Statistics.AddAppDownloads', request, response);
+
+            const model = await this._validator.addAppDownloads(request);
+            const appDownload = await this._service.addAppDownloads(model);
+            if (appDownload == null) {
+                throw new ApiError(400, 'Could not add a app downloads!');
+            }
+
+            ResponseHandler.success(request, response, 'App downloads added successfully!', 201, {
+                AppDownload : appDownload,
+            });
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    getAppDownlods = async (request: express.Request, response: express.Response): Promise<void> => {
+        try {
+            
+            await this.setContext('Statistics.GetAppDownlods', request, response);
+
+            const appDownload = await this._service.getAppDownlods();
+            if (appDownload == null) {
+                throw new ApiError(404, 'App Download  not found.');
+            }
+
+            ResponseHandler.success(request, response, 'App Download retrieved successfully!', 200, {
+                AppDownload : appDownload,
+            });
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
 
 }

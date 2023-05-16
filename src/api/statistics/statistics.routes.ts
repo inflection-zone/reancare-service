@@ -18,6 +18,8 @@ export const register = (app: express.Application): void => {
     router.get('/marital-status-wise-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getUsersByMaritalStatus);
     router.get('/device-detail-wise-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getDeviceDetailWiseUsers);
     router.get('/enrollment-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getEnrollmentUsers);
+    router.post('/app-downloads/add', authenticator.authenticateClient, authenticator.authenticateUser, controller.addAppDownloads);
+    router.get('/app-downloads', authenticator.authenticateClient, authenticator.authenticateUser, controller.getAppDownlods);
 
     app.use('/api/v1/statistics', router);
 };

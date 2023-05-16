@@ -1,5 +1,6 @@
 import express from 'express';
 import { BaseValidator, Where } from '../base.validator';
+import { AppDownloadDomainModel } from '../../domain.types/statistics/app.download.domain.model';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -8,6 +9,24 @@ export class StatistcsValidator extends BaseValidator {
     constructor() {
         super();
     }
+
+    getDomainModel = (request: express.Request): AppDownloadDomainModel => {
+
+        const AppDownloadModel: AppDownloadDomainModel = {
+            AppName          : request.body.AppName,
+            TotalDownloads   : request.body.TotalDownloads,
+            IOSDownloads     : request.body.IOSDownloads,
+            AndroidDownloads : request.body.AndroidDownloads,
+           
+        };
+
+        return AppDownloadModel;
+    };
+
+    addAppDownloads = async (request: express.Request): Promise<AppDownloadDomainModel> => {
+        await this.validateCreateBody(request);
+        return this.getDomainModel(request);
+    };
 
     searchFilter = async (request: express.Request): Promise<any> => {
 
@@ -47,6 +66,15 @@ export class StatistcsValidator extends BaseValidator {
         };
 
         return this.updateBaseSearchFilters(request, filters);
+    }
+
+    private  async validateCreateBody(request) {
+
+        await this.validateString(request, 'AppName', Where.Body, false, true);
+        await this.validateDecimal(request, 'TotalDownloads', Where.Body, false, true);
+        await this.validateDecimal(request, 'IOSDownloads', Where.Body, false, true);
+        await this.validateDecimal(request, 'AndroidDownloads', Where.Body, false, true);
+        this.validateRequest(request);
     }
 
 }
