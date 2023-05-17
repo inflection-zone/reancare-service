@@ -52,4 +52,8 @@ export class StatisticsService {
         return await this._statisticsRepo.getAppDownlods();
     };
 
+    getCountryWiseUsers = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getCountryWiseUsers(filters);
+    };
+
 }

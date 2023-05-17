@@ -1,4 +1,3 @@
-import { uuid } from "../../../domain.types/miscellaneous/system.types";
 import { AppDownloadDomainModel } from "../../../domain.types/statistics/app.download.domain.model";
 import { AppDownloadDto } from "../../../domain.types/statistics/app.download.dto";
 
@@ -24,4 +23,5 @@ export interface IStatisticsRepo {
 
     getAppDownlods(): Promise<any>;
 
+    getCountryWiseUsers(filters): Promise<any>;
 }

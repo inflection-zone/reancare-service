@@ -4,7 +4,6 @@ import { Loader } from '../../startup/loader';
 import { BaseController } from '../base.controller';
 import { StatisticsService } from '../../services/statistics/statistics.service';
 import { StatistcsValidator } from './statistics.validator';
-import { uuid } from '../../domain.types/miscellaneous/system.types';
 import { ApiError } from '../../common/api.error';
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -168,6 +167,19 @@ export class StatisticsController extends BaseController {
             ResponseHandler.success(request, response, 'App Download retrieved successfully!', 200, {
                 AppDownload : appDownload,
             });
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    getCountryWiseUsers = async (request: express.Request, response: express.Response): Promise<void> => {
+        try {
+            await this.setContext('Statistics.GetCountryWiseUsers', request, response);
+            const filters = await this._validator.searchFilter(request);
+            const countryWiseUsers = await this._service.getCountryWiseUsers(filters);
+            const message = 'Country wise users retrieved successfully!';
+            ResponseHandler.success(request, response,message, 200, {
+                CountryWiseUsers : countryWiseUsers });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
         }

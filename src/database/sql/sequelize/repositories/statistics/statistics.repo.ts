@@ -1,4 +1,5 @@
 import { Op } from 'sequelize';
+import { CountryCurrencyPhone } from 'country-currency-phone';
 import { ApiError } from '../../../../../common/api.error';
 import { Logger } from '../../../../../common/logger';
 import { IStatisticsRepo } from '../../../../repository.interfaces/statistics/statistics.repo.interface';
@@ -479,8 +480,53 @@ export class StatisticsRepo implements IStatisticsRepo {
     getAppDownlods= async (): Promise<any> => {
         try {
             const appDownload = await AppDownloadsModel.findAndCountAll();
-            // const IOSDownloads = 
             return appDownload;
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    getCountryWiseUsers = async (filters): Promise<any> => {
+        try {
+            const totalUsers_ = await this.getTotalUsers(filters);
+
+            const usersCountryCodes = [];
+            for (const u of totalUsers_.rows) {
+                var phone = u.Person.Phone;
+                const countryCode = phone.split("-")[0];
+                usersCountryCodes.push(countryCode);
+            }
+        
+            const countryCurrencyPhone = new CountryCurrencyPhone();
+
+            const  usersCountries = [];
+            for (const c of usersCountryCodes) {
+                const countryArray =  countryCurrencyPhone.getByPhoneCode(c);
+                let country  = undefined;
+                for (const a of countryArray){
+                    country = a.country.names[0];
+                }
+                usersCountries.push(country);
+            }
+
+            var uniqueContries = Array.from(new Set(usersCountries));
+
+            const countryWiseUsers = [];
+
+            for (const c of uniqueContries) {
+                const countryUsers = usersCountries.filter(x => x === c);
+                const ratio = ((countryUsers.length) / (totalUsers_.count) * 100).toFixed(2);
+                const countryUsersDetail = {
+                    Country : c,
+                    Count   : countryUsers.length,
+                    Ratio   : ratio,
+                };
+                countryWiseUsers.push(countryUsersDetail);
+            }
+
+            return countryWiseUsers;
+
         } catch (error) {
             Logger.instance().log(error.message);
             throw new ApiError(500, error.message);
