@@ -21,6 +21,7 @@ export const register = (app: express.Application): void => {
     router.post('/app-downloads/add', authenticator.authenticateClient, authenticator.authenticateUser, controller.addAppDownloads);
     router.get('/app-downloads', authenticator.authenticateClient, authenticator.authenticateUser, controller.getAppDownlods);
     router.get('/country-wise-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getCountryWiseUsers);
+    router.get('/major-ailment-wise-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getMajorAilmentDistributionOfUsers);
 
     app.use('/api/v1/statistics', router);
 };

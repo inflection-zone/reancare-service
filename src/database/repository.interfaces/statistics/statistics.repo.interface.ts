@@ -24,4 +24,7 @@ export interface IStatisticsRepo {
     getAppDownlods(): Promise<any>;
 
     getCountryWiseUsers(filters): Promise<any>;
+
+    getMajorAilmentDistributionOfUsers(filters): Promise<any>;
+    
 }

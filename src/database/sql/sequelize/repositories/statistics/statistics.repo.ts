@@ -489,10 +489,10 @@ export class StatisticsRepo implements IStatisticsRepo {
 
     getCountryWiseUsers = async (filters): Promise<any> => {
         try {
-            const totalUsers_ = await this.getTotalUsers(filters);
+            const totalUsers = await this.getTotalUsers(filters);
 
             const usersCountryCodes = [];
-            for (const u of totalUsers_.rows) {
+            for (const u of totalUsers.rows) {
                 var phone = u.Person.Phone;
                 const countryCode = phone.split("-")[0];
                 usersCountryCodes.push(countryCode);
@@ -516,7 +516,7 @@ export class StatisticsRepo implements IStatisticsRepo {
 
             for (const c of uniqueContries) {
                 const countryUsers = usersCountries.filter(x => x === c);
-                const ratio = ((countryUsers.length) / (totalUsers_.count) * 100).toFixed(2);
+                const ratio = ((countryUsers.length) / (totalUsers.count) * 100).toFixed(2);
                 const countryUsersDetail = {
                     Country : c,
                     Count   : countryUsers.length,
@@ -526,6 +526,54 @@ export class StatisticsRepo implements IStatisticsRepo {
             }
 
             return countryWiseUsers;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    getMajorAilmentDistributionOfUsers = async (filters): Promise<any> => {
+        try {
+            const totalUsers = await this.getTotalUsers(filters);
+
+            const healthProfileDetails = [];
+            for (const u of totalUsers.rows) {
+                const healthProfileDetail = await HealthProfile.findOne({ where : {
+                    PatientUserId : u.UserId,
+                } });
+                healthProfileDetails.push(healthProfileDetail);
+            }
+            
+            const totalMajorAilment = healthProfileDetails.map(x => x.MajorAilment);
+            const majorAilments = totalMajorAilment.filter(x => x !== '');
+
+            const majorAilmentNotSpecified = (totalMajorAilment.length) - (majorAilments.length);
+            const ratio = ((majorAilmentNotSpecified) / (totalUsers.count) * 100).toFixed(2);
+
+            const majorAilmentDetail = {
+                MajorAilment : "Not specified",
+                Count        : majorAilmentNotSpecified,
+                Ratio        : ratio,
+            };
+
+            const uniqueMajorAilment = Array.from(new Set(majorAilments));
+
+            const majorAilmentDistributionOfUsers = [];
+
+            for (const m of uniqueMajorAilment) {
+                const majorAilment = majorAilments.filter(x => x === m);
+                const ratio = ((majorAilment.length) / (totalUsers.count) * 100).toFixed(2);
+                const majorAilmentDetail = {
+                    MajorAilment : m,
+                    Count        : majorAilment.length,
+                    Ratio        : ratio,
+                };
+                majorAilmentDistributionOfUsers.push(majorAilmentDetail);
+            }
+
+            majorAilmentDistributionOfUsers.push(majorAilmentDetail);
+            return majorAilmentDistributionOfUsers;
 
         } catch (error) {
             Logger.instance().log(error.message);

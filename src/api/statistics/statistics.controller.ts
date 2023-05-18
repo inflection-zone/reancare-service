@@ -185,4 +185,17 @@ export class StatisticsController extends BaseController {
         }
     };
 
+    getMajorAilmentDistributionOfUsers = async (request: express.Request, response: express.Response): Promise<void> => {
+        try {
+            await this.setContext('Statistics.GetMajorAilmentDistributionOfUsers', request, response);
+            const filters = await this._validator.searchFilter(request);
+            const majorAilmentDistribution = await this._service.getMajorAilmentDistributionOfUsers(filters);
+            const message = 'Major ailment distribution wise users retrieved successfully!';
+            ResponseHandler.success(request, response,message, 200, {
+                MajorAilmentDistribution : majorAilmentDistribution });
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
 }

@@ -56,4 +56,8 @@ export class StatisticsService {
         return await this._statisticsRepo.getCountryWiseUsers(filters);
     };
 
+    getMajorAilmentDistributionOfUsers = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getMajorAilmentDistributionOfUsers(filters);
+    };
+
 }
