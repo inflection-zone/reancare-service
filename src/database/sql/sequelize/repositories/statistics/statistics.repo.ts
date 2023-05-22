@@ -22,7 +22,7 @@ export class StatisticsRepo implements IStatisticsRepo {
     getTotalUsers = async (filters): Promise<any> => {
         try {
             const { minDate, maxDate } = getMinMaxDates(filters);
-            const search: any = { where: {}, include: [] };
+            const search: any = { where: {}, include: [], paranoid: false };
 
             const includesObj =
             {
@@ -31,15 +31,13 @@ export class StatisticsRepo implements IStatisticsRepo {
                 where    : {
                     
                 },
+                paranoid : false
             };
      
             includesObj.where['Phone'] = {
                 [Op.notBetween] : [1000000000, 1000000100],
             };
-            includesObj.where['DeletedAt'] = {
-                [Op.eq] : null
-            };
-
+         
             if (filters.Year != null)  {
                 includesObj.where['CreatedAt'] = {
                     [Op.between] : [minDate, maxDate],
@@ -51,6 +49,54 @@ export class StatisticsRepo implements IStatisticsRepo {
             const totalUsers = await Patient.findAndCountAll(search);
 
             return totalUsers;
+            
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    getNonDeletedUsers = async (filters): Promise<any> => {
+        try {
+            const totalUsers = await this.getTotalUsers(filters);
+            const { minDate, maxDate } = getMinMaxDates(filters);
+            const search: any = { where: {}, include: [], paranoid: false };
+
+            const includesObj =
+            {
+                model    : Person,
+                required : true,
+                where    : {
+                    
+                },
+                paranoid : false
+            };
+     
+            includesObj.where['Phone'] = {
+                [Op.notBetween] : [1000000000, 1000000100],
+            };
+            
+            includesObj.where['DeletedAt'] = {
+                [Op.eq] : null
+            };
+
+            if (filters.Year != null)  {
+                includesObj.where['CreatedAt'] = {
+                    [Op.between] : [minDate, maxDate],
+                };
+            }
+          
+            search.include.push(includesObj);
+
+            const nonDeletedUsers = await Patient.findAndCountAll(search);
+            const nonDeletedUsersRatio =  ((nonDeletedUsers.count) / (totalUsers.count) * 100).toFixed(2);
+    
+            const  nonDeletedUsersDetails = {
+                Count : nonDeletedUsers.count,
+                Ratio : nonDeletedUsersRatio
+            };
+    
+            return nonDeletedUsersDetails;
             
         } catch (error) {
             Logger.instance().log(error.message);
@@ -289,8 +335,9 @@ export class StatisticsRepo implements IStatisticsRepo {
                 } });
                 healthProfileDetails.push(healthProfileDetail);
             }
-            
-            const totalHealthProfileUsers = healthProfileDetails.map(x => x.MaritalStatus);
+
+            const totalHealthProfileUsers_ = healthProfileDetails.filter(x => x !== null);
+            const totalHealthProfileUsers = totalHealthProfileUsers_.map(x => x.MaritalStatus);
             const marriedUsers = totalHealthProfileUsers.filter(x => x === "Married");
             const singleUsers = totalHealthProfileUsers.filter(x => x === "Single");
             const divorcedUsers = totalHealthProfileUsers.filter(x => x === "Divorced");
@@ -545,7 +592,8 @@ export class StatisticsRepo implements IStatisticsRepo {
                 healthProfileDetails.push(healthProfileDetail);
             }
             
-            const totalMajorAilment = healthProfileDetails.map(x => x.MajorAilment);
+            const totalMajorAilment_ = healthProfileDetails.filter(x => x !== null);
+            const totalMajorAilment = totalMajorAilment_.map(x => x.MajorAilment);
             const majorAilments = totalMajorAilment.filter(x => x !== '');
 
             const majorAilmentNotSpecified = (totalMajorAilment.length) - (majorAilments.length);

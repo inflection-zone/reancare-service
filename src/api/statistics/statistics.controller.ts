@@ -38,6 +38,20 @@ export class StatisticsController extends BaseController {
         }
     };
 
+    getNonDeletedUsers = async (request: express.Request, response: express.Response): Promise<void> => {
+        try {
+            await this.setContext('Statistics.GetNonDeletdUsers', request, response);
+            const filters = await this._validator.searchFilter(request);
+            const nonDeletedUsers = await this._service.getNonDeletedUsers(filters);
+            const message = 'Non deleted users retrieved successfully!';
+            ResponseHandler.success(request, response,message, 200, {
+                NonDeletedUsers : nonDeletedUsers });
+
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
     getActiveUsers = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
             await this.setContext('Statistics.GetActiveUsers', request, response);

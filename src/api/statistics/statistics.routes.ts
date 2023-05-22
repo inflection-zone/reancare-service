@@ -11,6 +11,7 @@ export const register = (app: express.Application): void => {
     const controller = new StatisticsController();
 
     router.get('/users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getTotalUsers);
+    router.get('/non-deleted-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getNonDeletedUsers);
     router.get('/active-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getActiveUsers);
     router.get('/deleted-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getDeletedUsers);
     router.get('/gender-wise-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getGenderWiseUsers);

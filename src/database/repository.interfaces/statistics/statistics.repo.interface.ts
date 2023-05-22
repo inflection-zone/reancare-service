@@ -5,6 +5,8 @@ export interface IStatisticsRepo {
 
     getTotalUsers(filters): Promise<any>;
 
+    getNonDeletedUsers(filters): Promise<any>;
+    
     getActiveUsers(filters): Promise<any>;
 
     getDeletedUsers(filters): Promise<any>;
@@ -26,5 +28,5 @@ export interface IStatisticsRepo {
     getCountryWiseUsers(filters): Promise<any>;
 
     getMajorAilmentDistributionOfUsers(filters): Promise<any>;
-    
+
 }

@@ -16,6 +16,10 @@ export class StatisticsService {
         return await this._statisticsRepo.getTotalUsers(filters);
     };
 
+    getNonDeletedUsers = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getNonDeletedUsers(filters);
+    };
+
     getActiveUsers = async (filters): Promise<any> => {
         return await this._statisticsRepo.getActiveUsers(filters);
     };
