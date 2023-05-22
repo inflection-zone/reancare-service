@@ -3,9 +3,9 @@ import { PatientService } from '../../../../services/users/patient/patient.servi
 import { Authorizer } from '../../../../auth/authorizer';
 import { ResponseHandler } from '../../../../common/response.handler';
 import { FileResourceService } from '../../../../services/general/file.resource.service';
-import { StatisticsService } from '../../../../services/users/patient/statistics/statistics.service';
+import { StatisticsService } from '../../../../services/users/patient/patient.statistics/patient.statistics.service';
 import { Loader } from '../../../../startup/loader';
-import { StatisticsValidator } from './statistics.validator';
+import { StatisticsValidator } from './patient.statistics.validator';
 import { Helper } from '../../../../common/helper';
 import { DocumentDomainModel } from '../../../../domain.types/users/patient/document/document.domain.model';
 import { Logger } from '../../../../common/logger';

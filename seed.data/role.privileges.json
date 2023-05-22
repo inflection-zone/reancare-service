@@ -225,8 +225,20 @@
             "GoalType.GetById",
             "GoalType.GetGoalTypes",
             "GoalType.Update",
-            "GoalType.Delete"
-
+            "GoalType.Delete",
+            "Statistics.GetTotalUsers",
+            "Statistics.GetActiveUsers",
+            "Statistics.GetGenderWiseUsers",
+            "Statistics.GetAgeWiseUsers",
+            "Statistics.GetUsersByMaritalStatus",
+            "Statistics.GetDeletdUsers",
+            "Statistics.GetDeviceDetailWiseUsers",
+            "Statistics.GetEnrollmentUsers",
+            "Statistics.AddAppDownloads",
+            "Statistics.GetAppDownlods",
+            "Statistics.GetCountryWiseUsers",
+            "'Statistics.GetMajorAilmentDistributionOfUsers",
+            "Statistics.GetNonDeletdUsers"
         ]
     },
     {
