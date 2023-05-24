@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import { CountryCurrencyPhone } from 'country-currency-phone';
 import { ApiError } from '../../../../../common/api.error';
 import { Logger } from '../../../../../common/logger';
@@ -14,6 +14,8 @@ import { AppDownloadDomainModel } from '../../../../../domain.types/statistics/a
 import { AppDownloadDto } from '../../../../../domain.types/statistics/app.download.dto';
 import AppDownloadsModel from '../../models/statistics/app.downloads.model';
 import { AppDownloadMapper } from '../../mappers/statistics/app.download.mapper';
+import BodyHeight from '../../models/clinical/biometrics/body.height.model';
+import BodyWeight from '../../models/clinical/biometrics/body.weight.model';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -22,6 +24,7 @@ export class StatisticsRepo implements IStatisticsRepo {
     getTotalUsers = async (filters): Promise<any> => {
         try {
             const { minDate, maxDate } = getMinMaxDates(filters);
+            const maxCreatedDate = getMaxDate(filters);
             const search: any = { where: {}, include: [], paranoid: false };
 
             const includesObj =
@@ -43,7 +46,13 @@ export class StatisticsRepo implements IStatisticsRepo {
                     [Op.between] : [minDate, maxDate],
                 };
             }
-          
+
+            if (filters.Year != null && filters.Month != null)  {
+                includesObj.where['CreatedAt'] = {
+                    [Op.lt] : maxCreatedDate,
+                };
+            }
+
             search.include.push(includesObj);
     
             const totalUsers = await Patient.findAndCountAll(search);
@@ -60,6 +69,7 @@ export class StatisticsRepo implements IStatisticsRepo {
         try {
             const totalUsers = await this.getTotalUsers(filters);
             const { minDate, maxDate } = getMinMaxDates(filters);
+            const maxCreatedDate = getMaxDate(filters);
             const search: any = { where: {}, include: [], paranoid: false };
 
             const includesObj =
@@ -85,10 +95,17 @@ export class StatisticsRepo implements IStatisticsRepo {
                     [Op.between] : [minDate, maxDate],
                 };
             }
-          
+
+            if (filters.Year != null && filters.Month != null)  {
+                includesObj.where['CreatedAt'] = {
+                    [Op.lt] : maxCreatedDate,
+                };
+            }
+
             search.include.push(includesObj);
 
             const nonDeletedUsers = await Patient.findAndCountAll(search);
+
             const nonDeletedUsersRatio =  ((nonDeletedUsers.count) / (totalUsers.count) * 100).toFixed(2);
     
             const  nonDeletedUsersDetails = {
@@ -104,10 +121,38 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
+    getOverallUsers = async (filters): Promise<any> => {
+        try {
+            const totalUsers_ = await this.getTotalUsers(filters);
+            const totalUsers = {
+                Count : totalUsers_.count
+            };
+            const nonDeletedUsers = await this.getNonDeletedUsers(filters);
+            const activeUsers = await this.getActiveUsers(filters);
+            const deletedUsers = await this.getDeletedUsers(filters);
+            const enrollmentUsers = await this.getEnrollmentUsers(filters);
+
+            const usersData = {
+                TotalUsers      : totalUsers,
+                NonDeletedUsers : nonDeletedUsers,
+                ActiveUsers     : activeUsers,
+                DeletedUsers    : deletedUsers,
+                EnrollmentUsers : enrollmentUsers.TotalEnrollnemtUsers,
+            };
+
+            return usersData;
+            
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
     getDeletedUsers = async (filters): Promise<any> => {
         try {
             const totalUsers = await this.getTotalUsers(filters);
             const { minDate, maxDate } = getMinMaxDates(filters);
+            const maxCreatedDate = getMaxDate(filters);
             const search: any = { where: {}, include: [],  paranoid: false };
 
             const includesObj =
@@ -129,6 +174,12 @@ export class StatisticsRepo implements IStatisticsRepo {
             if (filters.Year != null)  {
                 includesObj.where['CreatedAt'] = {
                     [Op.between] : [minDate, maxDate],
+                };
+            }
+
+            if (filters.Year != null && filters.Month != null)  {
+                includesObj.where['CreatedAt'] = {
+                    [Op.lt] : maxCreatedDate,
                 };
             }
             
@@ -169,15 +220,11 @@ export class StatisticsRepo implements IStatisticsRepo {
 
             const activeUsersRatio = ((activeUsersFromLoginSession.length) / (totalUsers_.count) * 100).toFixed(2);
     
-            const  _activeUsers = {
+            const  activeUsers = {
                 Count : activeUsersFromLoginSession.length,
                 Ratio : activeUsersRatio,
             };
 
-            const  activeUsers = {
-                ActiveUsers : _activeUsers
-            };
-    
             return activeUsers;
     
         } catch (error) {
@@ -332,7 +379,7 @@ export class StatisticsRepo implements IStatisticsRepo {
             for (const u of totalUsers.rows) {
                 const healthProfileDetail = await HealthProfile.findOne({ where : {
                     PatientUserId : u.UserId,
-                } });
+                }, paranoid : false } );
                 healthProfileDetails.push(healthProfileDetail);
             }
 
@@ -394,7 +441,7 @@ export class StatisticsRepo implements IStatisticsRepo {
             for (const u of totalUsers) {
                 const deviceDetail = await UserDeviceDetails.findOne({ where : {
                     UserId : u,
-                } });
+                }, paranoid : false });
                 deviceDetails.push(deviceDetail);
             }
 
@@ -450,7 +497,7 @@ export class StatisticsRepo implements IStatisticsRepo {
             for (const u of totalUsers.rows) {
                 const enrollmentDetail = await CareplanEnrollment.findOne({ where : {
                     PatientUserId : u.UserId,
-                } });
+                }, paranoid : false });
                 enrollmentDetails.push(enrollmentDetail);
             }
 
@@ -588,7 +635,7 @@ export class StatisticsRepo implements IStatisticsRepo {
             for (const u of totalUsers.rows) {
                 const healthProfileDetail = await HealthProfile.findOne({ where : {
                     PatientUserId : u.UserId,
-                } });
+                }, paranoid : false });
                 healthProfileDetails.push(healthProfileDetail);
             }
             
@@ -600,7 +647,7 @@ export class StatisticsRepo implements IStatisticsRepo {
             const ratio = ((majorAilmentNotSpecified) / (totalUsers.count) * 100).toFixed(2);
 
             const majorAilmentDetail = {
-                MajorAilment : "Not specified",
+                MajorAilment : "Not Specified",
                 Count        : majorAilmentNotSpecified,
                 Ratio        : ratio,
             };
@@ -629,6 +676,86 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
+    getObesityDistribution = async (filters): Promise<any> => {
+        try {
+            const totalUsers = await this.getTotalUsers(filters);
+
+            const heightDetails = [];
+            for (const u of totalUsers.rows) {
+                const heightDetail = await BodyHeight.findOne({ where : {
+                    PatientUserId : u.UserId,
+                } });
+                if (heightDetail !== null){
+                    heightDetails.push(heightDetail);
+                }
+            }
+            
+            const weightDetails = [];
+            for (const u of totalUsers.rows) {
+                const weightDetail = await BodyWeight.findOne({ where : {
+                    PatientUserId : u.UserId,
+                } });
+                if (weightDetail !== null){
+                    weightDetails.push(weightDetail);
+                }
+            }
+
+            const heightWeightArray = [];
+
+            for (const x of heightDetails) {
+                for (const y of weightDetails) {
+                    if (x.PatientUserId === y.PatientUserId) {
+                        heightWeightArray.push({
+                            bodyHeight  : x.BodyHeight,
+                            heightUnits : x.Unit,
+                            bodyWeight  : y.BodyWeight,
+                            weightUnits : y.unit,
+                        });
+                    }
+                }
+            }
+
+            const usresBmi = [];
+            for (const u of heightWeightArray) {
+                const bmi = Helper.calculateBMI(u.bodyHeight, u.heightUnits, u.bodyWeight, u.weightUnits);
+                usresBmi.push((bmi.bmi).toFixed(2));
+            }
+
+            const underWeight = usresBmi.filter(x => x < 18.5);
+            const healthy  = usresBmi.filter(x => x >= 18.5 && x <= 24.9);
+            const overWeight  = usresBmi.filter(x => x >= 25 && x <= 29.9);
+            const obese  = usresBmi.filter(x => x >= 30);
+
+            const underWeightUsers = {
+                Status : "Under Weight",
+                Count  : underWeight.length
+            };
+
+            const healthyUsers = {
+                Status : "Healthy",
+                Count  : healthy.length
+            };
+
+            const overWeightUsers = {
+                Status : "Over Weight",
+                Count  : overWeight.length
+            };
+
+            const obeseUsers = {
+                Status : "Obese",
+                Count  : obese.length
+            };
+
+            const obesityUsers = [underWeightUsers, healthyUsers, overWeightUsers, obeseUsers];
+
+            return obesityUsers;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
 }
 
 function getMinMaxDates(filters) {
@@ -641,4 +768,19 @@ function getMinMaxDates(filters) {
     maxDate.setUTCHours(0, 0, 0, 0);
 
     return { minDate, maxDate };
+}
+
+function getMaxDate(filters):Date {
+    const numberOfDays = getNumberOfDays(filters.Year,filters.Month);
+    const maxDate = new Date();
+    maxDate.setUTCFullYear(filters.Year,filters.Month - 1, numberOfDays);
+    maxDate.setUTCHours(0, 0, 0, 0);
+
+    return maxDate ;
+}
+
+function getNumberOfDays (year: number, month: number): number {
+    const nextMonth = new Date(year, month, 1);
+    nextMonth.setDate(nextMonth.getDate() - 1);
+    return nextMonth.getDate();
 }

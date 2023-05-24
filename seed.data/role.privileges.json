@@ -238,7 +238,9 @@
             "Statistics.GetAppDownlods",
             "Statistics.GetCountryWiseUsers",
             "'Statistics.GetMajorAilmentDistributionOfUsers",
-            "Statistics.GetNonDeletdUsers"
+            "Statistics.GetNonDeletdUsers",
+            "Statistics.GetObesityDistribution",
+            "Statistics.GetOverallUsers"
         ]
     },
     {

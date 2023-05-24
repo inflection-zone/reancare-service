@@ -211,5 +211,31 @@ export class StatisticsController extends BaseController {
             ResponseHandler.handleError(request, response, error);
         }
     };
+    
+    getObesityDistribution = async (request: express.Request, response: express.Response): Promise<void> => {
+        try {
+            await this.setContext('Statistics.GetObesityDistribution', request, response);
+            const filters = await this._validator.searchFilter(request);
+            const obesityDistribution = await this._service.getObesityDistribution(filters);
+            const message = 'Obesity distribution wise users retrieved successfully!';
+            ResponseHandler.success(request, response,message, 200, {
+                ObesityDistribution : obesityDistribution });
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    getOverallUsers = async (request: express.Request, response: express.Response): Promise<void> => {
+        try {
+            await this.setContext('Statistics.GetOverallUsers', request, response);
+            const filters = await this._validator.searchFilter(request);
+            const overallUsers  = await this._service.getOverallUsers(filters);
+            const message = 'Overall users data retrieved successfully!';
+            ResponseHandler.success(request, response,message, 200, {
+                OverallUsers : overallUsers  });
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
 
 }

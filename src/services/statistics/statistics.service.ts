@@ -64,4 +64,12 @@ export class StatisticsService {
         return await this._statisticsRepo.getMajorAilmentDistributionOfUsers(filters);
     };
 
+    getObesityDistribution = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getObesityDistribution(filters);
+    };
+    
+    getOverallUsers = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getOverallUsers(filters);
+    };
+    
 }

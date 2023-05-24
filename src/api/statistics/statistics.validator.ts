@@ -31,7 +31,7 @@ export class StatistcsValidator extends BaseValidator {
     searchFilter = async (request: express.Request): Promise<any> => {
 
         await this.validateDecimal(request, 'year', Where.Query, false, false);
-       
+        await this.validateDecimal(request, 'month', Where.Query, false, true);
         this.validateRequest(request);
 
         return this.getFilter(request);
@@ -40,7 +40,8 @@ export class StatistcsValidator extends BaseValidator {
     private getFilter(request) {
 
         const filters = {
-            Year : request.query.year ?? null,
+            Year  : request.query.year ?? null,
+            Month : request.query.month ?? null,
         };
 
         return this.updateBaseSearchFilters(request, filters);
