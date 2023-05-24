@@ -706,9 +706,10 @@ export class StatisticsRepo implements IStatisticsRepo {
                 for (const y of weightDetails) {
                     if (x.PatientUserId === y.PatientUserId) {
                         heightWeightArray.push({
-                            userId     : x.id,
-                            bodyHeight : x.BodyHeight,
-                            bodyWeight : y.BodyWeight,
+                            bodyHeight  : x.BodyHeight,
+                            heightUnits : x.Unit,
+                            bodyWeight  : y.BodyWeight,
+                            weightUnits : y.unit,
                         });
                     }
                 }
@@ -716,8 +717,8 @@ export class StatisticsRepo implements IStatisticsRepo {
 
             const usresBmi = [];
             for (const u of heightWeightArray) {
-                const bmi = (u.bodyWeight / ((u.bodyHeight * u.bodyHeight) / (100 * 100))).toFixed(1);
-                usresBmi.push(bmi);
+                const bmi = Helper.calculateBMI(u.bodyHeight, u.heightUnits, u.bodyWeight, u.weightUnits);
+                usresBmi.push((bmi.bmi).toFixed(2));
             }
 
             const underWeight = usresBmi.filter(x => x < 18.5);
