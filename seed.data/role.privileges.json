@@ -240,7 +240,12 @@
             "'Statistics.GetMajorAilmentDistributionOfUsers",
             "Statistics.GetNonDeletdUsers",
             "Statistics.GetObesityDistribution",
-            "Statistics.GetOverallUsers"
+            "Statistics.GetOverallUsers",
+            "DonationCommunication.Create",
+            "DonationCommunication.GetById",
+            "DonationCommunication.Search",
+            "DonationCommunication.Update",
+            "DonationCommunication.Delete"
         ]
     },
     {
@@ -643,7 +648,12 @@
             "Rssfeed.Search",
             "Rssfeed.GetRssFeed",
             "Rssfeed.GetAtomFeed",
-            "Rssfeed.GetJsonFeed"
+            "Rssfeed.GetJsonFeed",
+            "DonationCommunication.Create",
+            "DonationCommunication.GetById",
+            "DonationCommunication.Search",
+            "DonationCommunication.Update",
+            "DonationCommunication.Delete"
         ]
     },
     {
@@ -1001,7 +1011,12 @@
             "Rssfeed.Search",
             "Rssfeed.GetRssFeed",
             "Rssfeed.GetAtomFeed",
-            "Rssfeed.GetJsonFeed"
+            "Rssfeed.GetJsonFeed",
+            "DonationCommunication.Create",
+            "DonationCommunication.GetById",
+            "DonationCommunication.Search",
+            "DonationCommunication.Update",
+            "DonationCommunication.Delete"
         ]
     },
     {
