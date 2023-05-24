@@ -23,6 +23,7 @@ export const register = (app: express.Application): void => {
     router.get('/app-downloads', authenticator.authenticateClient, authenticator.authenticateUser, controller.getAppDownlods);
     router.get('/country-wise-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getCountryWiseUsers);
     router.get('/major-ailment-wise-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getMajorAilmentDistributionOfUsers);
-
+    router.get('/obesity-distribution', authenticator.authenticateClient, authenticator.authenticateUser, controller.getObesityDistribution);
+    router.get('/overall-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getOverallUsers);
     app.use('/api/v1/statistics', router);
 };

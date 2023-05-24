@@ -29,4 +29,7 @@ export interface IStatisticsRepo {
 
     getMajorAilmentDistributionOfUsers(filters): Promise<any>;
 
+    getObesityDistribution(filters): Promise<any>;
+
+    getOverallUsers(filters): Promise<any>;
 }
