@@ -32,4 +32,7 @@ export interface IStatisticsRepo {
     getObesityDistribution(filters): Promise<any>;
 
     getOverallUsers(filters): Promise<any>;
+
+    getAddictionDistribution(filters): Promise<any>;
+
 }

@@ -245,7 +245,8 @@
             "DonationCommunication.GetById",
             "DonationCommunication.Search",
             "DonationCommunication.Update",
-            "DonationCommunication.Delete"
+            "DonationCommunication.Delete",
+            "Statistics.GetAddictionDistribution"
         ]
     },
     {

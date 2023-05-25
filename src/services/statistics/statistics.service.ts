@@ -72,4 +72,8 @@ export class StatisticsService {
         return await this._statisticsRepo.getOverallUsers(filters);
     };
     
+    getAddictionDistribution = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getAddictionDistribution(filters);
+    };
+    
 }

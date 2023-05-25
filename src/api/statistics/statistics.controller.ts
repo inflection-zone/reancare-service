@@ -238,4 +238,17 @@ export class StatisticsController extends BaseController {
         }
     };
 
+    getAddictionDistribution = async (request: express.Request, response: express.Response): Promise<void> => {
+        try {
+            await this.setContext('Statistics.GetAddictionDistribution', request, response);
+            const filters = await this._validator.searchFilter(request);
+            const addictionDistribution  = await this._service.getAddictionDistribution(filters);
+            const message = 'Addiction distribution of users retrieved successfully!';
+            ResponseHandler.success(request, response,message, 200, {
+                AddictionDistribution : addictionDistribution  });
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
 }
