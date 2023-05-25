@@ -1,4 +1,4 @@
-import { Op, Sequelize } from 'sequelize';
+import { Op } from 'sequelize';
 import { CountryCurrencyPhone } from 'country-currency-phone';
 import { ApiError } from '../../../../../common/api.error';
 import { Logger } from '../../../../../common/logger';
@@ -706,10 +706,10 @@ export class StatisticsRepo implements IStatisticsRepo {
                 for (const y of weightDetails) {
                     if (x.PatientUserId === y.PatientUserId) {
                         heightWeightArray.push({
-                            bodyHeight  : x.BodyHeight,
-                            heightUnits : x.Unit,
-                            bodyWeight  : y.BodyWeight,
-                            weightUnits : y.unit,
+                            bodyHeight  : x.BodyHeight ?? null,
+                            heightUnits : x.Unit ?? null,
+                            bodyWeight  : y.BodyWeight ?? null,
+                            weightUnits : y.unit ?? null,
                         });
                     }
                 }
@@ -749,6 +749,78 @@ export class StatisticsRepo implements IStatisticsRepo {
             const obesityUsers = [underWeightUsers, healthyUsers, overWeightUsers, obeseUsers];
 
             return obesityUsers;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    getAddictionDistribution = async (filters): Promise<any> => {
+        try {
+            const totalUsers = await this.getTotalUsers(filters);
+
+            const healthProfileDetails = [];
+            for (const u of totalUsers.rows) {
+                const healthProfileDetail = await HealthProfile.findOne({ where : {
+                    PatientUserId : u.UserId,
+                }, paranoid : false });
+                healthProfileDetails.push(healthProfileDetail);
+            }
+            
+            const totalhealthProfileUsers = healthProfileDetails.filter(x => x !== null);
+
+            const tobaccoSmokers = totalhealthProfileUsers.filter(x => x.TobaccoQuestionAns === true);
+
+            const heavyDrinkers = totalhealthProfileUsers.filter(x => x.IsDrinker === true && x.DrinkingSeverity === 'High');
+
+            const substanceAbuse = totalhealthProfileUsers.filter(x => x.SubstanceAbuse === true);
+
+            const nonAddicted  = totalhealthProfileUsers.filter(
+                x => x.SubstanceAbuse === false &&
+                x.IsDrinker === false &&
+                (x.TobaccoQuestionAns === false) || (x.TobaccoQuestionAns === null));
+
+            const tobaccoSmokersRatio =  ((tobaccoSmokers.length) / (totalUsers.count) * 100).toFixed(2);
+
+            const heavyDrinkersRatio =  ((heavyDrinkers.length) / (totalUsers.count) * 100).toFixed(2);
+
+            const substanceAbuseRatio =  ((substanceAbuse.length) / (totalUsers.count) * 100).toFixed(2);
+
+            const nonAddictedRatio =  ((nonAddicted.length) / (totalUsers.count) * 100).toFixed(2);
+
+            const tobaccoSmokerUsers = {
+                Status : "Tobacco Smokers",
+                Count  : tobaccoSmokers.length,
+                Ratio  : tobaccoSmokersRatio
+            };
+
+            const heavyDrinkerUsers = {
+                Status : "Heavy Drinker",
+                Count  : heavyDrinkers.length,
+                Ratio  : heavyDrinkersRatio
+            };
+
+            const substanceAbuseUsers = {
+                Status : "Substance Abuse",
+                Count  : substanceAbuse.length,
+                Ratio  : substanceAbuseRatio
+            };
+
+            const nonAddictedUsers = {
+                Status : "Non Addicted",
+                Count  : nonAddicted.length,
+                Ratio  : nonAddictedRatio
+            };
+
+            const addictionDetails = [
+                tobaccoSmokerUsers,
+                heavyDrinkerUsers,
+                substanceAbuseUsers,
+                nonAddictedUsers
+            ];
+           
+            return addictionDetails;
 
         } catch (error) {
             Logger.instance().log(error.message);
