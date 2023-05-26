@@ -251,4 +251,17 @@ export class StatisticsController extends BaseController {
         }
     };
 
+    getHealthPillarDistribution = async (request: express.Request, response: express.Response): Promise<void> => {
+        try {
+            await this.setContext('Statistics.GetHealthPillarDistribution', request, response);
+            const filters = await this._validator.searchFilter(request);
+            const healthPillarDistribution  = await this._service.getHealthPillarDistribution(filters);
+            const message = 'Health pillar distribution of users retrieved successfully!';
+            ResponseHandler.success(request, response,message, 200, {
+                HealthPillarDistribution : healthPillarDistribution  });
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
 }
