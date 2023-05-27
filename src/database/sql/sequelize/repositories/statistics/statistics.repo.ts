@@ -847,29 +847,46 @@ export class StatisticsRepo implements IStatisticsRepo {
 
             const physicalActivityUsers = await this.getPhysicalActivityUsers(totalUsers, filters);
 
-            const meditationUsers = await this.getMeditationUsers(totalUsers);
+            const meditationUsers = await this.getMeditationUsers(totalUsers, filters);
 
-            const medicationUsers = await this.getMedicationUsers(totalUsers);
+            const medicationUsers = await this.getMedicationUsers(totalUsers, filters);
 
-            const SymptomUsers = await this.getSymptomUsers(totalUsers);
+            const symptomUsers = await this.getSymptomUsers(totalUsers, filters);
 
-            const labRecordUsers = await this.getLabRecordUsers(totalUsers);
+            const labRecordUsers = await this.getLabRecordUsers(totalUsers, filters);
 
-            const nutritionUsers = await this.getNutritionUsers(totalUsers);
+            const nutritionUsers = await this.getNutritionUsers(totalUsers, filters);
 
-            const vitalUsers = await this.getVitalUsers(totalUsers);
+            const vitalUsers = await this.getVitalUsers(totalUsers, filters);
 
-            const healthPillarDistribution =
+            let healthPillarDistribution = {} || [];
+
+            if (filters.Year === null) {
+                healthPillarDistribution =
                 [
                     physicalActivityUsers,
                     meditationUsers,
                     medicationUsers,
-                    SymptomUsers,
+                    symptomUsers,
                     labRecordUsers,
                     nutritionUsers,
                     vitalUsers
                 ];
-
+   
+            }
+            else {
+                healthPillarDistribution =
+                {
+                    PhysicalActivityUsers : physicalActivityUsers,
+                    MeditationUsers       : meditationUsers,
+                    MedicationUsers       : medicationUsers,
+                    SymptomUsers          : symptomUsers,
+                    LabRecordUsers        : labRecordUsers,
+                    NutritionUsers        : nutritionUsers,
+                    VitalUsers            : vitalUsers
+                };
+            }
+           
             return healthPillarDistribution;
 
         } catch (error) {
@@ -899,10 +916,8 @@ export class StatisticsRepo implements IStatisticsRepo {
                   }
               }
 
-              const monthlyUsersData = getMonthlyUsers(physicalActivityDetails,totalUsers);
+              physicalActivityUsers = getMonthlyUsers(physicalActivityDetails,totalUsers);
 
-              physicalActivityUsers = {
-                  PhysicalActivityUsers : monthlyUsersData };
           }
           else
           {
@@ -934,26 +949,45 @@ export class StatisticsRepo implements IStatisticsRepo {
       }
   };
 
-  private  getMeditationUsers = async (totalUsers) => {
+  private  getMeditationUsers = async (totalUsers, filters) => {
       try {
+          const { minDate, maxDate } = getMinMaxDates(filters);
           const meditationDetails = [];
-          for (const u of totalUsers.rows) {
-              const meditationDetail = await Meditation.findOne({ where : {
-                  PatientUserId : u.UserId,
-              }, paranoid : false });
-              if (meditationDetail !== null){
-                  meditationDetails.push(meditationDetail);
+          let meditationUsers = {};
+
+          if (filters.Year != null)  {
+              for (const u of totalUsers.rows) {
+                  const meditationDetail = await Meditation.findOne({ where : {
+                      PatientUserId : u.UserId,
+                      CreatedAt     : {
+                          [Op.between] : [minDate, maxDate],
+                      }
+                  }, paranoid : false });
+                  if (meditationDetail !== null){
+                      meditationDetails.push(meditationDetail);
+                  }
               }
+              meditationUsers = getMonthlyUsers(meditationDetails,totalUsers);
           }
-
-          const meditationUsersRatio =
-           ((meditationDetails.length) / (totalUsers.count) * 100).toFixed(2);
-
-          const meditationUsers = {
-              Status : "Meditation",
-              Count  : meditationDetails.length,
-              Ratio  : meditationUsersRatio
-          };
+          else {
+              for (const u of totalUsers.rows) {
+                  const meditationDetail = await Meditation.findOne({ where : {
+                      PatientUserId : u.UserId,
+                  }, paranoid : false });
+                  if (meditationDetail !== null){
+                      meditationDetails.push(meditationDetail);
+                  }
+              }
+  
+              const meditationUsersRatio =
+             ((meditationDetails.length) / (totalUsers.count) * 100).toFixed(2);
+  
+              meditationUsers = {
+                  Status : "Meditation",
+                  Count  : meditationDetails.length,
+                  Ratio  : meditationUsersRatio
+              };
+          }
       
           return meditationUsers;
 
@@ -963,28 +997,48 @@ export class StatisticsRepo implements IStatisticsRepo {
       }
   };
 
-  private  getMedicationUsers = async (totalUsers) => {
+  private  getMedicationUsers = async (totalUsers, filters) => {
       try {
+          const { minDate, maxDate } = getMinMaxDates(filters);
           const medicationDetails = [];
-          for (const u of totalUsers.rows) {
-              const medicationDetail = await Medication.findOne({ where : {
-                  PatientUserId : u.UserId,
-              }, paranoid : false });
-              if (medicationDetail !== null){
-                  medicationDetails.push(medicationDetail);
+          let medicationUsers = {};
+
+          if (filters.Year != null)  {
+              for (const u of totalUsers.rows) {
+                  const medicationDetail = await Medication.findOne({ where : {
+                      PatientUserId : u.UserId,
+                      CreatedAt     : {
+                          [Op.between] : [minDate, maxDate],
+                      }
+                  }, paranoid : false });
+                  if (medicationDetail !== null){
+                      medicationDetails.push(medicationDetail);
+                  }
               }
+              medicationUsers = getMonthlyUsers(medicationDetails,totalUsers);
           }
 
-          const medicationUsersRatio =
-            ((medicationDetails.length) / (totalUsers.count) * 100).toFixed(2);
+          else {
+              for (const u of totalUsers.rows) {
+                  const medicationDetail = await Medication.findOne({ where : {
+                      PatientUserId : u.UserId,
+                  }, paranoid : false });
+                  if (medicationDetail !== null){
+                      medicationDetails.push(medicationDetail);
+                  }
+              }
+  
+              const medicationUsersRatio =
+              ((medicationDetails.length) / (totalUsers.count) * 100).toFixed(2);
+  
+              medicationUsers = {
+                  Status : "Medication",
+                  Count  : medicationDetails.length,
+                  Ratio  : medicationUsersRatio
+              };
+          }
 
-          const meditationUsers = {
-              Status : "Medication",
-              Count  : medicationDetails.length,
-              Ratio  : medicationUsersRatio
-          };
-    
-          return meditationUsers;
+          return medicationUsers;
 
       } catch (error) {
           Logger.instance().log(error.message);
@@ -992,27 +1046,49 @@ export class StatisticsRepo implements IStatisticsRepo {
       }
   };
 
-  private  getSymptomUsers = async (totalUsers) => {
+  private  getSymptomUsers = async (totalUsers, filters) => {
       try {
+          const { minDate, maxDate } = getMinMaxDates(filters);
           const symptomDetails = [];
-          for (const u of totalUsers.rows) {
-              const symptomDetail = await Symptom.findOne({ where : {
-                  PatientUserId : u.UserId,
-              }, paranoid : false });
-              if (symptomDetail !== null){
-                  symptomDetails.push(symptomDetail);
+          let symptomUsers = {};
+
+          if (filters.Year != null)
+          {
+              for (const u of totalUsers.rows) {
+                  const symptomDetail = await Symptom.findOne({ where : {
+                      PatientUserId : u.UserId,
+                      CreatedAt     : {
+                          [Op.between] : [minDate, maxDate],
+                      }
+                  }, paranoid : false });
+                  if (symptomDetail !== null){
+                      symptomDetails.push(symptomDetail);
+                  }
               }
+
+              symptomUsers = getMonthlyUsers(symptomDetails,totalUsers);
+
           }
 
-          const symptomUsersRatio =
-             ((symptomDetails.length) / (totalUsers.count) * 100).toFixed(2);
-
-          const symptomUsers = {
-              Status : "Symptom",
-              Count  : symptomDetails.length,
-              Ratio  : symptomUsersRatio
-          };
-    
+          else {
+              for (const u of totalUsers.rows) {
+                  const symptomDetail = await Symptom.findOne({ where : {
+                      PatientUserId : u.UserId,
+                  }, paranoid : false });
+                  if (symptomDetail !== null){
+                      symptomDetails.push(symptomDetail);
+                  }
+              }
+  
+              const symptomUsersRatio =
+               ((symptomDetails.length) / (totalUsers.count) * 100).toFixed(2);
+  
+              symptomUsers = {
+                  Status : "Symptom",
+                  Count  : symptomDetails.length,
+                  Ratio  : symptomUsersRatio
+              };
+          }
           return symptomUsers;
 
       } catch (error) {
@@ -1021,27 +1097,48 @@ export class StatisticsRepo implements IStatisticsRepo {
       }
   };
 
-  private  getLabRecordUsers = async (totalUsers) => {
+  private  getLabRecordUsers = async (totalUsers, filters) => {
       try {
+          const { minDate, maxDate } = getMinMaxDates(filters);
           const labRecordDetails = [];
-          for (const u of totalUsers.rows) {
-              const labRecordDetail = await Symptom.findOne({ where : {
-                  PatientUserId : u.UserId,
-              }, paranoid : false });
-              if (labRecordDetail !== null){
-                  labRecordDetails.push(labRecordDetail);
+          let labRecordUsers = {};
+
+          if (filters.Year != null)
+          {
+              for (const u of totalUsers.rows) {
+                  const labRecordDetail = await Symptom.findOne({ where : {
+                      PatientUserId : u.UserId,
+                      CreatedAt     : {
+                          [Op.between] : [minDate, maxDate],
+                      }
+                  }, paranoid : false });
+                  if (labRecordDetail !== null){
+                      labRecordDetails.push(labRecordDetail);
+                  }
               }
+              labRecordUsers = getMonthlyUsers(labRecordDetails,totalUsers);
           }
 
-          const labRecordRatio =
-             ((labRecordDetails.length) / (totalUsers.count) * 100).toFixed(2);
-
-          const labRecordUsers = {
-              Status : "Lab Record",
-              Count  : labRecordDetails.length,
-              Ratio  : labRecordRatio
-          };
+          else {
+              for (const u of totalUsers.rows) {
+                  const labRecordDetail = await Symptom.findOne({ where : {
+                      PatientUserId : u.UserId,
+                  }, paranoid : false });
+                  if (labRecordDetail !== null){
+                      labRecordDetails.push(labRecordDetail);
+                  }
+              }
   
+              const labRecordRatio =
+               ((labRecordDetails.length) / (totalUsers.count) * 100).toFixed(2);
+  
+              labRecordUsers = {
+                  Status : "Lab Record",
+                  Count  : labRecordDetails.length,
+                  Ratio  : labRecordRatio
+              };
+          }
+
           return labRecordUsers;
 
       } catch (error) {
@@ -1050,37 +1147,73 @@ export class StatisticsRepo implements IStatisticsRepo {
       }
   };
 
-  private  getNutritionUsers = async (totalUsers) => {
+  private  getNutritionUsers = async (totalUsers, filters) => {
       try {
+          const { minDate, maxDate } = getMinMaxDates(filters);
           const nutritionDetails = [];
-          for (const u of totalUsers.rows) {
-              const foodConsumptionDetail = await FoodConsumption.findOne({ where : {
-                  PatientUserId : u.UserId,
-              }, paranoid : false });
-              if (foodConsumptionDetail !== null){
-                  nutritionDetails.push(foodConsumptionDetail.PatientUserId);
-              }
-          }
+          let nutritionUsers = {};
 
-          for (const u of totalUsers.rows) {
-              const waterConsumptionDetail = await WaterConsumption.findOne({ where : {
-                  PatientUserId : u.UserId,
-              }, paranoid : false });
-              if (waterConsumptionDetail !== null){
-                  nutritionDetails.push(waterConsumptionDetail.PatientUserId);
+          if (filters.Year != null) {
+              for (const u of totalUsers.rows) {
+                  const foodConsumptionDetail = await FoodConsumption.findOne({ where : {
+                      PatientUserId : u.UserId,
+                      CreatedAt     : {
+                          [Op.between] : [minDate, maxDate],
+                      }
+                  }, paranoid : false });
+                  if (foodConsumptionDetail !== null){
+                      nutritionDetails.push(foodConsumptionDetail);
+                  }
               }
-          }
-      
-          const uniqueNutrition =  Array.from(new Set(nutritionDetails));
+  
+              for (const u of totalUsers.rows) {
+                  const waterConsumptionDetail = await WaterConsumption.findOne({ where : {
+                      PatientUserId : u.UserId,
+                      CreatedAt     : {
+                          [Op.between] : [minDate, maxDate],
+                      }
+                  }, paranoid : false });
+                  if (waterConsumptionDetail !== null){
+                      nutritionDetails.push(waterConsumptionDetail);
+                  }
+              }
+
+              const uniqueNutritionUsers = getUniqueUsers(nutritionDetails);
            
-          const nutritionRatio =
-           ((uniqueNutrition.length) / (totalUsers.count) * 100).toFixed(2);
+              nutritionUsers = getMonthlyUsers(uniqueNutritionUsers,totalUsers);
 
-          const nutritionUsers = {
-              Status : "Nutrition",
-              Count  : uniqueNutrition.length,
-              Ratio  : nutritionRatio
-          };
+          }
+        
+          else {
+              for (const u of totalUsers.rows) {
+                  const foodConsumptionDetail = await FoodConsumption.findOne({ where : {
+                      PatientUserId : u.UserId,
+                  }, paranoid : false });
+                  if (foodConsumptionDetail !== null){
+                      nutritionDetails.push(foodConsumptionDetail);
+                  }
+              }
+  
+              for (const u of totalUsers.rows) {
+                  const waterConsumptionDetail = await WaterConsumption.findOne({ where : {
+                      PatientUserId : u.UserId,
+                  }, paranoid : false });
+                  if (waterConsumptionDetail !== null){
+                      nutritionDetails.push(waterConsumptionDetail);
+                  }
+              }
+        
+              const uniqueNutrition =  Array.from(new Set(nutritionDetails.map((x) => x.PatientUserId)));
+             
+              const nutritionRatio =
+             ((uniqueNutrition.length) / (totalUsers.count) * 100).toFixed(2);
+  
+              nutritionUsers = {
+                  Status : "Nutrition",
+                  Count  : uniqueNutrition.length,
+                  Ratio  : nutritionRatio
+              };
+          }
 
           return nutritionUsers;
 
@@ -1090,90 +1223,173 @@ export class StatisticsRepo implements IStatisticsRepo {
       }
   };
 
-  private  getVitalUsers = async (totalUsers) => {
+  private  getVitalUsers = async (totalUsers, filters) => {
       try {
           const vitalDetails = [];
-          for (const u of totalUsers.rows) {
-              const cholestrolDetail = await BloodCholesterol.findOne({ where : {
-                  PatientUserId : u.UserId,
-              }, paranoid : false });
-              if (cholestrolDetail !== null){
-                  vitalDetails.push(cholestrolDetail.PatientUserId);
-              }
-          }
+          let vitalsUsers = {};
 
-          for (const u of totalUsers.rows) {
-              const glucoseDetail = await BloodGlucose.findOne({ where : {
-                  PatientUserId : u.UserId,
-              }, paranoid : false });
-              if (glucoseDetail !== null){
-                  vitalDetails.push(glucoseDetail.PatientUserId);
+          if (filters.Year != null) {
+              for (const u of totalUsers.rows) {
+                  const cholestrolDetail = await BloodCholesterol.findOne({ where : {
+                      PatientUserId : u.UserId,
+                  }, paranoid : false });
+                  if (cholestrolDetail !== null){
+                      vitalDetails.push(cholestrolDetail);
+                  }
               }
-          }
 
-          for (const u of totalUsers.rows) {
-              const oxygenSaturationDetail = await BloodOxygenSaturation.findOne({ where : {
-                  PatientUserId : u.UserId,
-              }, paranoid : false });
-              if (oxygenSaturationDetail !== null){
-                  vitalDetails.push(oxygenSaturationDetail.PatientUserId);
+              for (const u of totalUsers.rows) {
+                  const glucoseDetail = await BloodGlucose.findOne({ where : {
+                      PatientUserId : u.UserId,
+                  }, paranoid : false });
+                  if (glucoseDetail !== null){
+                      vitalDetails.push(glucoseDetail);
+                  }
               }
-          }
 
-          for (const u of totalUsers.rows) {
-              const bloodPressureDetail = await BloodPressure.findOne({ where : {
-                  PatientUserId : u.UserId,
-              }, paranoid : false });
-              if (bloodPressureDetail !== null){
-                  vitalDetails.push(bloodPressureDetail.PatientUserId);
+              for (const u of totalUsers.rows) {
+                  const oxygenSaturationDetail = await BloodOxygenSaturation.findOne({ where : {
+                      PatientUserId : u.UserId,
+                  }, paranoid : false });
+                  if (oxygenSaturationDetail !== null){
+                      vitalDetails.push(oxygenSaturationDetail);
+                  }
               }
-          }
 
-          for (const u of totalUsers.rows) {
-              const bodyHeightDetail = await BodyHeight.findOne({ where : {
-                  PatientUserId : u.UserId,
-              }, paranoid : false });
-              if (bodyHeightDetail !== null){
-                  vitalDetails.push(bodyHeightDetail.PatientUserId);
+              for (const u of totalUsers.rows) {
+                  const bloodPressureDetail = await BloodPressure.findOne({ where : {
+                      PatientUserId : u.UserId,
+                  }, paranoid : false });
+                  if (bloodPressureDetail !== null){
+                      vitalDetails.push(bloodPressureDetail);
+                  }
               }
-          }
 
-          for (const u of totalUsers.rows) {
-              const bodyWeightDetail = await BodyWeight.findOne({ where : {
-                  PatientUserId : u.UserId,
-              }, paranoid : false });
-              if (bodyWeightDetail !== null){
-                  vitalDetails.push(bodyWeightDetail.PatientUserId);
+              for (const u of totalUsers.rows) {
+                  const bodyHeightDetail = await BodyHeight.findOne({ where : {
+                      PatientUserId : u.UserId,
+                  }, paranoid : false });
+                  if (bodyHeightDetail !== null){
+                      vitalDetails.push(bodyHeightDetail);
+                  }
               }
-          }
 
-          for (const u of totalUsers.rows) {
-              const bodyTempratureDetail = await BodyTemperature.findOne({ where : {
-                  PatientUserId : u.UserId,
-              }, paranoid : false });
-              if (bodyTempratureDetail !== null){
-                  vitalDetails.push(bodyTempratureDetail.PatientUserId);
+              for (const u of totalUsers.rows) {
+                  const bodyWeightDetail = await BodyWeight.findOne({ where : {
+                      PatientUserId : u.UserId,
+                  }, paranoid : false });
+                  if (bodyWeightDetail !== null){
+                      vitalDetails.push(bodyWeightDetail);
+                  }
               }
+
+              for (const u of totalUsers.rows) {
+                  const bodyTempratureDetail = await BodyTemperature.findOne({ where : {
+                      PatientUserId : u.UserId,
+                  }, paranoid : false });
+                  if (bodyTempratureDetail !== null){
+                      vitalDetails.push(bodyTempratureDetail);
+                  }
+              }
+    
+              for (const u of totalUsers.rows) {
+                  const pulseDetail = await Pulse.findOne({ where : {
+                      PatientUserId : u.UserId,
+                  }, paranoid : false });
+                  if (pulseDetail !== null){
+                      vitalDetails.push(pulseDetail);
+                  }
+              }
+
+              const uniquevitalUsers = getUniqueUsers(vitalDetails);
+           
+              vitalsUsers = getMonthlyUsers(uniquevitalUsers,totalUsers);
+
           }
     
-          for (const u of totalUsers.rows) {
-              const pulseDetail = await Pulse.findOne({ where : {
-                  PatientUserId : u.UserId,
-              }, paranoid : false });
-              if (pulseDetail !== null){
-                  vitalDetails.push(pulseDetail.PatientUserId);
+          else {
+              for (const u of totalUsers.rows) {
+                  const cholestrolDetail = await BloodCholesterol.findOne({ where : {
+                      PatientUserId : u.UserId,
+                  }, paranoid : false });
+                  if (cholestrolDetail !== null){
+                      vitalDetails.push(cholestrolDetail);
+                  }
               }
+  
+              for (const u of totalUsers.rows) {
+                  const glucoseDetail = await BloodGlucose.findOne({ where : {
+                      PatientUserId : u.UserId,
+                  }, paranoid : false });
+                  if (glucoseDetail !== null){
+                      vitalDetails.push(glucoseDetail);
+                  }
+              }
+  
+              for (const u of totalUsers.rows) {
+                  const oxygenSaturationDetail = await BloodOxygenSaturation.findOne({ where : {
+                      PatientUserId : u.UserId,
+                  }, paranoid : false });
+                  if (oxygenSaturationDetail !== null){
+                      vitalDetails.push(oxygenSaturationDetail);
+                  }
+              }
+  
+              for (const u of totalUsers.rows) {
+                  const bloodPressureDetail = await BloodPressure.findOne({ where : {
+                      PatientUserId : u.UserId,
+                  }, paranoid : false });
+                  if (bloodPressureDetail !== null){
+                      vitalDetails.push(bloodPressureDetail);
+                  }
+              }
+  
+              for (const u of totalUsers.rows) {
+                  const bodyHeightDetail = await BodyHeight.findOne({ where : {
+                      PatientUserId : u.UserId,
+                  }, paranoid : false });
+                  if (bodyHeightDetail !== null){
+                      vitalDetails.push(bodyHeightDetail);
+                  }
+              }
+  
+              for (const u of totalUsers.rows) {
+                  const bodyWeightDetail = await BodyWeight.findOne({ where : {
+                      PatientUserId : u.UserId,
+                  }, paranoid : false });
+                  if (bodyWeightDetail !== null){
+                      vitalDetails.push(bodyWeightDetail);
+                  }
+              }
+  
+              for (const u of totalUsers.rows) {
+                  const bodyTempratureDetail = await BodyTemperature.findOne({ where : {
+                      PatientUserId : u.UserId,
+                  }, paranoid : false });
+                  if (bodyTempratureDetail !== null){
+                      vitalDetails.push(bodyTempratureDetail);
+                  }
+              }
+      
+              for (const u of totalUsers.rows) {
+                  const pulseDetail = await Pulse.findOne({ where : {
+                      PatientUserId : u.UserId,
+                  }, paranoid : false });
+                  if (pulseDetail !== null){
+                      vitalDetails.push(pulseDetail);
+                  }
+              }
+              const uniqueVitalsDetails = Array.from(new Set(vitalDetails.map((x) => x.PatientUserId)));
+  
+              const vitalsRatio =
+            ((uniqueVitalsDetails.length) / (totalUsers.count) * 100).toFixed(2);
+  
+              vitalsUsers = {
+                  Status : "Vitals",
+                  Count  : uniqueVitalsDetails.length,
+                  Ratio  : vitalsRatio
+              };
           }
-          const uniqueVitalsDetails = Array.from(new Set(vitalDetails));
-
-          const vitalsRatio =
-          ((uniqueVitalsDetails.length) / (totalUsers.count) * 100).toFixed(2);
-
-          const vitalsUsers = {
-              Status : "Vitals",
-              Count  : uniqueVitalsDetails.length,
-              Ratio  : vitalsRatio
-          };
 
           return vitalsUsers;
 
@@ -1213,7 +1429,6 @@ function getNumberOfDays (year: number, month: number): number {
 }
 
 function getMonthlyUsers(usersData, totalUsers) {
-
     var months =
     ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -1235,4 +1450,17 @@ function getMonthlyUsers(usersData, totalUsers) {
         monthlyUsersData.push(monthlyUsersDetail);
     }
     return monthlyUsersData;
+}
+
+function getUniqueUsers(usersData) {
+    const compareObjects = (a, b) => {
+        return a.PatientUserId === b.PatientUserId;
+    };
+    const uniqueArray = usersData.filter((obj, index, self) => {
+        return (
+            index ===
+            self.findIndex((innerObj) => compareObjects(innerObj, obj))
+        );
+    });
+    return uniqueArray;
 }
