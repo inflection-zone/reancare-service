@@ -9,5 +9,5 @@ export interface CourseModuleDto {
     Description?    : string;
     ImageUrl?       : string;
     DurationInMins? : number;
-    Contents?        : CourseContentDto[];
+    Contents?       : CourseContentDto[];
 }

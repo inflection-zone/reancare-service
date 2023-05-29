@@ -123,10 +123,8 @@ export class SymptomTypeRepo implements ISymptomTypeRepo {
                 symptomType.Symptom = updateModel.Symptom;
             }
             if (updateModel.Tags != null && updateModel.Tags.length > 0) {
-
                 var tags = updateModel.Tags.length > 0 ?
                     JSON.stringify(updateModel.Tags) : '[]';
-
                 symptomType.Tags = tags;
             }
             if (updateModel.Description != null) {
