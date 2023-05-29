@@ -247,7 +247,8 @@
             "DonationCommunication.Update",
             "DonationCommunication.Delete",
             "Statistics.GetAddictionDistribution",
-            "Statistics.GetHealthPillarDistribution"
+            "Statistics.GetHealthPillarDistribution",
+            "Statistics.GetRoleWiseDistribution"
         ]
     },
     {

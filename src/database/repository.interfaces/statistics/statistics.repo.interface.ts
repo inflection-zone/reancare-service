@@ -11,6 +11,8 @@ export interface IStatisticsRepo {
 
     getDeletedUsers(filters): Promise<any>;
 
+    getRoleWiseDistribution(filters): Promise<any>;
+
     getGenderWiseUsers(filters): Promise<any>;
 
     getAgeWiseUsers(filters): Promise<any>;

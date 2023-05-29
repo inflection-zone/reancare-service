@@ -66,6 +66,20 @@ export class StatisticsController extends BaseController {
         }
     };
 
+    getRoleWiseDistribution = async (request: express.Request, response: express.Response): Promise<void> => {
+        try {
+            await this.setContext('Statistics.GetRoleWiseDistribution', request, response);
+            const filters = await this._validator.searchFilter(request);
+            const roleDistribution = await this._service.getRoleWiseDistribution(filters);
+            const message = 'Role wise distribution retrieved successfully!';
+            ResponseHandler.success(request, response,message, 200, {
+                RoleDistribution : roleDistribution });
+
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
     getDeletedUsers = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
             await this.setContext('Statistics.GetDeletdUsers', request, response);

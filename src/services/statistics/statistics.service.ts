@@ -28,6 +28,10 @@ export class StatisticsService {
         return await this._statisticsRepo.getDeletedUsers(filters);
     };
 
+    getRoleWiseDistribution = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getRoleWiseDistribution(filters);
+    };
+
     getGenderWiseUsers = async (filters): Promise<any> => {
         return await this._statisticsRepo.getGenderWiseUsers(filters);
     };

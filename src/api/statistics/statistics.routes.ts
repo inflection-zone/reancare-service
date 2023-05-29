@@ -14,6 +14,7 @@ export const register = (app: express.Application): void => {
     router.get('/non-deleted-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getNonDeletedUsers);
     router.get('/active-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getActiveUsers);
     router.get('/deleted-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getDeletedUsers);
+    router.get('/role-wise-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getRoleWiseDistribution);
     router.get('/gender-wise-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getGenderWiseUsers);
     router.get('/age-wise-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getAgeWiseUsers);
     router.get('/marital-status-wise-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getUsersByMaritalStatus);

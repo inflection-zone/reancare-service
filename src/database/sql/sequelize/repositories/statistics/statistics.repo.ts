@@ -29,6 +29,8 @@ import BloodPressure from '../../models/clinical/biometrics/blood.pressure.model
 import BodyTemperature from '../../models/clinical/biometrics/body.temperature.model';
 import Pulse from '../../models/clinical/biometrics/pulse.model';
 import { TimeHelper } from '../../../../../common/time.helper';
+import User from '../../models/users/user/user.model';
+import Role from '../../models/role/role.model';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -239,6 +241,70 @@ export class StatisticsRepo implements IStatisticsRepo {
             };
 
             return activeUsers;
+    
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+    
+    getRoleWiseDistribution = async (filters): Promise<any> => {
+        try {
+            const { minDate, maxDate } = getMinMaxDates(filters);
+            const maxCreatedDate = getMaxDate(filters);
+            const search: any = { where: {}, include: [],  paranoid: false };
+
+            const includesObj =
+            {
+                model    : Person,
+                required : true,
+                where    : {},
+                paranoid : false
+            };
+
+            includesObj.where['Phone'] = {
+                [Op.notBetween] : [1000000000, 1000000100],
+            };
+     
+            if (filters.Year != null)  {
+                includesObj.where['CreatedAt'] = {
+                    [Op.between] : [minDate, maxDate],
+                };
+            }
+
+            if (filters.Year != null && filters.Month != null)  {
+                includesObj.where['CreatedAt'] = {
+                    [Op.lt] : maxCreatedDate,
+                };
+            }
+            
+            search.include.push(includesObj);
+    
+            const allUsers = await User.findAndCountAll(search);
+
+            const allRoles = await Role.findAndCountAll();
+
+            const userRoles = [];
+
+            for (const u of allUsers.rows) {
+                const userRole = u.RoleId;
+                userRoles.push(userRole);
+            }
+
+            const userRoleDetails = [];
+
+            for (const r of allRoles.rows) {
+                const roles = userRoles.filter(x => x === r.id);
+                const ratio = ((roles.length) / (allUsers.count) * 100).toFixed(2);
+                const userRoleDetail = {
+                    Role  : r.RoleName,
+                    Count : roles.length,
+                    Ratio : ratio,
+                };
+                userRoleDetails.push(userRoleDetail);
+            }
+
+            return userRoleDetails;
     
         } catch (error) {
             Logger.instance().log(error.message);
