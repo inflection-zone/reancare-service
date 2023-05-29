@@ -61,50 +61,50 @@ export class TypesValidator extends BaseValidator {
     createPriorityType = async (request: express.Request): Promise<HealthPriorityTypeDomainModel> => {
         await this.validateCreatePriorityTypeBody(request);
         return this.getPriorityTypeDomainModel(request);
-    }
+    };
 
     updatePriorityType = async (request: express.Request): Promise<HealthPriorityTypeDomainModel> => {
         await this.validateUpdatePriorityTypeBody(request);
         const domainModel = this.getPriorityTypeDomainModel(request);
         domainModel.id = await this.getParamUuid(request, 'id');
         return domainModel;
-    }
+    };
 
     createRoleType = async (request: express.Request): Promise<RoleDomainModel> => {
         await this.validateCreateRoleTypeBody(request);
         return this.getRoleTypeDomainModel(request);
-    }
+    };
 
     updateRoleType = async (request: express.Request): Promise<RoleDomainModel> => {
         await this.validateUpdateRoleTypeBody(request);
         const domainModel = this.getRoleTypeDomainModel(request);
         domainModel.id = parseInt(request.params.id);
         return domainModel;
-    }
+    };
 
     createLabRecordType = async (request: express.Request): Promise<LabRecordTypeDomainModel> => {
         await this.validateUpdateLabRecordTypeBody(request);
         return this.getLabRecordTypeDomainModel(request);
-    }
+    };
 
     updateLabRecordType = async (request: express.Request): Promise<LabRecordTypeDomainModel> => {
         await this.validateCreateLabRecordTypeBody(request);
         const domainModel = this.getLabRecordTypeDomainModel(request);
         domainModel.id = await this.getParamUuid(request, 'id');
         return domainModel;
-    }
+    };
 
     createGoalType = async (request: express.Request): Promise<GoalTypeDomainModel> => {
         await this.validateCreateGoalTypeBody(request);
         return this.getGoalTypeDomainModel(request);
-    }
+    };
 
     updateGoalType = async (request: express.Request): Promise<GoalTypeDomainModel> => {
         await this.validateUpdateGoalTypeBody(request);
         const domainModel = this.getGoalTypeDomainModel(request);
         domainModel.id = await this.getParamUuid(request, 'id');
         return domainModel;
-    }
+    };
 
     private async validateCreatePriorityTypeBody(request) {
         await this.validateString(request, 'Type', Where.Body, true, false);
