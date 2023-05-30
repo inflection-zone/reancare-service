@@ -21,11 +21,11 @@ import LearningPath from './learning.path.model';
 @Table({
     timestamps      : true,
     modelName       : 'LearningCourses',
-    tableName       : 'educational_course_learning_paths',
+    tableName       : 'educational_learning_path_courses',
     paranoid        : true,
     freezeTableName : true,
 })
-export default class LearningCourses extends Model {
+export default class LearningPathCourses extends Model {
 
   @IsUUID(4)
   @PrimaryKey

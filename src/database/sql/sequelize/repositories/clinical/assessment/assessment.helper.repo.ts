@@ -167,7 +167,7 @@ export class AssessmentHelperRepo implements IAssessmentHelperRepo {
             Logger.instance().log(error.message);
             throw new ApiError(500, error.message);
         }
-    }
+    };
 
     public getNodeById = async (
         nodeId: string
@@ -227,7 +227,7 @@ export class AssessmentHelperRepo implements IAssessmentHelperRepo {
             Logger.instance().log(error.message);
             throw new ApiError(500, error.message);
         }
-    }
+    };
 
     public getTemplateChildrenNodes = async (templateId: uuid)
         : Promise<(CAssessmentQuestionNode | CAssessmentListNode | CAssessmentMessageNode)[]> => {
@@ -242,7 +242,7 @@ export class AssessmentHelperRepo implements IAssessmentHelperRepo {
             Logger.instance().log(error.message);
             throw new ApiError(500, error.message);
         }
-    }
+    };
 
     public getQuestionNodeOptions = async (nodeType: AssessmentNodeType, nodeId: uuid)
         : Promise<CAssessmentQueryOption[]> => {
@@ -1017,7 +1017,7 @@ export class AssessmentHelperRepo implements IAssessmentHelperRepo {
             Logger.instance().log(error.message);
             throw new ApiError(500, error.message);
         }
-    }
+    };
 
     getScoringCondition = async (conditionId: uuid): Promise<CScoringCondition> => {
         try {
@@ -1027,7 +1027,7 @@ export class AssessmentHelperRepo implements IAssessmentHelperRepo {
             Logger.instance().log(error.message);
             throw new ApiError(500, error.message);
         }
-    }
+    };
 
     getScoringConditionByNodeId = async (nodeId: uuid): Promise<CScoringCondition> => {
         try {
@@ -1105,7 +1105,7 @@ export class AssessmentHelperRepo implements IAssessmentHelperRepo {
             Logger.instance().log(error.message);
             throw new ApiError(500, error.message);
         }
-    }
+    };
 
     deleteScoringCondition = async (conditionId: string): Promise<boolean> => {
         try {
@@ -1138,7 +1138,7 @@ export class AssessmentHelperRepo implements IAssessmentHelperRepo {
             throw new ApiError(500, error.message);
         }
 
-    }
+    };
 
     //#endregion
 

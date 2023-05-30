@@ -75,8 +75,8 @@ export class DrugRepo implements IDrugRepo {
             if (filters.Name != null) {
                 search.where['DrugName'] = { [Op.like]: '%' + filters.Name + '%' };
             }
-            if (filters.genericName != null) {
-                search.where['genericName'] = { [Op.like]: '%' + filters.genericName + '%' };
+            if (filters.GenericName != null) {
+                search.where['GenericName'] = { [Op.like]: '%' + filters.GenericName + '%' };
             }
             let orderByColum = 'CreatedAt';
             if (filters.OrderBy) {

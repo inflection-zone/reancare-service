@@ -56,5 +56,5 @@ export default class GoalType extends Model {
 
   @DeletedAt
   DeletedAt: Date;
-
+  
 }

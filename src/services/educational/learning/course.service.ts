@@ -31,6 +31,8 @@ export class CourseService {
             module['Contents'] = contents;
         }
         course['Modules'] = modules;
+        const learningPaths = await this._courseRepo.getLearningPathsForCourse(id);
+        course['LearningPaths'] = learningPaths;
         return course;
     };
 

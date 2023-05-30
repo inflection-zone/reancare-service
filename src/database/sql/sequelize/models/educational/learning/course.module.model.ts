@@ -11,6 +11,7 @@ import {
     ForeignKey,
     BelongsTo,
     HasMany,
+    IsInt,
 } from 'sequelize-typescript';
 
 import { v4 } from 'uuid';
@@ -82,6 +83,13 @@ export default class CourseModule extends Model {
         allowNull : true,
     })
     DurationInMins: number;
+
+    @IsInt
+    @Column({
+        type      : DataType.INTEGER,
+        allowNull : true,
+    })
+    Sequence: number;
 
     @HasMany(() => CourseContent)
     CourseContents: CourseContent[];

@@ -4,8 +4,8 @@ import { LearningPathDto } from "./learning.path.dto";
 //////////////////////////////////////////////////////////////////////
 
 export interface LearningPathSearchFilters extends BaseSearchFilters{
-    Name?: string;
-    PreferenceWeight?: number;
+    Name?             : string;
+    PreferenceWeight? : number;
 }
 
 export interface LearningPathSearchResults extends BaseSearchResults{

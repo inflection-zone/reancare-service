@@ -11,7 +11,10 @@ import { CourseMapper } from '../../../mappers/educational/learning/course.mappe
 import CourseContent from '../../../models/educational/learning/course.content.model';
 import Course from '../../../models/educational/learning/course.model';
 import CourseModule from '../../../models/educational/learning/course.module.model';
-import LearningCourses from '../../../models/educational/learning/learning.course.model';
+import  LearningPathCourses from '../../../models/educational/learning/learning.course.model';
+import LearningPath from '../../../models/educational/learning/learning.path.model';
+import { LearningPathMapper } from '../../../mappers/educational/learning/learning.path.mapper';
+import { LearningPathDto } from '../../../../../../domain.types/educational/learning/learning.path/learning.path.dto';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -47,8 +50,7 @@ export class CourseRepo implements ICourseRepo {
     search = async (filters: CourseSearchFilters): Promise<CourseSearchResults> => {
         try {
 
-            const search = { where : {} ,
-
+            const search = { where   : {} ,
                 include : [
                     {
                         model   : CourseModule,
@@ -136,7 +138,7 @@ export class CourseRepo implements ICourseRepo {
             if (updateModel.DurationInDays != null) {
                 course.DurationInDays = updateModel.DurationInDays;
             }
-
+         
             await course.save();
             return await CourseMapper.toDto(course);
 
@@ -159,20 +161,72 @@ export class CourseRepo implements ICourseRepo {
 
     getCoursesForLearningPath = async (learningPathId: string): Promise<CourseDto[]> => {
         try {
-            const learningCourses = await LearningCourses.findAll({ where   : { LearningPathId: learningPathId },
-                include : [
-                    {
-                        model : Course
-                    }
-                ]
-            }
+            const learningCourses = await  LearningPathCourses.findAll(
+                { where   : { LearningPathId: learningPathId },
+                    include : [
+                        {
+                            model : Course
+                        }
+                    ]
+                }
             );
             var list = learningCourses.map(x => x.Course);
             return list.map(y => CourseMapper.toDto(y));
+
         } catch (error) {
             Logger.instance().log(error.message);
             throw new ApiError(500, error.message);
         }
     };
 
+    getLearningPathsForCourse = async (courseId: string): Promise<LearningPathDto[]> => {
+        try {
+            const CourseLearningPaths = await  LearningPathCourses.findAll(
+                { where   : { CourseId: courseId },
+                    include : [
+                        {
+                            model : LearningPath
+                        }
+                    ]
+                }
+            );
+            var list = CourseLearningPaths.map(x => x.LearningPath);
+            return list.map(y => LearningPathMapper.toDto(y));
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+    
+    private addLearningPaths = async (courseId: string, learningPathIds: string[]) => {
+        if (learningPathIds !== null && learningPathIds.length > 0) {
+            for await (var learningPathId of learningPathIds) {
+                await this.addLearningPath(courseId, learningPathId);
+            }
+        }
+    };
+
+    addLearningPath = async (id: string, learningPathId: string): Promise<boolean> => {
+        try {
+            const learningCourse = await  LearningPathCourses.findAll({
+                where : {
+                    CourseId       : id,
+                    LearningPathId : learningPathId,
+                }
+            });
+            if (learningCourse.length > 0) {
+                return false;
+            }
+            var entity = await  LearningPathCourses.create({
+                CourseId       : id,
+                LearningPathId : learningPathId,
+            });
+            return entity != null;
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+    
 }
