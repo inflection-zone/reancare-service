@@ -30,7 +30,6 @@ export class LearningPathRepo implements ILearningPathRepo {
                 EndDate          : createModel.EndDate,
                 PreferenceWeight : createModel.PreferenceWeight,
                 Enabled          : createModel.Enabled,
-                Sequence         : createModel.Sequence,
             };
 
             const learningPath = await LearningPath.create(entity);
@@ -141,9 +140,6 @@ export class LearningPathRepo implements ILearningPathRepo {
             }
             if (updateModel.Enabled != null) {
                 course.Enabled = updateModel.Enabled;
-            }
-            if (updateModel.Sequence != null) {
-                course.Sequence = updateModel.Sequence;
             }
 
             await course.save();

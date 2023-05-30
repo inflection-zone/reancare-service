@@ -13,5 +13,4 @@ export interface LearningPathDomainModel {
     EndDate?            : Date;
     PreferenceWeight?   : number;
     Enabled?            : boolean;
-    Sequence?           : number;
 }

@@ -62,13 +62,6 @@ export default class Course extends Model {
     })
     DurationInDays: number;
 
-    @IsInt
-    @Column({
-        type      : DataType.INTEGER,
-        allowNull : true,
-    })
-    Sequence: number;
-    
     @HasMany(() => LearningPathCourses)
     LearningPathCourses: LearningPathCourses[];
 

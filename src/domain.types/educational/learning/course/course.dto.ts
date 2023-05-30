@@ -11,7 +11,6 @@ export interface CourseDto {
     DurationInDays? : number;
     Modules?        : CourseModuleDto[];
     CreatedAt?      : Date;
-    Sequence?       : number;
 }
 export interface LearningCourseDto {
     id?                 : uuid,

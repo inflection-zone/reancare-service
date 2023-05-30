@@ -72,14 +72,7 @@ export default class LearningPath extends Model {
         allowNull : true,
     })
     Enabled: boolean;
-
-    @IsInt
-    @Column({
-        type      : DataType.INTEGER,
-        allowNull : true,
-    })
-    Sequence: number;
-
+    
     @HasMany(() =>  LearningPathCourses)
     LearningPathCourses:   LearningPathCourses[];
 

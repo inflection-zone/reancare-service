@@ -21,7 +21,6 @@ export class LearningPathMapper {
             PreferenceWeight : course.PreferenceWeight,
             Enabled          : course.Enabled,
             CreatedAt        : course.CreatedAt,
-            Sequence         : course.Sequence,
         };
         return dto;
     };
