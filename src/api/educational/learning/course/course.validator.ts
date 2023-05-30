@@ -2,6 +2,7 @@ import express from 'express';
 import { CourseDomainModel } from '../../../../domain.types/educational/learning/course/course.domain.model';
 import { CourseSearchFilters } from '../../../../domain.types/educational/learning/course/course.search.types';
 import { BaseValidator, Where } from '../../../base.validator';
+import { uuid } from '../../../../domain.types/miscellaneous/system.types';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -18,7 +19,17 @@ export class CourseValidator extends BaseValidator {
             Description     : request.body.Description,
             ImageUrl        : request.body.ImageUrl,
             DurationInDays  : request.body.DurationInDays,
+            Sequence        : request.body.Sequence,
         };
+        if (request.body.LearningPathIds && request.body.LearningPathIds.length > 0) {
+            var learningPathIds: uuid[] = [];
+            for (var l of request.body.LearningPathIds ) {
+                var learningPathId: uuid = l;
+                learningPathIds.push(learningPathId);
+            }
+            model.LearningPathIds = learningPathIds;
+        }
+
         return model;
     };
 
@@ -48,6 +59,7 @@ export class CourseValidator extends BaseValidator {
         await this.validateString(request, 'Description', Where.Body, false, true);
         await this.validateString(request, 'ImageUrl', Where.Body, false, true);
         await this.validateDecimal(request, 'DurationInDays', Where.Body, false, true);
+        await this.validateDecimal(request, 'Sequence', Where.Body, false, true);
         this.validateRequest(request);
     }
 
@@ -57,6 +69,7 @@ export class CourseValidator extends BaseValidator {
         await this.validateString(request, 'Description', Where.Body, false, false);
         await this.validateString(request, 'ImageUrl', Where.Body, false, false);
         await this.validateDecimal(request, 'DurationInDays', Where.Body, false, false);
+        await this.validateDecimal(request, 'Sequence', Where.Body, false, false);
         this.validateRequest(request);
     }
 

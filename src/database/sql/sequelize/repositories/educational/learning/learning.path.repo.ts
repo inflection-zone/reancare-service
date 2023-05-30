@@ -10,7 +10,7 @@ import { LearningPathSearchFilters,
 import { ILearningPathRepo } from '../../../../../repository.interfaces/educational/learning/learning.path.repo.interface';
 import { LearningPathMapper } from '../../../mappers/educational/learning/learning.path.mapper';
 import Course from '../../../models/educational/learning/course.model';
-import LearningCourses from '../../../models/educational/learning/learning.course.model';
+import  LearningPathCourses from '../../../models/educational/learning/learning.course.model';
 import LearningPath from '../../../models/educational/learning/learning.path.model';
 import { CourseMapper } from '../../../mappers/educational/learning/course.mapper';
 
@@ -30,6 +30,7 @@ export class LearningPathRepo implements ILearningPathRepo {
                 EndDate          : createModel.EndDate,
                 PreferenceWeight : createModel.PreferenceWeight,
                 Enabled          : createModel.Enabled,
+                Sequence         : createModel.Sequence,
             };
 
             const learningPath = await LearningPath.create(entity);
@@ -57,15 +58,9 @@ export class LearningPathRepo implements ILearningPathRepo {
             const search = { where   : {},
                 include : [
                     {
-                        model    : LearningCourses,
-                        as       : 'LearningCourses',
+                        model    : LearningPathCourses,
+                        as       : 'LearningPathCourses',
                         required : true,
-                        // include  : [
-                        //     {
-                        //         model    : Course,
-                        //         required : true
-                        //     }
-                        // ]
                     }
                 ]
             };
@@ -147,6 +142,9 @@ export class LearningPathRepo implements ILearningPathRepo {
             if (updateModel.Enabled != null) {
                 course.Enabled = updateModel.Enabled;
             }
+            if (updateModel.Sequence != null) {
+                course.Sequence = updateModel.Sequence;
+            }
 
             await course.save();
             
@@ -180,7 +178,7 @@ export class LearningPathRepo implements ILearningPathRepo {
 
     addCourse = async (id: string, courseId: string): Promise<boolean> => {
         try {
-            const learningCourse = await LearningCourses.findAll({
+            const learningCourse = await  LearningPathCourses.findAll({
                 where : {
                     CourseId       : courseId,
                     LearningPathId : id
@@ -189,7 +187,7 @@ export class LearningPathRepo implements ILearningPathRepo {
             if (learningCourse.length > 0) {
                 return false;
             }
-            var entity = await LearningCourses.create({
+            var entity = await  LearningPathCourses.create({
                 CourseId       : courseId,
                 LearningPathId : id
             });
@@ -203,7 +201,7 @@ export class LearningPathRepo implements ILearningPathRepo {
     getCourses = async (id: string): Promise<CourseDto[]> => {
 
         try {
-            const learningCourses = await LearningCourses.findAll({
+            const learningCourses = await  LearningPathCourses.findAll({
                 where : {
                     LearningPathId : id
                 },

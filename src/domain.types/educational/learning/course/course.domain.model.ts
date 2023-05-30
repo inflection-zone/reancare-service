@@ -7,4 +7,5 @@ export interface CourseDomainModel {
     Description?     : string;
     ImageUrl?        : string;
     DurationInDays?  : number;
+    Sequence?        : number;
 }

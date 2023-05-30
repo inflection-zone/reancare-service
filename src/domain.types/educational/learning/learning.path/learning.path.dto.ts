@@ -11,6 +11,7 @@ export interface LearningPathDto {
     PreferenceWeight?   : number;
     Enabled?            : boolean;
     CreatedAt?          : Date;
+    Sequence?           : number;
 }
 
 export interface LearningCourseDto {
