@@ -2,6 +2,7 @@ import express from 'express';
 import { CourseDomainModel } from '../../../../domain.types/educational/learning/course/course.domain.model';
 import { CourseSearchFilters } from '../../../../domain.types/educational/learning/course/course.search.types';
 import { BaseValidator, Where } from '../../../base.validator';
+import { uuid } from '../../../../domain.types/miscellaneous/system.types';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -19,6 +20,15 @@ export class CourseValidator extends BaseValidator {
             ImageUrl        : request.body.ImageUrl ?? null,
             DurationInDays  : request.body.DurationInDays ?? null,
         };
+        if (request.body.LearningPathIds && request.body.LearningPathIds.length > 0) {
+            var learningPathIds: uuid[] = [];
+            for (var l of request.body.LearningPathIds ) {
+                var learningPathId: uuid = l;
+                learningPathIds.push(learningPathId);
+            }
+            model.LearningPathIds = learningPathIds;
+        }
+
         return model;
     };
 

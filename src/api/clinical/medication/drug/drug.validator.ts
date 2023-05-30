@@ -82,7 +82,7 @@ export class DrugValidator extends BaseValidator{
 
         var filters: DrugSearchFilters = {
             Name        : request.query.name ?? null,
-            genericName : request.query.genericName ?? null,
+            GenericName : request.query.genericName ?? null,
         };
 
         return this.updateBaseSearchFilters(request, filters);

@@ -19,6 +19,7 @@ export class CourseMapper {
             DurationInDays : course.DurationInDays,
             Modules        : course.CourseModules,
             CreatedAt      : course.CreatedAt,
+            LearningPaths  : course.LearningPathCourses,
         };
         return dto;
     };

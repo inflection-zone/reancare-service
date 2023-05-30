@@ -9,12 +9,12 @@ import {
     IsUUID,
     PrimaryKey,
     HasMany,
+    IsInt,
 } from 'sequelize-typescript';
 
 import { v4 } from 'uuid';
 import CourseModule from './course.module.model';
-import CourseLearningPath from './learning.course.model';
-// import LearningPath from './learning.path.model';
+import LearningPathCourses from './learning.course.model';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -37,14 +37,6 @@ export default class Course extends Model {
         allowNull : false,
     })
     id: string;
-
-    // @IsUUID(4)
-    // @ForeignKey(() => CourseLearningPath)
-    // @Column({
-    //     type      : DataType.UUID,
-    //     allowNull : true,
-    // })
-    // LearningPathId: string;
     
     @Column({
         type      : DataType.STRING(256),
@@ -69,9 +61,9 @@ export default class Course extends Model {
         allowNull : true,
     })
     DurationInDays: number;
-    
-    @HasMany(() => CourseLearningPath)
-    CourseLearningPath: CourseLearningPath[];
+
+    @HasMany(() => LearningPathCourses)
+    LearningPathCourses: LearningPathCourses[];
 
     @HasMany(() => CourseModule)
     CourseModules: CourseModule[];
