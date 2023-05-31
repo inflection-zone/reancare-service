@@ -31,6 +31,8 @@ import Pulse from '../../models/clinical/biometrics/pulse.model';
 import { TimeHelper } from '../../../../../common/time.helper';
 import User from '../../models/users/user/user.model';
 import Role from '../../models/role/role.model';
+import Doctor from '../../models/users/doctor.model';
+import EmergencyContact from '../../models/users/patient/emergency.contact.model';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -961,6 +963,47 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
+    getUsersStats = async (filters): Promise<any> => {
+        try {
+            const persons = await this.getPersons(filters);
+
+            const users = await this.getUsers(filters);
+
+            const doctors = await this.getDoctors(filters);
+
+            const totalPatients = await this.getTotalUsers(filters);
+
+            const nonDetetedPatients = await this.getNonDeletedUsers(filters);
+
+            const detetedPatients = await this.getDeletedUsers(filters);
+
+            const enrollments = await this.getEnrollments(filters);
+
+            const emergencyContacts  = await this.getEmergencyContacts(filters);
+
+            const paitents = {
+                TotalPatients      : totalPatients.count,
+                NonDetetedPatients : nonDetetedPatients,
+                DetetedPatients    : detetedPatients,
+            };
+
+            const usersStats = {
+                Persons           : persons,
+                Users             : users,
+                Doctors           : doctors,
+                Paitents          : paitents,
+                Enrollments       : enrollments,
+                EmergencyContacts : emergencyContacts
+            };
+
+            return usersStats;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
     // #private region
 
   private  getPhysicalActivityUsers = async (totalUsers, filters) => {
@@ -1464,6 +1507,327 @@ export class StatisticsRepo implements IStatisticsRepo {
           throw new ApiError(500, error.message);
       }
   };
+
+  private  getPersons = async (filters) => {
+      try {
+          const { minDate, maxDate } = getMinMaxDates(filters);
+          const search: any = { where: {}, paranoid: false };
+
+          search.where['Phone'] = {
+              [Op.notBetween] : [1000000000, 1000000100],
+          };
+
+          search.where['DeletedAt'] = {
+              [Op.eq] : null
+          };
+       
+          if (filters.Year != null)  {
+              search.where['CreatedAt'] = {
+                  [Op.between] : [minDate, maxDate],
+              };
+          }
+  
+          const nonDeletedPersons = await Person.findAndCountAll(search);
+
+          search.where['DeletedAt'] = {
+              [Op.not] : null
+          };
+
+          const deletedPersons = await Person.findAndCountAll(search);
+
+          const totalPresons = nonDeletedPersons.count + deletedPersons.count;
+
+          const presons = {
+              TotalPresons      : totalPresons,
+              NonDeletedPersons : nonDeletedPersons.count,
+              DeletedPersons    : deletedPersons.count
+          };
+
+          return presons;
+
+      } catch (error) {
+          Logger.instance().log(error.message);
+          throw new ApiError(500, error.message);
+      }
+  };
+
+  private  getUsers = async (filters) => {
+      try {
+          const { minDate, maxDate } = getMinMaxDates(filters);
+          const search: any = { where: {}, include: [],  paranoid: false };
+
+          const includesObj =
+          {
+              model    : Person,
+              required : true,
+              where    : {},
+              paranoid : false
+          };
+
+          includesObj.where['Phone'] = {
+              [Op.notBetween] : [1000000000, 1000000100],
+          };
+
+          includesObj.where['DeletedAt'] = {
+              [Op.eq] : null
+          };
+   
+          if (filters.Year != null)  {
+              includesObj.where['CreatedAt'] = {
+                  [Op.between] : [minDate, maxDate],
+              };
+          }
+          
+          search.include.push(includesObj);
+  
+          const nonDeletedUsers = await User.findAndCountAll(search);
+
+          includesObj.where['DeletedAt'] = {
+              [Op.not] : null
+          };
+
+          search.include.push(includesObj);
+
+          const deletedUsers = await User.findAndCountAll(search);
+
+          const totalUsers = nonDeletedUsers.count + deletedUsers.count;
+
+          const users = {
+              TotalUsers      : totalUsers,
+              nonDeletedUsers : nonDeletedUsers.count,
+              DeletedUsers    : deletedUsers.count
+          };
+
+          return users;
+
+      } catch (error) {
+          Logger.instance().log(error.message);
+          throw new ApiError(500, error.message);
+      }
+  };
+
+private  getDoctors = async (filters) => {
+    try {
+        const { minDate, maxDate } = getMinMaxDates(filters);
+        const search: any = { where: {}, include: [],  paranoid: false };
+
+        const includesObj =
+        {
+            model    : Person,
+            required : true,
+            where    : {},
+            paranoid : false
+        };
+
+        includesObj.where['Phone'] = {
+            [Op.notBetween] : [1000000000, 1000000100],
+        };
+
+        includesObj.where['DeletedAt'] = {
+            [Op.eq] : null
+        };
+ 
+        if (filters.Year != null)  {
+            includesObj.where['CreatedAt'] = {
+                [Op.between] : [minDate, maxDate],
+            };
+        }
+        
+        search.include.push(includesObj);
+
+        const nonDeletedDoctors = await Doctor.findAndCountAll(search);
+
+        includesObj.where['DeletedAt'] = {
+            [Op.not] : null
+        };
+
+        search.include.push(includesObj);
+
+        const deletedDoctors = await Doctor.findAndCountAll(search);
+
+        const totalDoctors = nonDeletedDoctors.count + deletedDoctors.count;
+
+        const doctors = {
+            TotalDoctors      : totalDoctors,
+            NonDeletedDoctors : nonDeletedDoctors.count,
+            DeletedDoctors    : deletedDoctors.count
+        };
+
+        return doctors;
+
+    } catch (error) {
+        Logger.instance().log(error.message);
+        throw new ApiError(500, error.message);
+    }
+};
+
+private  getEnrollments = async (filters) => {
+    try {
+
+        const { minDate, maxDate } = getMinMaxDates(filters);
+        const maxCreatedDate = getMaxDate(filters);
+        const search: any = { where: {}, include: [], paranoid: false };
+
+        const includesObj =
+        {
+            model    : Person,
+            required : true,
+            where    : {
+                
+            },
+            paranoid : false
+        };
+ 
+        includesObj.where['Phone'] = {
+            [Op.notBetween] : [1000000000, 1000000100],
+        };
+        
+        includesObj.where['DeletedAt'] = {
+            [Op.eq] : null
+        };
+
+        if (filters.Year != null)  {
+            includesObj.where['CreatedAt'] = {
+                [Op.between] : [minDate, maxDate],
+            };
+        }
+
+        if (filters.Year != null && filters.Month != null)  {
+            includesObj.where['CreatedAt'] = {
+                [Op.lt] : maxCreatedDate,
+            };
+        }
+
+        search.include.push(includesObj);
+
+        const nonDeletedUsers = await Patient.findAndCountAll(search);
+
+        includesObj.where['DeletedAt'] = {
+            [Op.not] : null
+        };
+
+        search.include.push(includesObj);
+
+        const deletedUsers = await Patient.findAndCountAll(search);
+
+        const nonDeletedEnrollmentDetails = [];
+        for (const u of nonDeletedUsers.rows) {
+            const enrollmentDetail = await CareplanEnrollment.findOne({ where : {
+                PatientUserId : u.UserId,
+            }, paranoid : false });
+            if (enrollmentDetail !== null){
+                nonDeletedEnrollmentDetails.push(enrollmentDetail);
+            }
+        }
+
+        const deletedEnrollmentDetails = [];
+        for (const u of deletedUsers.rows) {
+            const enrollmentDetail = await CareplanEnrollment.findOne({ where : {
+                PatientUserId : u.UserId,
+            }, paranoid : false });
+            if (enrollmentDetail !== null){
+                deletedEnrollmentDetails.push(enrollmentDetail);
+            }
+       
+        }
+
+        const totalEnrollments = nonDeletedEnrollmentDetails.length + deletedEnrollmentDetails.length;
+
+        const nonDeletedCholestrolEnrollment = nonDeletedEnrollmentDetails.filter(x => x.PlanCode === 'Cholesterol');
+
+        const deletedCholestrolEnrollment = deletedEnrollmentDetails.filter(x => x.PlanCode === 'Cholesterol');
+
+        const totalCholestrolEnrollment = nonDeletedCholestrolEnrollment.length + deletedCholestrolEnrollment.length;
+
+        const nonDeletedStrokeEnrollment = nonDeletedEnrollmentDetails.filter(x => x.PlanCode === 'Stroke');
+
+        const deletedStrokeEnrollment = deletedEnrollmentDetails.filter(x => x.PlanCode === 'Stroke');
+
+        const totalStrokeEnrollment = nonDeletedStrokeEnrollment.length + deletedStrokeEnrollment.length;
+
+        const nonDeletedHFMotivatorEnrollment = nonDeletedEnrollmentDetails.filter(x => x.PlanCode === 'HFMotivator');
+
+        const deletedHFMotivatorEnrollment = deletedEnrollmentDetails.filter(x => x.PlanCode === 'HFMotivator');
+
+        const totalHFMotivatorEnrollment = nonDeletedHFMotivatorEnrollment.length + deletedHFMotivatorEnrollment.length;
+
+        const enrollments = {
+            TotalEnrollments                : totalEnrollments,
+            NonDeletedEnrollment            : nonDeletedEnrollmentDetails.length,
+            DeletedEnrollment               : deletedEnrollmentDetails.length,
+            TotalCholestrolEnrollment       : totalCholestrolEnrollment,
+            NonDeletedCholestrolEnrollment  : nonDeletedCholestrolEnrollment.length,
+            DeletedCholestrolEnrollment     : deletedCholestrolEnrollment.length,
+            TotalStrokeEnrollment           : totalStrokeEnrollment,
+            NonDeletedStrokeEnrollment      : nonDeletedStrokeEnrollment.length,
+            DeletedStrokeEnrollment         : deletedStrokeEnrollment.length,
+            TotalHFMotivatorEnrollment      : totalHFMotivatorEnrollment,
+            NonDeletedHFMotivatorEnrollment : nonDeletedHFMotivatorEnrollment.length,
+            DeletedHFMotivatorEnrollment    : deletedHFMotivatorEnrollment.length
+
+        };
+
+        return enrollments;
+
+    } catch (error) {
+        Logger.instance().log(error.message);
+        throw new ApiError(500, error.message);
+    }
+};
+
+private  getEmergencyContacts = async (filters) => {
+    try {
+        const { minDate, maxDate } = getMinMaxDates(filters);
+        const search: any = { where: {}, paranoid: false };
+
+        search.where['Phone'] = {
+            [Op.notBetween] : [1000000000, 1000000100],
+        };
+
+        if (filters.Year != null)  {
+            search.where['CreatedAt'] = {
+                [Op.between] : [minDate, maxDate],
+            };
+        }
+  
+        const persons = await Person.findAndCountAll(search);
+
+        const emergencyContactDetails = [];
+        for (const p of persons.rows) {
+            const emergencyContactDetail = await EmergencyContact.findOne({ where : {
+                ContactPersonId : p.id,
+            }, paranoid : false });
+            if (emergencyContactDetail !== null){
+                emergencyContactDetails.push(emergencyContactDetail);
+            }
+        }
+
+        const usersDetails = [];
+        for (const p of emergencyContactDetails) {
+            const user = await User.findOne({ where : {
+                PersonId : p.ContactPersonId,
+            }, paranoid : false });
+            if (user !== null){
+                usersDetails.push(user);
+            }
+        }
+
+        const onlyEmergencyContact =  emergencyContactDetails.length - usersDetails.length;
+
+        const emergencyContacts = {
+            TotalEmergencyContacts          : emergencyContactDetails.length,
+            EmergencyContactsWhoAreAppUsers : usersDetails.length,
+            OnlyEmergencyContacts           : onlyEmergencyContact
+        
+        };
+
+        return emergencyContacts;
+
+    } catch (error) {
+        Logger.instance().log(error.message);
+        throw new ApiError(500, error.message);
+    }
+};
 
 }
 

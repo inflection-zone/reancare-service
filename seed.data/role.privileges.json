@@ -248,7 +248,8 @@
             "DonationCommunication.Delete",
             "Statistics.GetAddictionDistribution",
             "Statistics.GetHealthPillarDistribution",
-            "Statistics.GetRoleWiseDistribution"
+            "Statistics.GetRoleWiseDistribution",
+            "Statistics.GetUsersStats"
         ]
     },
     {

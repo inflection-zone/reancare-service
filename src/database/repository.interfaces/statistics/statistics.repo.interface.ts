@@ -39,4 +39,6 @@ export interface IStatisticsRepo {
 
     getHealthPillarDistribution(filters): Promise<any>;
 
+    getUsersStats(filters): Promise<any>;
+
 }

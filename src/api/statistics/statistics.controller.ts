@@ -278,4 +278,18 @@ export class StatisticsController extends BaseController {
         }
     };
 
+    getUsersStats = async (request: express.Request, response: express.Response): Promise<void> => {
+        try {
+            await this.setContext('Statistics.GetUsersStats', request, response);
+            const filters = await this._validator.searchFilter(request);
+            const usersStats = await this._service.getUsersStats(filters);
+            const message = 'Users stats retrieved successfully!';
+            ResponseHandler.success(request, response,message, 200, {
+                UsersStats : usersStats });
+
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
 }

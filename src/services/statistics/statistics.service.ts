@@ -83,5 +83,9 @@ export class StatisticsService {
     getHealthPillarDistribution = async (filters): Promise<any> => {
         return await this._statisticsRepo.getHealthPillarDistribution(filters);
     };
+
+    getUsersStats = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getUsersStats(filters);
+    };
     
 }
