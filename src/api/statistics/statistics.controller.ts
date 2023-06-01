@@ -292,4 +292,18 @@ export class StatisticsController extends BaseController {
         }
     };
 
+    getBiometricsDistribution = async (request: express.Request, response: express.Response): Promise<void> => {
+        try {
+            await this.setContext('Statistics.GetBiometricsDistribution', request, response);
+            const filters = await this._validator.searchFilter(request);
+            const biometrics = await this._service.getBiometricsDistribution(filters);
+            const message = 'Biometrics distribution retrieved successfully!';
+            ResponseHandler.success(request, response,message, 200, {
+                Biometrics : biometrics });
+
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
 }

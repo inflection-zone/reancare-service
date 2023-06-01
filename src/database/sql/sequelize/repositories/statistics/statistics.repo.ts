@@ -951,7 +951,7 @@ export class StatisticsRepo implements IStatisticsRepo {
                     SymptomUsers          : symptomUsers,
                     LabRecordUsers        : labRecordUsers,
                     NutritionUsers        : nutritionUsers,
-                    VitalUsers            : vitalUsers
+                    // VitalUsers            : vitalUsers
                 };
             }
            
@@ -968,6 +968,8 @@ export class StatisticsRepo implements IStatisticsRepo {
             const persons = await this.getPersons(filters);
 
             const users = await this.getUsers(filters);
+
+            const admins = await this.getAdmins(filters);
 
             const doctors = await this.getDoctors(filters);
 
@@ -990,6 +992,7 @@ export class StatisticsRepo implements IStatisticsRepo {
             const usersStats = {
                 Persons           : persons,
                 Users             : users,
+                Admins            : admins,
                 Doctors           : doctors,
                 Paitents          : paitents,
                 Enrollments       : enrollments,
@@ -1004,830 +1007,1199 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
+    getBiometricsDistribution = async (filters): Promise<any> => {
+        try {
+            const totalUsers = await this.getTotalUsers(filters);
+            let biometricUsers = {} || [] ;
+
+            const cholesterolUsers = await this.getCholestrolUsers(totalUsers, filters);
+
+            const glucoseUsers = await this.getGlucoseUsers(totalUsers, filters);
+
+            const oxygenSaturationUsers = await this.getOxygenSaturationUsers(totalUsers, filters);
+
+            const bloodPressureUsers = await this.getBloodPressureUsers(totalUsers, filters);
+
+            const bodyHeightUsers = await this.getBodyHeightUsers(totalUsers, filters);
+
+            const bodyWeightUsers = await this.getBodyWeightUsers(totalUsers, filters);
+
+            const bodyTempratureUsers = await this.getBodyTempratureUsers(totalUsers, filters);
+
+            const pulseUsers = await this.getPulseUsers(totalUsers, filters);
+
+            if (filters.Year != null) {
+                biometricUsers = {
+                    CholesterolUsers      : cholesterolUsers,
+                    GlucoseUsers          : glucoseUsers,
+                    OxygenSaturationUsers : oxygenSaturationUsers,
+                    BloodPressureUsers    : bloodPressureUsers,
+                    BodyHeightUsers       : bodyHeightUsers,
+                    BodyWeightUsers       : bodyWeightUsers ,
+                    BodyTempratureUsers   : bodyTempratureUsers,
+                    PulseUsers            : pulseUsers,
+                };
+            }
+
+            else {
+                biometricUsers =
+                [
+                    cholesterolUsers,
+                    glucoseUsers,
+                    oxygenSaturationUsers,
+                    bloodPressureUsers,
+                    bodyHeightUsers,
+                    bodyWeightUsers,
+                    bodyTempratureUsers,
+                    pulseUsers
+                ];
+            }
+  
+            return biometricUsers;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
     // #private region
 
-  private  getPhysicalActivityUsers = async (totalUsers, filters) => {
-      try {
-          const { minDate, maxDate } = getMinMaxDates(filters);
-          const physicalActivityDetails = [];
-          var physicalActivityUsers = {};
+    private  getPhysicalActivityUsers = async (totalUsers, filters) => {
+        try {
+            const { minDate, maxDate } = getMinMaxDates(filters);
+            const physicalActivityDetails = [];
+            var physicalActivityUsers = {};
 
-          if (filters.Year != null)  {
-              for (const u of totalUsers.rows) {
-                  const physicalActivityDetail = await PhysicalActivity.findOne({ where : {
-                      PatientUserId : u.UserId,
-                      CreatedAt     : {
-                          [Op.between] : [minDate, maxDate],
-                      }
-                  }, paranoid : false });
-                  if (physicalActivityDetail !== null){
-                      physicalActivityDetails.push(physicalActivityDetail);
-                  }
-              }
+            if (filters.Year != null)  {
+                for (const u of totalUsers.rows) {
+                    const physicalActivityDetail = await PhysicalActivity.findOne({ where : {
+                        PatientUserId : u.UserId,
+                        CreatedAt     : {
+                            [Op.between] : [minDate, maxDate],
+                        }
+                    }, paranoid : false });
+                    if (physicalActivityDetail !== null){
+                        physicalActivityDetails.push(physicalActivityDetail);
+                    }
+                }
 
-              physicalActivityUsers = getMonthlyUsers(physicalActivityDetails,totalUsers);
+                physicalActivityUsers = getMonthlyUsers(physicalActivityDetails,totalUsers);
 
-          }
-          else
-          {
-              for (const u of totalUsers.rows) {
-                  const physicalActivityDetail = await PhysicalActivity.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (physicalActivityDetail !== null){
-                      physicalActivityDetails.push(physicalActivityDetail);
-                  }
-              }
+            }
+            else
+            {
+                for (const u of totalUsers.rows) {
+                    const physicalActivityDetail = await PhysicalActivity.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (physicalActivityDetail !== null){
+                        physicalActivityDetails.push(physicalActivityDetail);
+                    }
+                }
 
-              const physicalActivityUsersRatio =
-              ((physicalActivityDetails.length) / (totalUsers.count) * 100).toFixed(2);
-   
-              physicalActivityUsers = {
-                  Status : "Physical Activity",
-                  Count  : physicalActivityDetails.length,
-                  Ratio  : physicalActivityUsersRatio
-              };
-           
-          }
-
-          return physicalActivityUsers;
-
-      } catch (error) {
-          Logger.instance().log(error.message);
-          throw new ApiError(500, error.message);
-      }
-  };
-
-  private  getMeditationUsers = async (totalUsers, filters) => {
-      try {
-          const { minDate, maxDate } = getMinMaxDates(filters);
-          const meditationDetails = [];
-          let meditationUsers = {};
-
-          if (filters.Year != null)  {
-              for (const u of totalUsers.rows) {
-                  const meditationDetail = await Meditation.findOne({ where : {
-                      PatientUserId : u.UserId,
-                      CreatedAt     : {
-                          [Op.between] : [minDate, maxDate],
-                      }
-                  }, paranoid : false });
-                  if (meditationDetail !== null){
-                      meditationDetails.push(meditationDetail);
-                  }
-              }
-              meditationUsers = getMonthlyUsers(meditationDetails,totalUsers);
-          }
-          else {
-              for (const u of totalUsers.rows) {
-                  const meditationDetail = await Meditation.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (meditationDetail !== null){
-                      meditationDetails.push(meditationDetail);
-                  }
-              }
-  
-              const meditationUsersRatio =
-             ((meditationDetails.length) / (totalUsers.count) * 100).toFixed(2);
-  
-              meditationUsers = {
-                  Status : "Meditation",
-                  Count  : meditationDetails.length,
-                  Ratio  : meditationUsersRatio
-              };
-          }
-      
-          return meditationUsers;
-
-      } catch (error) {
-          Logger.instance().log(error.message);
-          throw new ApiError(500, error.message);
-      }
-  };
-
-  private  getMedicationUsers = async (totalUsers, filters) => {
-      try {
-          const { minDate, maxDate } = getMinMaxDates(filters);
-          const medicationDetails = [];
-          let medicationUsers = {};
-
-          if (filters.Year != null)  {
-              for (const u of totalUsers.rows) {
-                  const medicationDetail = await Medication.findOne({ where : {
-                      PatientUserId : u.UserId,
-                      CreatedAt     : {
-                          [Op.between] : [minDate, maxDate],
-                      }
-                  }, paranoid : false });
-                  if (medicationDetail !== null){
-                      medicationDetails.push(medicationDetail);
-                  }
-              }
-              medicationUsers = getMonthlyUsers(medicationDetails,totalUsers);
-          }
-
-          else {
-              for (const u of totalUsers.rows) {
-                  const medicationDetail = await Medication.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (medicationDetail !== null){
-                      medicationDetails.push(medicationDetail);
-                  }
-              }
-  
-              const medicationUsersRatio =
-              ((medicationDetails.length) / (totalUsers.count) * 100).toFixed(2);
-  
-              medicationUsers = {
-                  Status : "Medication",
-                  Count  : medicationDetails.length,
-                  Ratio  : medicationUsersRatio
-              };
-          }
-
-          return medicationUsers;
-
-      } catch (error) {
-          Logger.instance().log(error.message);
-          throw new ApiError(500, error.message);
-      }
-  };
-
-  private  getSymptomUsers = async (totalUsers, filters) => {
-      try {
-          const { minDate, maxDate } = getMinMaxDates(filters);
-          const symptomDetails = [];
-          let symptomUsers = {};
-
-          if (filters.Year != null)
-          {
-              for (const u of totalUsers.rows) {
-                  const symptomDetail = await Symptom.findOne({ where : {
-                      PatientUserId : u.UserId,
-                      CreatedAt     : {
-                          [Op.between] : [minDate, maxDate],
-                      }
-                  }, paranoid : false });
-                  if (symptomDetail !== null){
-                      symptomDetails.push(symptomDetail);
-                  }
-              }
-
-              symptomUsers = getMonthlyUsers(symptomDetails,totalUsers);
-
-          }
-
-          else {
-              for (const u of totalUsers.rows) {
-                  const symptomDetail = await Symptom.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (symptomDetail !== null){
-                      symptomDetails.push(symptomDetail);
-                  }
-              }
-  
-              const symptomUsersRatio =
-               ((symptomDetails.length) / (totalUsers.count) * 100).toFixed(2);
-  
-              symptomUsers = {
-                  Status : "Symptom",
-                  Count  : symptomDetails.length,
-                  Ratio  : symptomUsersRatio
-              };
-          }
-          return symptomUsers;
-
-      } catch (error) {
-          Logger.instance().log(error.message);
-          throw new ApiError(500, error.message);
-      }
-  };
-
-  private  getLabRecordUsers = async (totalUsers, filters) => {
-      try {
-          const { minDate, maxDate } = getMinMaxDates(filters);
-          const labRecordDetails = [];
-          let labRecordUsers = {};
-
-          if (filters.Year != null)
-          {
-              for (const u of totalUsers.rows) {
-                  const labRecordDetail = await Symptom.findOne({ where : {
-                      PatientUserId : u.UserId,
-                      CreatedAt     : {
-                          [Op.between] : [minDate, maxDate],
-                      }
-                  }, paranoid : false });
-                  if (labRecordDetail !== null){
-                      labRecordDetails.push(labRecordDetail);
-                  }
-              }
-              labRecordUsers = getMonthlyUsers(labRecordDetails,totalUsers);
-          }
-
-          else {
-              for (const u of totalUsers.rows) {
-                  const labRecordDetail = await Symptom.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (labRecordDetail !== null){
-                      labRecordDetails.push(labRecordDetail);
-                  }
-              }
-  
-              const labRecordRatio =
-               ((labRecordDetails.length) / (totalUsers.count) * 100).toFixed(2);
-  
-              labRecordUsers = {
-                  Status : "Lab Record",
-                  Count  : labRecordDetails.length,
-                  Ratio  : labRecordRatio
-              };
-          }
-
-          return labRecordUsers;
-
-      } catch (error) {
-          Logger.instance().log(error.message);
-          throw new ApiError(500, error.message);
-      }
-  };
-
-  private  getNutritionUsers = async (totalUsers, filters) => {
-      try {
-          const { minDate, maxDate } = getMinMaxDates(filters);
-          const nutritionDetails = [];
-          let nutritionUsers = {};
-
-          if (filters.Year != null) {
-              for (const u of totalUsers.rows) {
-                  const foodConsumptionDetail = await FoodConsumption.findOne({ where : {
-                      PatientUserId : u.UserId,
-                      CreatedAt     : {
-                          [Op.between] : [minDate, maxDate],
-                      }
-                  }, paranoid : false });
-                  if (foodConsumptionDetail !== null){
-                      nutritionDetails.push(foodConsumptionDetail);
-                  }
-              }
-  
-              for (const u of totalUsers.rows) {
-                  const waterConsumptionDetail = await WaterConsumption.findOne({ where : {
-                      PatientUserId : u.UserId,
-                      CreatedAt     : {
-                          [Op.between] : [minDate, maxDate],
-                      }
-                  }, paranoid : false });
-                  if (waterConsumptionDetail !== null){
-                      nutritionDetails.push(waterConsumptionDetail);
-                  }
-              }
-
-              const uniqueNutritionUsers = getUniqueUsers(nutritionDetails);
-           
-              nutritionUsers = getMonthlyUsers(uniqueNutritionUsers,totalUsers);
-
-          }
-        
-          else {
-              for (const u of totalUsers.rows) {
-                  const foodConsumptionDetail = await FoodConsumption.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (foodConsumptionDetail !== null){
-                      nutritionDetails.push(foodConsumptionDetail);
-                  }
-              }
-  
-              for (const u of totalUsers.rows) {
-                  const waterConsumptionDetail = await WaterConsumption.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (waterConsumptionDetail !== null){
-                      nutritionDetails.push(waterConsumptionDetail);
-                  }
-              }
-        
-              const uniqueNutrition =  Array.from(new Set(nutritionDetails.map((x) => x.PatientUserId)));
-             
-              const nutritionRatio =
-             ((uniqueNutrition.length) / (totalUsers.count) * 100).toFixed(2);
-  
-              nutritionUsers = {
-                  Status : "Nutrition",
-                  Count  : uniqueNutrition.length,
-                  Ratio  : nutritionRatio
-              };
-          }
-
-          return nutritionUsers;
-
-      } catch (error) {
-          Logger.instance().log(error.message);
-          throw new ApiError(500, error.message);
-      }
-  };
-
-  private  getVitalUsers = async (totalUsers, filters) => {
-      try {
-          const vitalDetails = [];
-          let vitalsUsers = {};
-
-          if (filters.Year != null) {
-              for (const u of totalUsers.rows) {
-                  const cholestrolDetail = await BloodCholesterol.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (cholestrolDetail !== null){
-                      vitalDetails.push(cholestrolDetail);
-                  }
-              }
-
-              for (const u of totalUsers.rows) {
-                  const glucoseDetail = await BloodGlucose.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (glucoseDetail !== null){
-                      vitalDetails.push(glucoseDetail);
-                  }
-              }
-
-              for (const u of totalUsers.rows) {
-                  const oxygenSaturationDetail = await BloodOxygenSaturation.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (oxygenSaturationDetail !== null){
-                      vitalDetails.push(oxygenSaturationDetail);
-                  }
-              }
-
-              for (const u of totalUsers.rows) {
-                  const bloodPressureDetail = await BloodPressure.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (bloodPressureDetail !== null){
-                      vitalDetails.push(bloodPressureDetail);
-                  }
-              }
-
-              for (const u of totalUsers.rows) {
-                  const bodyHeightDetail = await BodyHeight.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (bodyHeightDetail !== null){
-                      vitalDetails.push(bodyHeightDetail);
-                  }
-              }
-
-              for (const u of totalUsers.rows) {
-                  const bodyWeightDetail = await BodyWeight.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (bodyWeightDetail !== null){
-                      vitalDetails.push(bodyWeightDetail);
-                  }
-              }
-
-              for (const u of totalUsers.rows) {
-                  const bodyTempratureDetail = await BodyTemperature.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (bodyTempratureDetail !== null){
-                      vitalDetails.push(bodyTempratureDetail);
-                  }
-              }
+                const physicalActivityUsersRatio =
+                ((physicalActivityDetails.length) / (totalUsers.count) * 100).toFixed(2);
     
-              for (const u of totalUsers.rows) {
-                  const pulseDetail = await Pulse.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (pulseDetail !== null){
-                      vitalDetails.push(pulseDetail);
-                  }
-              }
+                physicalActivityUsers = {
+                    Status : "Physical Activity",
+                    Count  : physicalActivityDetails.length,
+                    Ratio  : physicalActivityUsersRatio
+                };
+            
+            }
 
-              const uniquevitalUsers = getUniqueUsers(vitalDetails);
-           
-              vitalsUsers = getMonthlyUsers(uniquevitalUsers,totalUsers);
+            return physicalActivityUsers;
 
-          }
-    
-          else {
-              for (const u of totalUsers.rows) {
-                  const cholestrolDetail = await BloodCholesterol.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (cholestrolDetail !== null){
-                      vitalDetails.push(cholestrolDetail);
-                  }
-              }
-  
-              for (const u of totalUsers.rows) {
-                  const glucoseDetail = await BloodGlucose.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (glucoseDetail !== null){
-                      vitalDetails.push(glucoseDetail);
-                  }
-              }
-  
-              for (const u of totalUsers.rows) {
-                  const oxygenSaturationDetail = await BloodOxygenSaturation.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (oxygenSaturationDetail !== null){
-                      vitalDetails.push(oxygenSaturationDetail);
-                  }
-              }
-  
-              for (const u of totalUsers.rows) {
-                  const bloodPressureDetail = await BloodPressure.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (bloodPressureDetail !== null){
-                      vitalDetails.push(bloodPressureDetail);
-                  }
-              }
-  
-              for (const u of totalUsers.rows) {
-                  const bodyHeightDetail = await BodyHeight.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (bodyHeightDetail !== null){
-                      vitalDetails.push(bodyHeightDetail);
-                  }
-              }
-  
-              for (const u of totalUsers.rows) {
-                  const bodyWeightDetail = await BodyWeight.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (bodyWeightDetail !== null){
-                      vitalDetails.push(bodyWeightDetail);
-                  }
-              }
-  
-              for (const u of totalUsers.rows) {
-                  const bodyTempratureDetail = await BodyTemperature.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (bodyTempratureDetail !== null){
-                      vitalDetails.push(bodyTempratureDetail);
-                  }
-              }
-      
-              for (const u of totalUsers.rows) {
-                  const pulseDetail = await Pulse.findOne({ where : {
-                      PatientUserId : u.UserId,
-                  }, paranoid : false });
-                  if (pulseDetail !== null){
-                      vitalDetails.push(pulseDetail);
-                  }
-              }
-              const uniqueVitalsDetails = Array.from(new Set(vitalDetails.map((x) => x.PatientUserId)));
-  
-              const vitalsRatio =
-            ((uniqueVitalsDetails.length) / (totalUsers.count) * 100).toFixed(2);
-  
-              vitalsUsers = {
-                  Status : "Vitals",
-                  Count  : uniqueVitalsDetails.length,
-                  Ratio  : vitalsRatio
-              };
-          }
-
-          return vitalsUsers;
-
-      } catch (error) {
-          Logger.instance().log(error.message);
-          throw new ApiError(500, error.message);
-      }
-  };
-
-  private  getPersons = async (filters) => {
-      try {
-          const { minDate, maxDate } = getMinMaxDates(filters);
-          const search: any = { where: {}, paranoid: false };
-
-          search.where['Phone'] = {
-              [Op.notBetween] : [1000000000, 1000000100],
-          };
-
-          search.where['DeletedAt'] = {
-              [Op.eq] : null
-          };
-       
-          if (filters.Year != null)  {
-              search.where['CreatedAt'] = {
-                  [Op.between] : [minDate, maxDate],
-              };
-          }
-  
-          const nonDeletedPersons = await Person.findAndCountAll(search);
-
-          search.where['DeletedAt'] = {
-              [Op.not] : null
-          };
-
-          const deletedPersons = await Person.findAndCountAll(search);
-
-          const totalPresons = nonDeletedPersons.count + deletedPersons.count;
-
-          const presons = {
-              TotalPresons      : totalPresons,
-              NonDeletedPersons : nonDeletedPersons.count,
-              DeletedPersons    : deletedPersons.count
-          };
-
-          return presons;
-
-      } catch (error) {
-          Logger.instance().log(error.message);
-          throw new ApiError(500, error.message);
-      }
-  };
-
-  private  getUsers = async (filters) => {
-      try {
-          const { minDate, maxDate } = getMinMaxDates(filters);
-          const search: any = { where: {}, include: [],  paranoid: false };
-
-          const includesObj =
-          {
-              model    : Person,
-              required : true,
-              where    : {},
-              paranoid : false
-          };
-
-          includesObj.where['Phone'] = {
-              [Op.notBetween] : [1000000000, 1000000100],
-          };
-
-          includesObj.where['DeletedAt'] = {
-              [Op.eq] : null
-          };
-   
-          if (filters.Year != null)  {
-              includesObj.where['CreatedAt'] = {
-                  [Op.between] : [minDate, maxDate],
-              };
-          }
-          
-          search.include.push(includesObj);
-  
-          const nonDeletedUsers = await User.findAndCountAll(search);
-
-          includesObj.where['DeletedAt'] = {
-              [Op.not] : null
-          };
-
-          search.include.push(includesObj);
-
-          const deletedUsers = await User.findAndCountAll(search);
-
-          const totalUsers = nonDeletedUsers.count + deletedUsers.count;
-
-          const users = {
-              TotalUsers      : totalUsers,
-              nonDeletedUsers : nonDeletedUsers.count,
-              DeletedUsers    : deletedUsers.count
-          };
-
-          return users;
-
-      } catch (error) {
-          Logger.instance().log(error.message);
-          throw new ApiError(500, error.message);
-      }
-  };
-
-private  getDoctors = async (filters) => {
-    try {
-        const { minDate, maxDate } = getMinMaxDates(filters);
-        const search: any = { where: {}, include: [],  paranoid: false };
-
-        const includesObj =
-        {
-            model    : Person,
-            required : true,
-            where    : {},
-            paranoid : false
-        };
-
-        includesObj.where['Phone'] = {
-            [Op.notBetween] : [1000000000, 1000000100],
-        };
-
-        includesObj.where['DeletedAt'] = {
-            [Op.eq] : null
-        };
- 
-        if (filters.Year != null)  {
-            includesObj.where['CreatedAt'] = {
-                [Op.between] : [minDate, maxDate],
-            };
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
         }
+    };
+
+    private  getMeditationUsers = async (totalUsers, filters) => {
+        try {
+            const { minDate, maxDate } = getMinMaxDates(filters);
+            const meditationDetails = [];
+            let meditationUsers = {};
+
+            if (filters.Year != null)  {
+                for (const u of totalUsers.rows) {
+                    const meditationDetail = await Meditation.findOne({ where : {
+                        PatientUserId : u.UserId,
+                        CreatedAt     : {
+                            [Op.between] : [minDate, maxDate],
+                        }
+                    }, paranoid : false });
+                    if (meditationDetail !== null){
+                        meditationDetails.push(meditationDetail);
+                    }
+                }
+                meditationUsers = getMonthlyUsers(meditationDetails,totalUsers);
+            }
+            else {
+                for (const u of totalUsers.rows) {
+                    const meditationDetail = await Meditation.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (meditationDetail !== null){
+                        meditationDetails.push(meditationDetail);
+                    }
+                }
+    
+                const meditationUsersRatio =
+                ((meditationDetails.length) / (totalUsers.count) * 100).toFixed(2);
+    
+                meditationUsers = {
+                    Status : "Meditation",
+                    Count  : meditationDetails.length,
+                    Ratio  : meditationUsersRatio
+                };
+            }
         
-        search.include.push(includesObj);
+            return meditationUsers;
 
-        const nonDeletedDoctors = await Doctor.findAndCountAll(search);
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
 
-        includesObj.where['DeletedAt'] = {
-            [Op.not] : null
-        };
+    private  getMedicationUsers = async (totalUsers, filters) => {
+        try {
+            const { minDate, maxDate } = getMinMaxDates(filters);
+            const medicationDetails = [];
+            let medicationUsers = {};
 
-        search.include.push(includesObj);
+            if (filters.Year != null)  {
+                for (const u of totalUsers.rows) {
+                    const medicationDetail = await Medication.findOne({ where : {
+                        PatientUserId : u.UserId,
+                        CreatedAt     : {
+                            [Op.between] : [minDate, maxDate],
+                        }
+                    }, paranoid : false });
+                    if (medicationDetail !== null){
+                        medicationDetails.push(medicationDetail);
+                    }
+                }
+                medicationUsers = getMonthlyUsers(medicationDetails,totalUsers);
+            }
 
-        const deletedDoctors = await Doctor.findAndCountAll(search);
+            else {
+                for (const u of totalUsers.rows) {
+                    const medicationDetail = await Medication.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (medicationDetail !== null){
+                        medicationDetails.push(medicationDetail);
+                    }
+                }
+    
+                const medicationUsersRatio =
+                ((medicationDetails.length) / (totalUsers.count) * 100).toFixed(2);
+    
+                medicationUsers = {
+                    Status : "Medication",
+                    Count  : medicationDetails.length,
+                    Ratio  : medicationUsersRatio
+                };
+            }
 
-        const totalDoctors = nonDeletedDoctors.count + deletedDoctors.count;
+            return medicationUsers;
 
-        const doctors = {
-            TotalDoctors      : totalDoctors,
-            NonDeletedDoctors : nonDeletedDoctors.count,
-            DeletedDoctors    : deletedDoctors.count
-        };
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
 
-        return doctors;
+    private  getSymptomUsers = async (totalUsers, filters) => {
+        try {
+            const { minDate, maxDate } = getMinMaxDates(filters);
+            const symptomDetails = [];
+            let symptomUsers = {};
 
-    } catch (error) {
-        Logger.instance().log(error.message);
-        throw new ApiError(500, error.message);
-    }
-};
+            if (filters.Year != null)
+            {
+                for (const u of totalUsers.rows) {
+                    const symptomDetail = await Symptom.findOne({ where : {
+                        PatientUserId : u.UserId,
+                        CreatedAt     : {
+                            [Op.between] : [minDate, maxDate],
+                        }
+                    }, paranoid : false });
+                    if (symptomDetail !== null){
+                        symptomDetails.push(symptomDetail);
+                    }
+                }
 
-private  getEnrollments = async (filters) => {
-    try {
+                symptomUsers = getMonthlyUsers(symptomDetails,totalUsers);
 
-        const { minDate, maxDate } = getMinMaxDates(filters);
-        const maxCreatedDate = getMaxDate(filters);
-        const search: any = { where: {}, include: [], paranoid: false };
+            }
 
-        const includesObj =
-        {
-            model    : Person,
-            required : true,
-            where    : {
+            else {
+                for (const u of totalUsers.rows) {
+                    const symptomDetail = await Symptom.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (symptomDetail !== null){
+                        symptomDetails.push(symptomDetail);
+                    }
+                }
+    
+                const symptomUsersRatio =
+                ((symptomDetails.length) / (totalUsers.count) * 100).toFixed(2);
+    
+                symptomUsers = {
+                    Status : "Symptoms",
+                    Count  : symptomDetails.length,
+                    Ratio  : symptomUsersRatio
+                };
+            }
+            return symptomUsers;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    private  getLabRecordUsers = async (totalUsers, filters) => {
+        try {
+            const { minDate, maxDate } = getMinMaxDates(filters);
+            const labRecordDetails = [];
+            let labRecordUsers = {};
+
+            if (filters.Year != null)
+            {
+                for (const u of totalUsers.rows) {
+                    const labRecordDetail = await Symptom.findOne({ where : {
+                        PatientUserId : u.UserId,
+                        CreatedAt     : {
+                            [Op.between] : [minDate, maxDate],
+                        }
+                    }, paranoid : false });
+                    if (labRecordDetail !== null){
+                        labRecordDetails.push(labRecordDetail);
+                    }
+                }
+                labRecordUsers = getMonthlyUsers(labRecordDetails,totalUsers);
+            }
+
+            else {
+                for (const u of totalUsers.rows) {
+                    const labRecordDetail = await Symptom.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (labRecordDetail !== null){
+                        labRecordDetails.push(labRecordDetail);
+                    }
+                }
+    
+                const labRecordRatio =
+                ((labRecordDetails.length) / (totalUsers.count) * 100).toFixed(2);
+    
+                labRecordUsers = {
+                    Status : "Lab Record",
+                    Count  : labRecordDetails.length,
+                    Ratio  : labRecordRatio
+                };
+            }
+
+            return labRecordUsers;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    private  getNutritionUsers = async (totalUsers, filters) => {
+        try {
+            const { minDate, maxDate } = getMinMaxDates(filters);
+            const nutritionDetails = [];
+            let nutritionUsers = {};
+
+            if (filters.Year != null) {
+                for (const u of totalUsers.rows) {
+                    const foodConsumptionDetail = await FoodConsumption.findOne({ where : {
+                        PatientUserId : u.UserId,
+                        CreatedAt     : {
+                            [Op.between] : [minDate, maxDate],
+                        }
+                    }, paranoid : false });
+                    if (foodConsumptionDetail !== null){
+                        nutritionDetails.push(foodConsumptionDetail);
+                    }
+                }
+    
+                for (const u of totalUsers.rows) {
+                    const waterConsumptionDetail = await WaterConsumption.findOne({ where : {
+                        PatientUserId : u.UserId,
+                        CreatedAt     : {
+                            [Op.between] : [minDate, maxDate],
+                        }
+                    }, paranoid : false });
+                    if (waterConsumptionDetail !== null){
+                        nutritionDetails.push(waterConsumptionDetail);
+                    }
+                }
+
+                const uniqueNutritionUsers = getUniqueUsers(nutritionDetails);
+            
+                nutritionUsers = getMonthlyUsers(uniqueNutritionUsers,totalUsers);
+
+            }
+            
+            else {
+                for (const u of totalUsers.rows) {
+                    const foodConsumptionDetail = await FoodConsumption.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (foodConsumptionDetail !== null){
+                        nutritionDetails.push(foodConsumptionDetail);
+                    }
+                }
+    
+                for (const u of totalUsers.rows) {
+                    const waterConsumptionDetail = await WaterConsumption.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (waterConsumptionDetail !== null){
+                        nutritionDetails.push(waterConsumptionDetail);
+                    }
+                }
+            
+                const uniqueNutrition =  Array.from(new Set(nutritionDetails.map((x) => x.PatientUserId)));
                 
-            },
-            paranoid : false
-        };
- 
-        includesObj.where['Phone'] = {
-            [Op.notBetween] : [1000000000, 1000000100],
-        };
+                const nutritionRatio =
+                ((uniqueNutrition.length) / (totalUsers.count) * 100).toFixed(2);
+    
+                nutritionUsers = {
+                    Status : "Nutrition",
+                    Count  : uniqueNutrition.length,
+                    Ratio  : nutritionRatio
+                };
+            }
+
+            return nutritionUsers;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    private  getVitalUsers = async (totalUsers, filters) => {
+        try {
+            const vitalDetails = [];
+            let vitalsUsers = {};
+
+            if (filters.Year != null) {
+                for (const u of totalUsers.rows) {
+                    const cholestrolDetail = await BloodCholesterol.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (cholestrolDetail !== null){
+                        vitalDetails.push(cholestrolDetail);
+                    }
+                }
+
+                for (const u of totalUsers.rows) {
+                    const glucoseDetail = await BloodGlucose.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (glucoseDetail !== null){
+                        vitalDetails.push(glucoseDetail);
+                    }
+                }
+
+                for (const u of totalUsers.rows) {
+                    const oxygenSaturationDetail = await BloodOxygenSaturation.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (oxygenSaturationDetail !== null){
+                        vitalDetails.push(oxygenSaturationDetail);
+                    }
+                }
+
+                for (const u of totalUsers.rows) {
+                    const bloodPressureDetail = await BloodPressure.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (bloodPressureDetail !== null){
+                        vitalDetails.push(bloodPressureDetail);
+                    }
+                }
+
+                for (const u of totalUsers.rows) {
+                    const bodyHeightDetail = await BodyHeight.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (bodyHeightDetail !== null){
+                        vitalDetails.push(bodyHeightDetail);
+                    }
+                }
+
+                for (const u of totalUsers.rows) {
+                    const bodyWeightDetail = await BodyWeight.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (bodyWeightDetail !== null){
+                        vitalDetails.push(bodyWeightDetail);
+                    }
+                }
+
+                for (const u of totalUsers.rows) {
+                    const bodyTempratureDetail = await BodyTemperature.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (bodyTempratureDetail !== null){
+                        vitalDetails.push(bodyTempratureDetail);
+                    }
+                }
         
-        includesObj.where['DeletedAt'] = {
-            [Op.eq] : null
-        };
+                for (const u of totalUsers.rows) {
+                    const pulseDetail = await Pulse.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (pulseDetail !== null){
+                        vitalDetails.push(pulseDetail);
+                    }
+                }
 
-        if (filters.Year != null)  {
-            includesObj.where['CreatedAt'] = {
-                [Op.between] : [minDate, maxDate],
-            };
-        }
+                const uniquevitalUsers = getUniqueUsers(vitalDetails);
+            
+                vitalsUsers = getMonthlyUsers(uniquevitalUsers,totalUsers);
 
-        if (filters.Year != null && filters.Month != null)  {
-            includesObj.where['CreatedAt'] = {
-                [Op.lt] : maxCreatedDate,
-            };
-        }
-
-        search.include.push(includesObj);
-
-        const nonDeletedUsers = await Patient.findAndCountAll(search);
-
-        includesObj.where['DeletedAt'] = {
-            [Op.not] : null
-        };
-
-        search.include.push(includesObj);
-
-        const deletedUsers = await Patient.findAndCountAll(search);
-
-        const nonDeletedEnrollmentDetails = [];
-        for (const u of nonDeletedUsers.rows) {
-            const enrollmentDetail = await CareplanEnrollment.findOne({ where : {
-                PatientUserId : u.UserId,
-            }, paranoid : false });
-            if (enrollmentDetail !== null){
-                nonDeletedEnrollmentDetails.push(enrollmentDetail);
             }
-        }
-
-        const deletedEnrollmentDetails = [];
-        for (const u of deletedUsers.rows) {
-            const enrollmentDetail = await CareplanEnrollment.findOne({ where : {
-                PatientUserId : u.UserId,
-            }, paranoid : false });
-            if (enrollmentDetail !== null){
-                deletedEnrollmentDetails.push(enrollmentDetail);
-            }
-       
-        }
-
-        const totalEnrollments = nonDeletedEnrollmentDetails.length + deletedEnrollmentDetails.length;
-
-        const nonDeletedCholestrolEnrollment = nonDeletedEnrollmentDetails.filter(x => x.PlanCode === 'Cholesterol');
-
-        const deletedCholestrolEnrollment = deletedEnrollmentDetails.filter(x => x.PlanCode === 'Cholesterol');
-
-        const totalCholestrolEnrollment = nonDeletedCholestrolEnrollment.length + deletedCholestrolEnrollment.length;
-
-        const nonDeletedStrokeEnrollment = nonDeletedEnrollmentDetails.filter(x => x.PlanCode === 'Stroke');
-
-        const deletedStrokeEnrollment = deletedEnrollmentDetails.filter(x => x.PlanCode === 'Stroke');
-
-        const totalStrokeEnrollment = nonDeletedStrokeEnrollment.length + deletedStrokeEnrollment.length;
-
-        const nonDeletedHFMotivatorEnrollment = nonDeletedEnrollmentDetails.filter(x => x.PlanCode === 'HFMotivator');
-
-        const deletedHFMotivatorEnrollment = deletedEnrollmentDetails.filter(x => x.PlanCode === 'HFMotivator');
-
-        const totalHFMotivatorEnrollment = nonDeletedHFMotivatorEnrollment.length + deletedHFMotivatorEnrollment.length;
-
-        const enrollments = {
-            TotalEnrollments                : totalEnrollments,
-            NonDeletedEnrollment            : nonDeletedEnrollmentDetails.length,
-            DeletedEnrollment               : deletedEnrollmentDetails.length,
-            TotalCholestrolEnrollment       : totalCholestrolEnrollment,
-            NonDeletedCholestrolEnrollment  : nonDeletedCholestrolEnrollment.length,
-            DeletedCholestrolEnrollment     : deletedCholestrolEnrollment.length,
-            TotalStrokeEnrollment           : totalStrokeEnrollment,
-            NonDeletedStrokeEnrollment      : nonDeletedStrokeEnrollment.length,
-            DeletedStrokeEnrollment         : deletedStrokeEnrollment.length,
-            TotalHFMotivatorEnrollment      : totalHFMotivatorEnrollment,
-            NonDeletedHFMotivatorEnrollment : nonDeletedHFMotivatorEnrollment.length,
-            DeletedHFMotivatorEnrollment    : deletedHFMotivatorEnrollment.length
-
-        };
-
-        return enrollments;
-
-    } catch (error) {
-        Logger.instance().log(error.message);
-        throw new ApiError(500, error.message);
-    }
-};
-
-private  getEmergencyContacts = async (filters) => {
-    try {
-        const { minDate, maxDate } = getMinMaxDates(filters);
-        const search: any = { where: {}, paranoid: false };
-
-        search.where['Phone'] = {
-            [Op.notBetween] : [1000000000, 1000000100],
-        };
-
-        if (filters.Year != null)  {
-            search.where['CreatedAt'] = {
-                [Op.between] : [minDate, maxDate],
-            };
-        }
-  
-        const persons = await Person.findAndCountAll(search);
-
-        const emergencyContactDetails = [];
-        for (const p of persons.rows) {
-            const emergencyContactDetail = await EmergencyContact.findOne({ where : {
-                ContactPersonId : p.id,
-            }, paranoid : false });
-            if (emergencyContactDetail !== null){
-                emergencyContactDetails.push(emergencyContactDetail);
-            }
-        }
-
-        const usersDetails = [];
-        for (const p of emergencyContactDetails) {
-            const user = await User.findOne({ where : {
-                PersonId : p.ContactPersonId,
-            }, paranoid : false });
-            if (user !== null){
-                usersDetails.push(user);
-            }
-        }
-
-        const onlyEmergencyContact =  emergencyContactDetails.length - usersDetails.length;
-
-        const emergencyContacts = {
-            TotalEmergencyContacts          : emergencyContactDetails.length,
-            EmergencyContactsWhoAreAppUsers : usersDetails.length,
-            OnlyEmergencyContacts           : onlyEmergencyContact
         
-        };
+            else {
+                for (const u of totalUsers.rows) {
+                    const cholestrolDetail = await BloodCholesterol.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (cholestrolDetail !== null){
+                        vitalDetails.push(cholestrolDetail);
+                    }
+                }
+    
+                for (const u of totalUsers.rows) {
+                    const glucoseDetail = await BloodGlucose.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (glucoseDetail !== null){
+                        vitalDetails.push(glucoseDetail);
+                    }
+                }
+    
+                for (const u of totalUsers.rows) {
+                    const oxygenSaturationDetail = await BloodOxygenSaturation.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (oxygenSaturationDetail !== null){
+                        vitalDetails.push(oxygenSaturationDetail);
+                    }
+                }
+    
+                for (const u of totalUsers.rows) {
+                    const bloodPressureDetail = await BloodPressure.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (bloodPressureDetail !== null){
+                        vitalDetails.push(bloodPressureDetail);
+                    }
+                }
+    
+                for (const u of totalUsers.rows) {
+                    const bodyHeightDetail = await BodyHeight.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (bodyHeightDetail !== null){
+                        vitalDetails.push(bodyHeightDetail);
+                    }
+                }
+    
+                for (const u of totalUsers.rows) {
+                    const bodyWeightDetail = await BodyWeight.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (bodyWeightDetail !== null){
+                        vitalDetails.push(bodyWeightDetail);
+                    }
+                }
+    
+                for (const u of totalUsers.rows) {
+                    const bodyTempratureDetail = await BodyTemperature.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (bodyTempratureDetail !== null){
+                        vitalDetails.push(bodyTempratureDetail);
+                    }
+                }
+        
+                for (const u of totalUsers.rows) {
+                    const pulseDetail = await Pulse.findOne({ where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false });
+                    if (pulseDetail !== null){
+                        vitalDetails.push(pulseDetail);
+                    }
+                }
+                const uniqueVitalsDetails = Array.from(new Set(vitalDetails.map((x) => x.PatientUserId)));
+    
+                const vitalsRatio =
+                ((uniqueVitalsDetails.length) / (totalUsers.count) * 100).toFixed(2);
+    
+                vitalsUsers = {
+                    Status : "Vitals",
+                    Count  : uniqueVitalsDetails.length,
+                    Ratio  : vitalsRatio
+                };
+            }
 
-        return emergencyContacts;
+            return vitalsUsers;
 
-    } catch (error) {
-        Logger.instance().log(error.message);
-        throw new ApiError(500, error.message);
-    }
-};
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    private  getPersons = async (filters) => {
+        try {
+            const { minDate, maxDate } = getMinMaxDates(filters);
+            const search: any = { where: {}, paranoid: false };
+
+            search.where['Phone'] = {
+                [Op.notBetween] : [1000000000, 1000000100],
+            };
+
+            search.where['DeletedAt'] = {
+                [Op.eq] : null
+            };
+        
+            if (filters.Year != null)  {
+                search.where['CreatedAt'] = {
+                    [Op.between] : [minDate, maxDate],
+                };
+            }
+    
+            const nonDeletedPersons = await Person.findAndCountAll(search);
+
+            search.where['DeletedAt'] = {
+                [Op.not] : null
+            };
+
+            const deletedPersons = await Person.findAndCountAll(search);
+
+            const totalPresons = nonDeletedPersons.count + deletedPersons.count;
+
+            const presons = {
+                TotalPresons      : totalPresons,
+                NonDeletedPersons : nonDeletedPersons.count,
+                DeletedPersons    : deletedPersons.count
+            };
+
+            return presons;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    private  getUsers = async (filters) => {
+        try {
+            const { minDate, maxDate } = getMinMaxDates(filters);
+            const search: any = { where: {}, include: [],  paranoid: false };
+
+            const includesObj =
+            {
+                model    : Person,
+                required : true,
+                where    : {},
+                paranoid : false
+            };
+
+            includesObj.where['Phone'] = {
+                [Op.notBetween] : [1000000000, 1000000100],
+            };
+
+            includesObj.where['DeletedAt'] = {
+                [Op.eq] : null
+            };
+    
+            if (filters.Year != null)  {
+                includesObj.where['CreatedAt'] = {
+                    [Op.between] : [minDate, maxDate],
+                };
+            }
+            
+            search.include.push(includesObj);
+    
+            const nonDeletedUsers = await User.findAndCountAll(search);
+
+            includesObj.where['DeletedAt'] = {
+                [Op.not] : null
+            };
+
+            search.include.push(includesObj);
+
+            const deletedUsers = await User.findAndCountAll(search);
+
+            const totalUsers = nonDeletedUsers.count + deletedUsers.count;
+
+            const users = {
+                TotalUsers      : totalUsers,
+                nonDeletedUsers : nonDeletedUsers.count,
+                DeletedUsers    : deletedUsers.count
+            };
+
+            return users;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    private  getDoctors = async (filters) => {
+        try {
+            const { minDate, maxDate } = getMinMaxDates(filters);
+            const search: any = { where: {}, include: [],  paranoid: false };
+
+            const includesObj =
+            {
+                model    : Person,
+                required : true,
+                where    : {},
+                paranoid : false
+            };
+
+            includesObj.where['Phone'] = {
+                [Op.notBetween] : [1000000000, 1000000100],
+            };
+
+            includesObj.where['DeletedAt'] = {
+                [Op.eq] : null
+            };
+    
+            if (filters.Year != null)  {
+                includesObj.where['CreatedAt'] = {
+                    [Op.between] : [minDate, maxDate],
+                };
+            }
+            
+            search.include.push(includesObj);
+
+            const nonDeletedDoctors = await Doctor.findAndCountAll(search);
+
+            includesObj.where['DeletedAt'] = {
+                [Op.not] : null
+            };
+
+            search.include.push(includesObj);
+
+            const deletedDoctors = await Doctor.findAndCountAll(search);
+
+            const totalDoctors = nonDeletedDoctors.count + deletedDoctors.count;
+
+            const doctors = {
+                TotalDoctors      : totalDoctors,
+                NonDeletedDoctors : nonDeletedDoctors.count,
+                DeletedDoctors    : deletedDoctors.count
+            };
+
+            return doctors;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    private  getAdmins = async (filters) => {
+        try {
+            const { minDate, maxDate } = getMinMaxDates(filters);
+            const search: any = { where: {}, include: [],  paranoid: false };
+
+            const includesObj =
+            {
+                model    : Person,
+                required : true,
+                where    : {},
+                paranoid : false
+            };
+
+            search.where['RoleId'] = {
+                [Op.eq] : 1,
+            };
+
+            includesObj.where['Phone'] = {
+                [Op.notBetween] : [1000000000, 1000000100],
+            };
+
+            includesObj.where['DeletedAt'] = {
+                [Op.eq] : null
+            };
+    
+            if (filters.Year != null)  {
+                includesObj.where['CreatedAt'] = {
+                    [Op.between] : [minDate, maxDate],
+                };
+            }
+            
+            search.include.push(includesObj);
+
+            const adminUsers = await User.findAndCountAll(search);
+
+            search.include.push(includesObj);
+
+            const admins = {
+                TotalAdmins : adminUsers.count
+            };
+
+            return admins;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    private  getEnrollments = async (filters) => {
+        try {
+
+            const { minDate, maxDate } = getMinMaxDates(filters);
+            const maxCreatedDate = getMaxDate(filters);
+            const search: any = { where: {}, include: [], paranoid: false };
+
+            const includesObj =
+            {
+                model    : Person,
+                required : true,
+                where    : {
+                    
+                },
+                paranoid : false
+            };
+    
+            includesObj.where['Phone'] = {
+                [Op.notBetween] : [1000000000, 1000000100],
+            };
+            
+            includesObj.where['DeletedAt'] = {
+                [Op.eq] : null
+            };
+
+            if (filters.Year != null)  {
+                includesObj.where['CreatedAt'] = {
+                    [Op.between] : [minDate, maxDate],
+                };
+            }
+
+            if (filters.Year != null && filters.Month != null)  {
+                includesObj.where['CreatedAt'] = {
+                    [Op.lt] : maxCreatedDate,
+                };
+            }
+
+            search.include.push(includesObj);
+
+            const nonDeletedUsers = await Patient.findAndCountAll(search);
+
+            includesObj.where['DeletedAt'] = {
+                [Op.not] : null
+            };
+
+            search.include.push(includesObj);
+
+            const deletedUsers = await Patient.findAndCountAll(search);
+
+            const nonDeletedEnrollmentDetails = [];
+            for (const u of nonDeletedUsers.rows) {
+                const enrollmentDetail = await CareplanEnrollment.findOne({ where : {
+                    PatientUserId : u.UserId,
+                }, paranoid : false });
+                if (enrollmentDetail !== null){
+                    nonDeletedEnrollmentDetails.push(enrollmentDetail);
+                }
+            }
+
+            const deletedEnrollmentDetails = [];
+            for (const u of deletedUsers.rows) {
+                const enrollmentDetail = await CareplanEnrollment.findOne({ where : {
+                    PatientUserId : u.UserId,
+                }, paranoid : false });
+                if (enrollmentDetail !== null){
+                    deletedEnrollmentDetails.push(enrollmentDetail);
+                }
+        
+            }
+
+            const totalEnrollments = nonDeletedEnrollmentDetails.length + deletedEnrollmentDetails.length;
+
+            const nonDeletedCholestrolEnrollment = nonDeletedEnrollmentDetails.filter(x => x.PlanCode === 'Cholesterol');
+
+            const deletedCholestrolEnrollment = deletedEnrollmentDetails.filter(x => x.PlanCode === 'Cholesterol');
+
+            const totalCholestrolEnrollment = nonDeletedCholestrolEnrollment.length + deletedCholestrolEnrollment.length;
+
+            const nonDeletedStrokeEnrollment = nonDeletedEnrollmentDetails.filter(x => x.PlanCode === 'Stroke');
+
+            const deletedStrokeEnrollment = deletedEnrollmentDetails.filter(x => x.PlanCode === 'Stroke');
+
+            const totalStrokeEnrollment = nonDeletedStrokeEnrollment.length + deletedStrokeEnrollment.length;
+
+            const nonDeletedHFMotivatorEnrollment = nonDeletedEnrollmentDetails.filter(x => x.PlanCode === 'HFMotivator');
+
+            const deletedHFMotivatorEnrollment = deletedEnrollmentDetails.filter(x => x.PlanCode === 'HFMotivator');
+
+            const totalHFMotivatorEnrollment = nonDeletedHFMotivatorEnrollment.length + deletedHFMotivatorEnrollment.length;
+
+            const enrollments = {
+                TotalEnrollments                : totalEnrollments,
+                NonDeletedEnrollment            : nonDeletedEnrollmentDetails.length,
+                DeletedEnrollment               : deletedEnrollmentDetails.length,
+                TotalCholestrolEnrollment       : totalCholestrolEnrollment,
+                NonDeletedCholestrolEnrollment  : nonDeletedCholestrolEnrollment.length,
+                DeletedCholestrolEnrollment     : deletedCholestrolEnrollment.length,
+                TotalStrokeEnrollment           : totalStrokeEnrollment,
+                NonDeletedStrokeEnrollment      : nonDeletedStrokeEnrollment.length,
+                DeletedStrokeEnrollment         : deletedStrokeEnrollment.length,
+                TotalHFMotivatorEnrollment      : totalHFMotivatorEnrollment,
+                NonDeletedHFMotivatorEnrollment : nonDeletedHFMotivatorEnrollment.length,
+                DeletedHFMotivatorEnrollment    : deletedHFMotivatorEnrollment.length
+
+            };
+
+            return enrollments;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    private  getEmergencyContacts = async (filters) => {
+        try {
+            const { minDate, maxDate } = getMinMaxDates(filters);
+            const search: any = { where: {}, paranoid: false };
+
+            search.where['Phone'] = {
+                [Op.notBetween] : [1000000000, 1000000100],
+            };
+
+            if (filters.Year != null)  {
+                search.where['CreatedAt'] = {
+                    [Op.between] : [minDate, maxDate],
+                };
+            }
+    
+            const persons = await Person.findAndCountAll(search);
+
+            const emergencyContactDetails = [];
+            for (const p of persons.rows) {
+                const emergencyContactDetail = await EmergencyContact.findOne({ where : {
+                    ContactPersonId : p.id,
+                }, paranoid : false });
+                if (emergencyContactDetail !== null){
+                    emergencyContactDetails.push(emergencyContactDetail);
+                }
+            }
+
+            const usersDetails = [];
+            for (const p of emergencyContactDetails) {
+                const user = await User.findOne({ where : {
+                    PersonId : p.ContactPersonId,
+                }, paranoid : false });
+                if (user !== null){
+                    usersDetails.push(user);
+                }
+            }
+
+            const onlyEmergencyContact =  emergencyContactDetails.length - usersDetails.length;
+
+            const emergencyContacts = {
+                TotalEmergencyContacts          : emergencyContactDetails.length,
+                EmergencyContactsWhoAreAppUsers : usersDetails.length,
+                OnlyEmergencyContacts           : onlyEmergencyContact
+            
+            };
+
+            return emergencyContacts;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    private  getCholestrolUsers = async (totalUsers, filters) => {
+        try {
+            let cholestrolUsers = {};
+            const cholestrolDetails = [];
+            for (const u of totalUsers.rows) {
+                const cholestrolDetail = await BloodCholesterol.findOne({
+                    where : {
+                        PatientUserId : u.UserId,
+                    }, paranoid : false
+                });
+                if (cholestrolDetail !== null) {
+                    cholestrolDetails.push(cholestrolDetail);
+                }
+            }
+
+            const cholestrolUsersRatio = ((cholestrolDetails.length) / (totalUsers.count) * 100).toFixed(2);
+            cholestrolUsers = {
+                Biometrics : 'Cholestrol',
+                Count      : cholestrolDetails.length,
+                Ratio      : cholestrolUsersRatio
+            };
+
+            if (filters.Year !== null) {
+                cholestrolUsers = getMonthlyUsers(cholestrolDetails, totalUsers);
+            }
+
+            return cholestrolUsers;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    private  getGlucoseUsers = async (totalUsers, filters) => {
+        try {
+            let glucoseUsers = {};
+            const glucoseDetails = [];
+            for (const u of totalUsers.rows) {
+                const glucoseDetail = await BloodGlucose.findOne({ where : {
+                    PatientUserId : u.UserId,
+                }, paranoid : false });
+                if (glucoseDetail !== null){
+                    glucoseDetails.push(glucoseDetail);
+                }
+            }
+
+            const glucoseUsersRatio = ((glucoseDetails.length) / (totalUsers.count) * 100).toFixed(2);
+
+            glucoseUsers = {
+                Biometrics : 'Glucose',
+                Count      : glucoseDetails.length,
+                Ratio      : glucoseUsersRatio
+            };
+
+            if (filters.Year !== null) {
+                glucoseUsers = getMonthlyUsers(glucoseDetails,totalUsers);
+            }
+
+            return glucoseUsers;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    private  getOxygenSaturationUsers = async (totalUsers, filters) => {
+        try {
+            let oxygenSaturationUsers = {};
+            const oxygenSaturationDetails = [];
+            for (const u of totalUsers.rows) {
+                const oxygenSaturationDetail = await BloodOxygenSaturation.findOne({ where : {
+                    PatientUserId : u.UserId,
+                }, paranoid : false });
+                if (oxygenSaturationDetail !== null){
+                    oxygenSaturationDetails.push(oxygenSaturationDetail);
+                }
+            }
+
+            const oxygenSaturationUsersRatio = ((oxygenSaturationDetails.length) / (totalUsers.count) * 100).toFixed(2);
+
+            oxygenSaturationUsers = {
+                Biometrics : 'Oxygen Saturation',
+                Count      : oxygenSaturationDetails.length,
+                Ratio      : oxygenSaturationUsersRatio
+            };
+
+            if (filters.Year !== null) {
+                oxygenSaturationUsers = getMonthlyUsers(oxygenSaturationDetails,totalUsers);
+            }
+
+            return oxygenSaturationUsers;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    private  getBloodPressureUsers = async (totalUsers, filters) => {
+        try {
+            let bloodPressureUsers = {};
+
+            const bloodPressureDetails = [];
+            for (const u of totalUsers.rows) {
+                const bloodPressureDetail = await BloodPressure.findOne({ where : {
+                    PatientUserId : u.UserId,
+                }, paranoid : false });
+                if (bloodPressureDetail !== null){
+                    bloodPressureDetails.push(bloodPressureDetail);
+                }
+            }
+
+            const bloodPressureUsersRatio = ((bloodPressureDetails.length) / (totalUsers.count) * 100).toFixed(2);
+            bloodPressureUsers = {
+                Biometrics : 'Blood Pressure',
+                Count      : bloodPressureDetails.length,
+                Ratio      : bloodPressureUsersRatio
+            };
+
+            if (filters.Year !== null) {
+                bloodPressureUsers = getMonthlyUsers(bloodPressureDetails,totalUsers);
+            }
+
+            return bloodPressureUsers;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    private  getBodyHeightUsers = async (totalUsers, filters) => {
+        try {
+            let bodyHeightUsers = {};
+            const bodyHeightDetails = [];
+            for (const u of totalUsers.rows) {
+                const bodyHeightDetail = await BodyHeight.findOne({ where : {
+                    PatientUserId : u.UserId,
+                }, paranoid : false });
+                if (bodyHeightDetail !== null){
+                    bodyHeightDetails.push(bodyHeightDetail);
+                }
+            }
+
+            const bodyHeightUsersRatio = ((bodyHeightDetails.length) / (totalUsers.count) * 100).toFixed(2);
+            
+            bodyHeightUsers = {
+                Biometrics : 'Body Height',
+                Count      : bodyHeightDetails.length,
+                Ratio      : bodyHeightUsersRatio
+            };
+
+            if (filters.Year !== null) {
+                bodyHeightUsers = getMonthlyUsers(bodyHeightDetails,totalUsers);
+            }
+
+            return bodyHeightUsers;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    private  getBodyWeightUsers = async (totalUsers, filters) => {
+        try {
+            let bodyWeightUsers = {};
+            const bodyWeightDetails = [];
+            for (const u of totalUsers.rows) {
+                const bodyWeightDetail = await BodyWeight.findOne({ where : {
+                    PatientUserId : u.UserId,
+                }, paranoid : false });
+                if (bodyWeightDetail !== null){
+                    bodyWeightDetails.push(bodyWeightDetail);
+                }
+            }
+
+            const bodyWeightUsersRatio = ((bodyWeightDetails.length) / (totalUsers.count) * 100).toFixed(2);
+
+            bodyWeightUsers = {
+                Biometrics : 'Body Weight',
+                Count      : bodyWeightDetails.length,
+                Ratio      : bodyWeightUsersRatio
+            };
+
+            if (filters.Year !== null) {
+                bodyWeightUsers = getMonthlyUsers(bodyWeightDetails,totalUsers);
+            }
+
+            return bodyWeightUsers;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    private  getBodyTempratureUsers = async (totalUsers, filters) => {
+        try {
+            let bodyTempratureUsers = {};
+            const bodyTempratureDetails = [];
+            for (const u of totalUsers.rows) {
+                const bodyTempratureDetail = await BodyTemperature.findOne({ where : {
+                    PatientUserId : u.UserId,
+                }, paranoid : false });
+                if (bodyTempratureDetail !== null){
+                    bodyTempratureDetails.push(bodyTempratureDetail);
+                }
+            }
+
+            const bodyTempratureUsersRatio = ((bodyTempratureDetails.length) / (totalUsers.count) * 100).toFixed(2);
+
+            bodyTempratureUsers = {
+                Biometrics : 'Body Temprature',
+                Count      : bodyTempratureDetails.length,
+                Ratio      : bodyTempratureUsersRatio
+            };
+
+            if (filters.Year !== null) {
+                bodyTempratureUsers = getMonthlyUsers(bodyTempratureDetails,totalUsers);
+            }
+
+            return bodyTempratureUsers;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    private  getPulseUsers = async (totalUsers, filters) => {
+        try {
+            let pulseUsers = {};
+            const pulseDetails = [];
+            for (const u of totalUsers.rows) {
+                const pulseDetail = await Pulse.findOne({ where : {
+                    PatientUserId : u.UserId,
+                }, paranoid : false });
+                if (pulseDetail !== null){
+                    pulseDetails.push(pulseDetail);
+                }
+            }
+
+            const pulseUsersRatio = ((pulseDetails.length) / (totalUsers.count) * 100).toFixed(2);
+            pulseUsers = {
+                Biometrics : 'Pulse',
+                Count      : pulseDetails.length,
+                Ratio      : pulseUsersRatio
+            };
+
+            if (filters.Year !== null) {
+                pulseUsers = getMonthlyUsers(pulseDetails,totalUsers);
+            }
+
+            return pulseUsers;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
 
 }
 

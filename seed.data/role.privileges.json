@@ -249,7 +249,8 @@
             "Statistics.GetAddictionDistribution",
             "Statistics.GetHealthPillarDistribution",
             "Statistics.GetRoleWiseDistribution",
-            "Statistics.GetUsersStats"
+            "Statistics.GetUsersStats",
+            "Statistics.GetBiometricsDistribution"
         ]
     },
     {

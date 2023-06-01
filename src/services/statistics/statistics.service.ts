@@ -88,4 +88,8 @@ export class StatisticsService {
         return await this._statisticsRepo.getUsersStats(filters);
     };
     
+    getBiometricsDistribution = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getBiometricsDistribution(filters);
+    };
+    
 }

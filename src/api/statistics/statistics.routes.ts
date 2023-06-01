@@ -29,6 +29,7 @@ export const register = (app: express.Application): void => {
     router.get('/addiction-distribution', authenticator.authenticateClient, authenticator.authenticateUser, controller.getAddictionDistribution);
     router.get('/health-pillar-distribution', authenticator.authenticateClient, authenticator.authenticateUser, controller.getHealthPillarDistribution);
     router.get('/users-stats', authenticator.authenticateClient, authenticator.authenticateUser, controller.getUsersStats);
+    router.get('/biometrics-distribution', authenticator.authenticateClient, authenticator.authenticateUser, controller.getBiometricsDistribution);
 
     app.use('/api/v1/statistics', router);
 };

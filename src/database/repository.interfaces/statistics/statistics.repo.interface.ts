@@ -41,4 +41,6 @@ export interface IStatisticsRepo {
 
     getUsersStats(filters): Promise<any>;
 
+    getBiometricsDistribution(filters): Promise<any>;
+
 }
