@@ -2,7 +2,7 @@
 export interface AppDownloadDomainModel {
     id?               : string;
     AppName?          : string;
-    TotalDownloads? : number;
+    TotalDownloads?   : number;
     IOSDownloads?     : number;
     AndroidDownloads? : number;
 }

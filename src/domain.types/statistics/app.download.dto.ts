@@ -1,7 +1,7 @@
 export interface AppDownloadDto {
     id?               : string;
     AppName?          : string;
-    TotalDownloads? : number;
+    TotalDownloads?   : number;
     IOSDownloads?     : number;
     AndroidDownloads? : number;
 }
