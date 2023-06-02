@@ -14,6 +14,7 @@ export const register = (app: express.Application): void => {
     router.get('/non-deleted-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getNonDeletedUsers);
     router.get('/active-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getActiveUsers);
     router.get('/deleted-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getDeletedUsers);
+    router.get('/role-wise-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getRoleWiseDistribution);
     router.get('/gender-wise-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getGenderWiseUsers);
     router.get('/age-wise-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getAgeWiseUsers);
     router.get('/marital-status-wise-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getUsersByMaritalStatus);
@@ -26,6 +27,9 @@ export const register = (app: express.Application): void => {
     router.get('/obesity-distribution', authenticator.authenticateClient, authenticator.authenticateUser, controller.getObesityDistribution);
     router.get('/overall-users', authenticator.authenticateClient, authenticator.authenticateUser, controller.getOverallUsers);
     router.get('/addiction-distribution', authenticator.authenticateClient, authenticator.authenticateUser, controller.getAddictionDistribution);
+    router.get('/health-pillar-distribution', authenticator.authenticateClient, authenticator.authenticateUser, controller.getHealthPillarDistribution);
+    router.get('/users-stats', authenticator.authenticateClient, authenticator.authenticateUser, controller.getUsersStats);
+    router.get('/biometrics-distribution', authenticator.authenticateClient, authenticator.authenticateUser, controller.getBiometricsDistribution);
 
     app.use('/api/v1/statistics', router);
 };

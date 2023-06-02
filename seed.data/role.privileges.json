@@ -246,7 +246,11 @@
             "DonationCommunication.Search",
             "DonationCommunication.Update",
             "DonationCommunication.Delete",
-            "Statistics.GetAddictionDistribution"
+            "Statistics.GetAddictionDistribution",
+            "Statistics.GetHealthPillarDistribution",
+            "Statistics.GetRoleWiseDistribution",
+            "Statistics.GetUsersStats",
+            "Statistics.GetBiometricsDistribution"
         ]
     },
     {

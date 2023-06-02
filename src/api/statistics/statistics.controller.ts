@@ -66,6 +66,20 @@ export class StatisticsController extends BaseController {
         }
     };
 
+    getRoleWiseDistribution = async (request: express.Request, response: express.Response): Promise<void> => {
+        try {
+            await this.setContext('Statistics.GetRoleWiseDistribution', request, response);
+            const filters = await this._validator.searchFilter(request);
+            const roleDistribution = await this._service.getRoleWiseDistribution(filters);
+            const message = 'Role wise distribution retrieved successfully!';
+            ResponseHandler.success(request, response,message, 200, {
+                RoleDistribution : roleDistribution });
+
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
     getDeletedUsers = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
             await this.setContext('Statistics.GetDeletdUsers', request, response);
@@ -246,6 +260,47 @@ export class StatisticsController extends BaseController {
             const message = 'Addiction distribution of users retrieved successfully!';
             ResponseHandler.success(request, response,message, 200, {
                 AddictionDistribution : addictionDistribution  });
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    getHealthPillarDistribution = async (request: express.Request, response: express.Response): Promise<void> => {
+        try {
+            await this.setContext('Statistics.GetHealthPillarDistribution', request, response);
+            const filters = await this._validator.searchFilter(request);
+            const healthPillarDistribution  = await this._service.getHealthPillarDistribution(filters);
+            const message = 'Health pillar distribution of users retrieved successfully!';
+            ResponseHandler.success(request, response,message, 200, {
+                HealthPillarDistribution : healthPillarDistribution  });
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    getUsersStats = async (request: express.Request, response: express.Response): Promise<void> => {
+        try {
+            await this.setContext('Statistics.GetUsersStats', request, response);
+            const filters = await this._validator.searchFilter(request);
+            const usersStats = await this._service.getUsersStats(filters);
+            const message = 'Users stats retrieved successfully!';
+            ResponseHandler.success(request, response,message, 200, {
+                UsersStats : usersStats });
+
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    getBiometricsDistribution = async (request: express.Request, response: express.Response): Promise<void> => {
+        try {
+            await this.setContext('Statistics.GetBiometricsDistribution', request, response);
+            const filters = await this._validator.searchFilter(request);
+            const biometrics = await this._service.getBiometricsDistribution(filters);
+            const message = 'Biometrics distribution retrieved successfully!';
+            ResponseHandler.success(request, response,message, 200, {
+                Biometrics : biometrics });
+
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
         }
