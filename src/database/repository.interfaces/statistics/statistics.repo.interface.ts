@@ -11,6 +11,8 @@ export interface IStatisticsRepo {
 
     getDeletedUsers(filters): Promise<any>;
 
+    getRoleWiseDistribution(filters): Promise<any>;
+
     getGenderWiseUsers(filters): Promise<any>;
 
     getAgeWiseUsers(filters): Promise<any>;
@@ -34,5 +36,11 @@ export interface IStatisticsRepo {
     getOverallUsers(filters): Promise<any>;
 
     getAddictionDistribution(filters): Promise<any>;
+
+    getHealthPillarDistribution(filters): Promise<any>;
+
+    getUsersStats(filters): Promise<any>;
+
+    getBiometricsDistribution(filters): Promise<any>;
 
 }
