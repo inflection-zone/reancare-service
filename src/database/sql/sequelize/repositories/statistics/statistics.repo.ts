@@ -925,7 +925,7 @@ export class StatisticsRepo implements IStatisticsRepo {
 
             const nutritionUsers = await this.getNutritionUsers(totalUsers, filters);
 
-            const vitalUsers = await this.getVitalUsers(totalUsers, filters);
+            const vitalUsers = await this.getVitalUsers(totalUsers);
 
             let healthPillarDistribution = {} || [];
 
@@ -951,7 +951,6 @@ export class StatisticsRepo implements IStatisticsRepo {
                     SymptomUsers          : symptomUsers,
                     LabRecordUsers        : labRecordUsers,
                     NutritionUsers        : nutritionUsers,
-                    // VitalUsers            : vitalUsers
                 };
             }
            
@@ -1391,173 +1390,92 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
-    private  getVitalUsers = async (totalUsers, filters) => {
+    private  getVitalUsers = async (totalUsers ) => {
         try {
             const vitalDetails = [];
             let vitalsUsers = {};
 
-            if (filters.Year != null) {
-                for (const u of totalUsers.rows) {
-                    const cholestrolDetail = await BloodCholesterol.findOne({ where : {
-                        PatientUserId : u.UserId,
-                    }, paranoid : false });
-                    if (cholestrolDetail !== null){
-                        vitalDetails.push(cholestrolDetail);
-                    }
+            for (const u of totalUsers.rows) {
+                const cholestrolDetail = await BloodCholesterol.findOne({ where : {
+                    PatientUserId : u.UserId,
+                }, paranoid : false });
+                if (cholestrolDetail !== null){
+                    vitalDetails.push(cholestrolDetail);
                 }
-
-                for (const u of totalUsers.rows) {
-                    const glucoseDetail = await BloodGlucose.findOne({ where : {
-                        PatientUserId : u.UserId,
-                    }, paranoid : false });
-                    if (glucoseDetail !== null){
-                        vitalDetails.push(glucoseDetail);
-                    }
+            }
+    
+            for (const u of totalUsers.rows) {
+                const glucoseDetail = await BloodGlucose.findOne({ where : {
+                    PatientUserId : u.UserId,
+                }, paranoid : false });
+                if (glucoseDetail !== null){
+                    vitalDetails.push(glucoseDetail);
                 }
-
-                for (const u of totalUsers.rows) {
-                    const oxygenSaturationDetail = await BloodOxygenSaturation.findOne({ where : {
-                        PatientUserId : u.UserId,
-                    }, paranoid : false });
-                    if (oxygenSaturationDetail !== null){
-                        vitalDetails.push(oxygenSaturationDetail);
-                    }
+            }
+    
+            for (const u of totalUsers.rows) {
+                const oxygenSaturationDetail = await BloodOxygenSaturation.findOne({ where : {
+                    PatientUserId : u.UserId,
+                }, paranoid : false });
+                if (oxygenSaturationDetail !== null){
+                    vitalDetails.push(oxygenSaturationDetail);
                 }
-
-                for (const u of totalUsers.rows) {
-                    const bloodPressureDetail = await BloodPressure.findOne({ where : {
-                        PatientUserId : u.UserId,
-                    }, paranoid : false });
-                    if (bloodPressureDetail !== null){
-                        vitalDetails.push(bloodPressureDetail);
-                    }
+            }
+    
+            for (const u of totalUsers.rows) {
+                const bloodPressureDetail = await BloodPressure.findOne({ where : {
+                    PatientUserId : u.UserId,
+                }, paranoid : false });
+                if (bloodPressureDetail !== null){
+                    vitalDetails.push(bloodPressureDetail);
                 }
-
-                for (const u of totalUsers.rows) {
-                    const bodyHeightDetail = await BodyHeight.findOne({ where : {
-                        PatientUserId : u.UserId,
-                    }, paranoid : false });
-                    if (bodyHeightDetail !== null){
-                        vitalDetails.push(bodyHeightDetail);
-                    }
+            }
+    
+            for (const u of totalUsers.rows) {
+                const bodyHeightDetail = await BodyHeight.findOne({ where : {
+                    PatientUserId : u.UserId,
+                }, paranoid : false });
+                if (bodyHeightDetail !== null){
+                    vitalDetails.push(bodyHeightDetail);
                 }
-
-                for (const u of totalUsers.rows) {
-                    const bodyWeightDetail = await BodyWeight.findOne({ where : {
-                        PatientUserId : u.UserId,
-                    }, paranoid : false });
-                    if (bodyWeightDetail !== null){
-                        vitalDetails.push(bodyWeightDetail);
-                    }
+            }
+    
+            for (const u of totalUsers.rows) {
+                const bodyWeightDetail = await BodyWeight.findOne({ where : {
+                    PatientUserId : u.UserId,
+                }, paranoid : false });
+                if (bodyWeightDetail !== null){
+                    vitalDetails.push(bodyWeightDetail);
                 }
-
-                for (const u of totalUsers.rows) {
-                    const bodyTempratureDetail = await BodyTemperature.findOne({ where : {
-                        PatientUserId : u.UserId,
-                    }, paranoid : false });
-                    if (bodyTempratureDetail !== null){
-                        vitalDetails.push(bodyTempratureDetail);
-                    }
+            }
+    
+            for (const u of totalUsers.rows) {
+                const bodyTempratureDetail = await BodyTemperature.findOne({ where : {
+                    PatientUserId : u.UserId,
+                }, paranoid : false });
+                if (bodyTempratureDetail !== null){
+                    vitalDetails.push(bodyTempratureDetail);
                 }
-        
-                for (const u of totalUsers.rows) {
-                    const pulseDetail = await Pulse.findOne({ where : {
-                        PatientUserId : u.UserId,
-                    }, paranoid : false });
-                    if (pulseDetail !== null){
-                        vitalDetails.push(pulseDetail);
-                    }
-                }
-
-                const uniquevitalUsers = getUniqueUsers(vitalDetails);
-            
-                vitalsUsers = getMonthlyUsers(uniquevitalUsers,totalUsers);
-
             }
         
-            else {
-                for (const u of totalUsers.rows) {
-                    const cholestrolDetail = await BloodCholesterol.findOne({ where : {
-                        PatientUserId : u.UserId,
-                    }, paranoid : false });
-                    if (cholestrolDetail !== null){
-                        vitalDetails.push(cholestrolDetail);
-                    }
+            for (const u of totalUsers.rows) {
+                const pulseDetail = await Pulse.findOne({ where : {
+                    PatientUserId : u.UserId,
+                }, paranoid : false });
+                if (pulseDetail !== null){
+                    vitalDetails.push(pulseDetail);
                 }
+            }
+            const uniqueVitalsDetails = Array.from(new Set(vitalDetails.map((x) => x.PatientUserId)));
     
-                for (const u of totalUsers.rows) {
-                    const glucoseDetail = await BloodGlucose.findOne({ where : {
-                        PatientUserId : u.UserId,
-                    }, paranoid : false });
-                    if (glucoseDetail !== null){
-                        vitalDetails.push(glucoseDetail);
-                    }
-                }
-    
-                for (const u of totalUsers.rows) {
-                    const oxygenSaturationDetail = await BloodOxygenSaturation.findOne({ where : {
-                        PatientUserId : u.UserId,
-                    }, paranoid : false });
-                    if (oxygenSaturationDetail !== null){
-                        vitalDetails.push(oxygenSaturationDetail);
-                    }
-                }
-    
-                for (const u of totalUsers.rows) {
-                    const bloodPressureDetail = await BloodPressure.findOne({ where : {
-                        PatientUserId : u.UserId,
-                    }, paranoid : false });
-                    if (bloodPressureDetail !== null){
-                        vitalDetails.push(bloodPressureDetail);
-                    }
-                }
-    
-                for (const u of totalUsers.rows) {
-                    const bodyHeightDetail = await BodyHeight.findOne({ where : {
-                        PatientUserId : u.UserId,
-                    }, paranoid : false });
-                    if (bodyHeightDetail !== null){
-                        vitalDetails.push(bodyHeightDetail);
-                    }
-                }
-    
-                for (const u of totalUsers.rows) {
-                    const bodyWeightDetail = await BodyWeight.findOne({ where : {
-                        PatientUserId : u.UserId,
-                    }, paranoid : false });
-                    if (bodyWeightDetail !== null){
-                        vitalDetails.push(bodyWeightDetail);
-                    }
-                }
-    
-                for (const u of totalUsers.rows) {
-                    const bodyTempratureDetail = await BodyTemperature.findOne({ where : {
-                        PatientUserId : u.UserId,
-                    }, paranoid : false });
-                    if (bodyTempratureDetail !== null){
-                        vitalDetails.push(bodyTempratureDetail);
-                    }
-                }
-        
-                for (const u of totalUsers.rows) {
-                    const pulseDetail = await Pulse.findOne({ where : {
-                        PatientUserId : u.UserId,
-                    }, paranoid : false });
-                    if (pulseDetail !== null){
-                        vitalDetails.push(pulseDetail);
-                    }
-                }
-                const uniqueVitalsDetails = Array.from(new Set(vitalDetails.map((x) => x.PatientUserId)));
-    
-                const vitalsRatio =
+            const vitalsRatio =
                 ((uniqueVitalsDetails.length) / (totalUsers.count) * 100).toFixed(2);
     
-                vitalsUsers = {
-                    Status : "Vitals",
-                    Count  : uniqueVitalsDetails.length,
-                    Ratio  : vitalsRatio
-                };
-            }
+            vitalsUsers = {
+                Status : "Vitals",
+                Count  : uniqueVitalsDetails.length,
+                Ratio  : vitalsRatio
+            };
 
             return vitalsUsers;
 
