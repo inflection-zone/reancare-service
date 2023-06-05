@@ -7,11 +7,11 @@ import { v4 } from 'uuid';
 @Table({
     timestamps      : true,
     modelName       : 'AppDownloads',
-    tableName       : 'app_downloads',
+    tableName       : 'statistics_app_downloads',
     paranoid        : true,
     freezeTableName : true,
 })
-export default class AppDownloads extends Model {
+export default class StatisticsAppDownloads extends Model {
 
   @IsUUID(4)
   @PrimaryKey

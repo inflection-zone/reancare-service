@@ -138,7 +138,7 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
-    getOverallUsers = async (filters): Promise<any> => {
+    getUsersCount = async (filters): Promise<any> => {
         try {
             const totalUsers_ = await this.getTotalUsers(filters);
             const totalUsers = {
@@ -147,7 +147,7 @@ export class StatisticsRepo implements IStatisticsRepo {
             const nonDeletedUsers = await this.getNonDeletedUsers(filters);
             const activeUsers = await this.getActiveUsers(filters);
             const deletedUsers = await this.getDeletedUsers(filters);
-            const enrollmentUsers = await this.getEnrollmentUsers(filters);
+            const enrollmentUsers = await this.getUsersByEnrollment(filters);
 
             const usersData = {
                 TotalUsers      : totalUsers,
@@ -250,7 +250,7 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
     
-    getRoleWiseDistribution = async (filters): Promise<any> => {
+    getUsersByRole = async (filters): Promise<any> => {
         try {
             const { minDate, maxDate } = getMinMaxDates(filters);
             const maxCreatedDate = getMaxDate(filters);
@@ -314,7 +314,7 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
-    getGenderWiseUsers = async (filters): Promise<any> => {
+    getUsersByGender = async (filters): Promise<any> => {
         try {
             const totalUsers = await this.getTotalUsers(filters);
         
@@ -370,7 +370,7 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
-    getAgeWiseUsers = async (filters): Promise<any> => {
+    getUsersByAge = async (filters): Promise<any> => {
         try {
             const totalUsers_ = await this.getTotalUsers(filters);
             const totalUsers = totalUsers_.rows.map(x => x.Person.BirthDate);
@@ -512,7 +512,7 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
-    getDeviceDetailWiseUsers = async (filters): Promise<any> => {
+    getUsersByDeviceDetail = async (filters): Promise<any> => {
         try {
             const _totalUsers = await this.getTotalUsers(filters);
 
@@ -570,7 +570,7 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
-    getEnrollmentUsers = async (filters): Promise<any> => {
+    getUsersByEnrollment = async (filters): Promise<any> => {
         try {
             const totalUsers = await this.getTotalUsers(filters);
 
@@ -633,7 +633,7 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
-    addAppDownloads = async (createModel: AppDownloadDomainModel):
+    updateAppDownloadCount = async (createModel: AppDownloadDomainModel):
     Promise<AppDownloadDto> => {
 
         try {
@@ -652,7 +652,7 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
-    getAppDownlods= async (): Promise<any> => {
+    getAppDownlodCount= async (): Promise<any> => {
         try {
             const appDownload = await AppDownloadsModel.findAndCountAll();
             return appDownload;
@@ -662,7 +662,7 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
-    getCountryWiseUsers = async (filters): Promise<any> => {
+    getUsersByCountry = async (filters): Promise<any> => {
         try {
             const totalUsers = await this.getTotalUsers(filters);
 
@@ -708,7 +708,7 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
-    getMajorAilmentDistributionOfUsers = async (filters): Promise<any> => {
+    getUsersByMajorAilment = async (filters): Promise<any> => {
         try {
             const totalUsers = await this.getTotalUsers(filters);
 
@@ -757,7 +757,7 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
-    getObesityDistribution = async (filters): Promise<any> => {
+    getUsersByObesity = async (filters): Promise<any> => {
         try {
             const totalUsers = await this.getTotalUsers(filters);
 
@@ -837,7 +837,7 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
-    getAddictionDistribution = async (filters): Promise<any> => {
+    getUsersByAddiction = async (filters): Promise<any> => {
         try {
             const totalUsers = await this.getTotalUsers(filters);
 
@@ -909,7 +909,7 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
-    getHealthPillarDistribution = async (filters): Promise<any> => {
+    getUsersByHealthPillar = async (filters): Promise<any> => {
         try {
             const totalUsers = await this.getTotalUsers(filters);
 
@@ -1006,7 +1006,7 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
-    getBiometricsDistribution = async (filters): Promise<any> => {
+    getUsersByBiometrics = async (filters): Promise<any> => {
         try {
             const totalUsers = await this.getTotalUsers(filters);
             let biometricUsers = {} || [] ;

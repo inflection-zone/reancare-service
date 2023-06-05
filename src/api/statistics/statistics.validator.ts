@@ -23,7 +23,7 @@ export class StatistcsValidator extends BaseValidator {
         return AppDownloadModel;
     };
 
-    addAppDownloads = async (request: express.Request): Promise<AppDownloadDomainModel> => {
+    updateAppDownloads = async (request: express.Request): Promise<AppDownloadDomainModel> => {
         await this.validateCreateBody(request);
         return this.getDomainModel(request);
     };

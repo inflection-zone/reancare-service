@@ -11,36 +11,36 @@ export interface IStatisticsRepo {
 
     getDeletedUsers(filters): Promise<any>;
 
-    getRoleWiseDistribution(filters): Promise<any>;
+    getUsersByRole(filters): Promise<any>;
 
-    getGenderWiseUsers(filters): Promise<any>;
+    getUsersByGender(filters): Promise<any>;
 
-    getAgeWiseUsers(filters): Promise<any>;
+    getUsersByAge(filters): Promise<any>;
 
     getUsersByMaritalStatus(filters): Promise<any>;
 
-    getDeviceDetailWiseUsers(filters): Promise<any>;
+    getUsersByDeviceDetail(filters): Promise<any>;
 
-    getEnrollmentUsers(filters): Promise<any>;
+    getUsersByEnrollment(filters): Promise<any>;
 
-    addAppDownloads(appDownloadDomainModel: AppDownloadDomainModel): Promise<AppDownloadDto>;
+    updateAppDownloadCount(appDownloadDomainModel: AppDownloadDomainModel): Promise<AppDownloadDto>;
 
-    getAppDownlods(): Promise<any>;
+    getAppDownlodCount(): Promise<any>;
 
-    getCountryWiseUsers(filters): Promise<any>;
+    getUsersByCountry(filters): Promise<any>;
 
-    getMajorAilmentDistributionOfUsers(filters): Promise<any>;
+    getUsersByMajorAilment(filters): Promise<any>;
 
-    getObesityDistribution(filters): Promise<any>;
+    getUsersByObesity(filters): Promise<any>;
 
-    getOverallUsers(filters): Promise<any>;
-
-    getAddictionDistribution(filters): Promise<any>;
-
-    getHealthPillarDistribution(filters): Promise<any>;
-
+    getUsersCount(filters): Promise<any>;
+    
     getUsersStats(filters): Promise<any>;
 
-    getBiometricsDistribution(filters): Promise<any>;
+    getUsersByAddiction(filters): Promise<any>;
+
+    getUsersByHealthPillar(filters): Promise<any>;
+
+    getUsersByBiometrics(filters): Promise<any>;
 
 }

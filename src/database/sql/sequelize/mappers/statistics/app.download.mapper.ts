@@ -1,12 +1,12 @@
 
-import AppDownloads from '../../models/statistics/app.downloads.model';
+import StatisticsAppDownloads from '../../models/statistics/app.downloads.model';
 import { AppDownloadDto } from '../../../../../domain.types/statistics/app.download.dto';
 
 ///////////////////////////////////////////////////////////////////////////////////
 
 export class AppDownloadMapper {
 
-    static toDto = (appDownload: AppDownloads): AppDownloadDto => {
+    static toDto = (appDownload: StatisticsAppDownloads): AppDownloadDto => {
         if (appDownload == null){
             return null;
         }

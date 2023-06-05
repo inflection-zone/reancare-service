@@ -66,11 +66,11 @@ export class StatisticsController extends BaseController {
         }
     };
 
-    getRoleWiseDistribution = async (request: express.Request, response: express.Response): Promise<void> => {
+    getUsersByRole = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
-            await this.setContext('Statistics.GetRoleWiseDistribution', request, response);
+            await this.setContext('Statistics.GetUsersByRole', request, response);
             const filters = await this._validator.searchFilter(request);
-            const roleDistribution = await this._service.getRoleWiseDistribution(filters);
+            const roleDistribution = await this._service.getUsersByRole(filters);
             const message = 'Role wise distribution retrieved successfully!';
             ResponseHandler.success(request, response,message, 200, {
                 RoleDistribution : roleDistribution });
@@ -94,11 +94,11 @@ export class StatisticsController extends BaseController {
         }
     };
 
-    getGenderWiseUsers = async (request: express.Request, response: express.Response): Promise<void> => {
+    getUsersByGender = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
-            await this.setContext('Statistics.GetGenderWiseUsers', request, response);
+            await this.setContext('Statistics.GetUsersByGender', request, response);
             const filters = await this._validator.searchFilter(request);
-            const genderWiseUsers = await this._service.getGenderWiseUsers(filters);
+            const genderWiseUsers = await this._service.getUsersByGender(filters);
             const message = 'Gender wise users retrieved successfully!';
             ResponseHandler.success(request, response,message, 200, {
                 GenderWiseUsers : genderWiseUsers });
@@ -108,11 +108,11 @@ export class StatisticsController extends BaseController {
         }
     };
 
-    getAgeWiseUsers = async (request: express.Request, response: express.Response): Promise<void> => {
+    getUsersByAge = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
-            await this.setContext('Statistics.GetAgeWiseUsers', request, response);
+            await this.setContext('Statistics.GetUsersByAge', request, response);
             const filters = await this._validator.searchFilterForAge(request);
-            const ageWiseUsers = await this._service.getAgeWiseUsers(filters);
+            const ageWiseUsers = await this._service.getUsersByAge(filters);
             const message = 'Age wise users retrieved successfully!';
             ResponseHandler.success(request, response,message, 200, {
                 AgeWiseUsers : ageWiseUsers });
@@ -136,11 +136,11 @@ export class StatisticsController extends BaseController {
         }
     };
 
-    getDeviceDetailWiseUsers = async (request: express.Request, response: express.Response): Promise<void> => {
+    getUsersByDeviceDetail = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
-            await this.setContext('Statistics.GetDeviceDetailWiseUsers', request, response);
+            await this.setContext('Statistics.GetUsersByDeviceDetail', request, response);
             const filters = await this._validator.searchFilter(request);
-            const deviceDetailWiseUsers = await this._service.getDeviceDetailWiseUsers(filters);
+            const deviceDetailWiseUsers = await this._service.getUsersByDeviceDetail(filters);
             const message = 'Device detail wise users retrieved successfully!';
             ResponseHandler.success(request, response,message, 200, {
                 DeviceDetailWiseUsers : deviceDetailWiseUsers });
@@ -150,11 +150,11 @@ export class StatisticsController extends BaseController {
         }
     };
 
-    getEnrollmentUsers = async (request: express.Request, response: express.Response): Promise<void> => {
+    getUsersByEnrollment = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
-            await this.setContext('Statistics.GetEnrollmentUsers', request, response);
+            await this.setContext('Statistics.GetUsersByEnrollment', request, response);
             const filters = await this._validator.searchFilter(request);
-            const enrollmentUsers = await this._service.getEnrollmentUsers(filters);
+            const enrollmentUsers = await this._service.getUsersByEnrollment(filters);
             const message = 'Enrollment users retrieved successfully!';
             ResponseHandler.success(request, response,message, 200, {
                 EnrollmentUsers : enrollmentUsers });
@@ -163,13 +163,13 @@ export class StatisticsController extends BaseController {
         }
     };
 
-    addAppDownloads = async (request: express.Request, response: express.Response): Promise<void> => {
+    updateAppDownloadCount = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
             
-            await this.setContext('Statistics.AddAppDownloads', request, response);
+            await this.setContext('Statistics.UpdateAppDownloadCount', request, response);
 
-            const model = await this._validator.addAppDownloads(request);
-            const appDownload = await this._service.addAppDownloads(model);
+            const model = await this._validator.updateAppDownloads(request);
+            const appDownload = await this._service.updateAppDownloadCount(model);
             if (appDownload == null) {
                 throw new ApiError(400, 'Could not add a app downloads!');
             }
@@ -182,12 +182,12 @@ export class StatisticsController extends BaseController {
         }
     };
 
-    getAppDownlods = async (request: express.Request, response: express.Response): Promise<void> => {
+    getAppDownlodCount = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
             
-            await this.setContext('Statistics.GetAppDownlods', request, response);
+            await this.setContext('Statistics.GetAppDownlodCount', request, response);
 
-            const appDownload = await this._service.getAppDownlods();
+            const appDownload = await this._service.getAppDownlodCount();
             if (appDownload == null) {
                 throw new ApiError(404, 'App Download  not found.');
             }
@@ -200,11 +200,11 @@ export class StatisticsController extends BaseController {
         }
     };
 
-    getCountryWiseUsers = async (request: express.Request, response: express.Response): Promise<void> => {
+    getUsersByCountry = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
-            await this.setContext('Statistics.GetCountryWiseUsers', request, response);
+            await this.setContext('Statistics.GetUsersByCountry', request, response);
             const filters = await this._validator.searchFilter(request);
-            const countryWiseUsers = await this._service.getCountryWiseUsers(filters);
+            const countryWiseUsers = await this._service.getUsersByCountry(filters);
             const message = 'Country wise users retrieved successfully!';
             ResponseHandler.success(request, response,message, 200, {
                 CountryWiseUsers : countryWiseUsers });
@@ -213,11 +213,11 @@ export class StatisticsController extends BaseController {
         }
     };
 
-    getMajorAilmentDistributionOfUsers = async (request: express.Request, response: express.Response): Promise<void> => {
+    getUsersByMajorAilment = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
-            await this.setContext('Statistics.GetMajorAilmentDistributionOfUsers', request, response);
+            await this.setContext('Statistics.GetUsersByMajorAilment', request, response);
             const filters = await this._validator.searchFilter(request);
-            const majorAilmentDistribution = await this._service.getMajorAilmentDistributionOfUsers(filters);
+            const majorAilmentDistribution = await this._service.getUsersByMajorAilment(filters);
             const message = 'Major ailment distribution wise users retrieved successfully!';
             ResponseHandler.success(request, response,message, 200, {
                 MajorAilmentDistribution : majorAilmentDistribution });
@@ -226,11 +226,11 @@ export class StatisticsController extends BaseController {
         }
     };
     
-    getObesityDistribution = async (request: express.Request, response: express.Response): Promise<void> => {
+    getUsersByObesity = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
-            await this.setContext('Statistics.GetObesityDistribution', request, response);
+            await this.setContext('Statistics.GetUsersByObesity', request, response);
             const filters = await this._validator.searchFilter(request);
-            const obesityDistribution = await this._service.getObesityDistribution(filters);
+            const obesityDistribution = await this._service.getUsersByObesity(filters);
             const message = 'Obesity distribution wise users retrieved successfully!';
             ResponseHandler.success(request, response,message, 200, {
                 ObesityDistribution : obesityDistribution });
@@ -239,40 +239,14 @@ export class StatisticsController extends BaseController {
         }
     };
 
-    getOverallUsers = async (request: express.Request, response: express.Response): Promise<void> => {
+    getUsersCount = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
-            await this.setContext('Statistics.GetOverallUsers', request, response);
+            await this.setContext('Statistics.GetUsersCount', request, response);
             const filters = await this._validator.searchFilter(request);
-            const overallUsers  = await this._service.getOverallUsers(filters);
+            const overallUsers  = await this._service.getUsersCount(filters);
             const message = 'Overall users data retrieved successfully!';
             ResponseHandler.success(request, response,message, 200, {
                 OverallUsers : overallUsers  });
-        } catch (error) {
-            ResponseHandler.handleError(request, response, error);
-        }
-    };
-
-    getAddictionDistribution = async (request: express.Request, response: express.Response): Promise<void> => {
-        try {
-            await this.setContext('Statistics.GetAddictionDistribution', request, response);
-            const filters = await this._validator.searchFilter(request);
-            const addictionDistribution  = await this._service.getAddictionDistribution(filters);
-            const message = 'Addiction distribution of users retrieved successfully!';
-            ResponseHandler.success(request, response,message, 200, {
-                AddictionDistribution : addictionDistribution  });
-        } catch (error) {
-            ResponseHandler.handleError(request, response, error);
-        }
-    };
-
-    getHealthPillarDistribution = async (request: express.Request, response: express.Response): Promise<void> => {
-        try {
-            await this.setContext('Statistics.GetHealthPillarDistribution', request, response);
-            const filters = await this._validator.searchFilter(request);
-            const healthPillarDistribution  = await this._service.getHealthPillarDistribution(filters);
-            const message = 'Health pillar distribution of users retrieved successfully!';
-            ResponseHandler.success(request, response,message, 200, {
-                HealthPillarDistribution : healthPillarDistribution  });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
         }
@@ -292,11 +266,37 @@ export class StatisticsController extends BaseController {
         }
     };
 
-    getBiometricsDistribution = async (request: express.Request, response: express.Response): Promise<void> => {
+    getUsersByAddiction = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
-            await this.setContext('Statistics.GetBiometricsDistribution', request, response);
+            await this.setContext('Statistics.GetUsersByAddiction', request, response);
             const filters = await this._validator.searchFilter(request);
-            const biometrics = await this._service.getBiometricsDistribution(filters);
+            const addictionDistribution  = await this._service.getUsersByAddiction(filters);
+            const message = 'Addiction distribution of users retrieved successfully!';
+            ResponseHandler.success(request, response,message, 200, {
+                AddictionDistribution : addictionDistribution  });
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    getUsersByHealthPillar = async (request: express.Request, response: express.Response): Promise<void> => {
+        try {
+            await this.setContext('Statistics.GetUsersByHealthPillar', request, response);
+            const filters = await this._validator.searchFilter(request);
+            const healthPillarDistribution  = await this._service.getUsersByHealthPillar(filters);
+            const message = 'Health pillar distribution of users retrieved successfully!';
+            ResponseHandler.success(request, response,message, 200, {
+                HealthPillarDistribution : healthPillarDistribution  });
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    getUsersByBiometrics = async (request: express.Request, response: express.Response): Promise<void> => {
+        try {
+            await this.setContext('Statistics.GetUsersByBiometrics', request, response);
+            const filters = await this._validator.searchFilter(request);
+            const biometrics = await this._service.getUsersByBiometrics(filters);
             const message = 'Biometrics distribution retrieved successfully!';
             ResponseHandler.success(request, response,message, 200, {
                 Biometrics : biometrics });

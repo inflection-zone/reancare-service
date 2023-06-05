@@ -28,68 +28,68 @@ export class StatisticsService {
         return await this._statisticsRepo.getDeletedUsers(filters);
     };
 
-    getRoleWiseDistribution = async (filters): Promise<any> => {
-        return await this._statisticsRepo.getRoleWiseDistribution(filters);
+    getUsersByRole = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getUsersByRole(filters);
     };
 
-    getGenderWiseUsers = async (filters): Promise<any> => {
-        return await this._statisticsRepo.getGenderWiseUsers(filters);
+    getUsersByGender = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getUsersByGender(filters);
     };
 
-    getAgeWiseUsers = async (filters): Promise<any> => {
-        return await this._statisticsRepo.getAgeWiseUsers(filters);
+    getUsersByAge = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getUsersByAge(filters);
     };
 
     getUsersByMaritalStatus = async (filters): Promise<any> => {
         return await this._statisticsRepo.getUsersByMaritalStatus(filters);
     };
 
-    getDeviceDetailWiseUsers = async (filters): Promise<any> => {
-        return await this._statisticsRepo.getDeviceDetailWiseUsers(filters);
+    getUsersByDeviceDetail = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getUsersByDeviceDetail(filters);
     };
 
-    getEnrollmentUsers = async (filters): Promise<any> => {
-        return await this._statisticsRepo.getEnrollmentUsers(filters);
+    getUsersByEnrollment = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getUsersByEnrollment(filters);
     };
 
-    addAppDownloads = async (appDownloadDomainModel: AppDownloadDomainModel ): Promise<AppDownloadDto> => {
-        return await this._statisticsRepo.addAppDownloads(appDownloadDomainModel);
+    updateAppDownloadCount = async (appDownloadDomainModel: AppDownloadDomainModel ): Promise<AppDownloadDto> => {
+        return await this._statisticsRepo.updateAppDownloadCount(appDownloadDomainModel);
     };
 
-    getAppDownlods = async (): Promise<any> => {
-        return await this._statisticsRepo.getAppDownlods();
+    getAppDownlodCount = async (): Promise<any> => {
+        return await this._statisticsRepo.getAppDownlodCount();
     };
 
-    getCountryWiseUsers = async (filters): Promise<any> => {
-        return await this._statisticsRepo.getCountryWiseUsers(filters);
+    getUsersByCountry = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getUsersByCountry(filters);
     };
 
-    getMajorAilmentDistributionOfUsers = async (filters): Promise<any> => {
-        return await this._statisticsRepo.getMajorAilmentDistributionOfUsers(filters);
+    getUsersByMajorAilment = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getUsersByMajorAilment(filters);
     };
 
-    getObesityDistribution = async (filters): Promise<any> => {
-        return await this._statisticsRepo.getObesityDistribution(filters);
+    getUsersByObesity = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getUsersByObesity(filters);
     };
     
-    getOverallUsers = async (filters): Promise<any> => {
-        return await this._statisticsRepo.getOverallUsers(filters);
-    };
-    
-    getAddictionDistribution = async (filters): Promise<any> => {
-        return await this._statisticsRepo.getAddictionDistribution(filters);
-    };
-
-    getHealthPillarDistribution = async (filters): Promise<any> => {
-        return await this._statisticsRepo.getHealthPillarDistribution(filters);
+    getUsersCount = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getUsersCount(filters);
     };
 
     getUsersStats = async (filters): Promise<any> => {
         return await this._statisticsRepo.getUsersStats(filters);
     };
     
-    getBiometricsDistribution = async (filters): Promise<any> => {
-        return await this._statisticsRepo.getBiometricsDistribution(filters);
+    getUsersByAddiction = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getUsersByAddiction(filters);
+    };
+
+    getUsersByHealthPillar = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getUsersByHealthPillar(filters);
+    };
+
+    getUsersByBiometrics = async (filters): Promise<any> => {
+        return await this._statisticsRepo.getUsersByBiometrics(filters);
     };
     
 }
