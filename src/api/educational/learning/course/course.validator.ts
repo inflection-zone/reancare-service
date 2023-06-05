@@ -16,9 +16,9 @@ export class CourseValidator extends BaseValidator {
         const model: CourseDomainModel = {
             LearningPathIds : request.body.LearningPathIds ?? [],
             Name            : request.body.Name,
-            Description     : request.body.Description,
-            ImageUrl        : request.body.ImageUrl,
-            DurationInDays  : request.body.DurationInDays,
+            Description     : request.body.Description ?? null,
+            ImageUrl        : request.body.ImageUrl ?? null,
+            DurationInDays  : request.body.DurationInDays ?? null,
         };
         if (request.body.LearningPathIds && request.body.LearningPathIds.length > 0) {
             var learningPathIds: uuid[] = [];
@@ -64,9 +64,9 @@ export class CourseValidator extends BaseValidator {
     private  async validateUpdateBody(request) {
         await this.validateUuid(request, 'LearningPathId', Where.Body, false, false);
         await this.validateString(request, 'Name', Where.Body, false, false);
-        await this.validateString(request, 'Description', Where.Body, false, false);
-        await this.validateString(request, 'ImageUrl', Where.Body, false, false);
-        await this.validateDecimal(request, 'DurationInDays', Where.Body, false, false);
+        await this.validateString(request, 'Description', Where.Body, false, true);
+        await this.validateString(request, 'ImageUrl', Where.Body, false, true);
+        await this.validateDecimal(request, 'DurationInDays', Where.Body, false, true);
         this.validateRequest(request);
     }
 

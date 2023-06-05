@@ -30,7 +30,6 @@ export class CourseRepo implements ICourseRepo {
                 DurationInDays : createModel.DurationInDays,
             };
             const course = await Course.create(entity);
-            await this.addLearningPaths(course.id, createModel.LearningPathIds);
             return await CourseMapper.toDto(course);
         } catch (error) {
             Logger.instance().log(error.message);
@@ -141,7 +140,6 @@ export class CourseRepo implements ICourseRepo {
             }
          
             await course.save();
-            await this.addLearningPaths(course.id, updateModel.LearningPathIds);
             return await CourseMapper.toDto(course);
 
         } catch (error) {

@@ -625,7 +625,8 @@ export class AssessmentHelperRepo implements IAssessmentHelperRepo {
         const options = await this.getQuestionNodeOptions(node.NodeType as AssessmentNodeType, nodeId);
         const paths = await this.getQuestionNodePaths(node.NodeType as AssessmentNodeType, nodeId);
         const children = await this.getNodeListChildren(nodeId);
-        return AssessmentHelperMapper.toNodeDto(node, children, paths, options);
+        const scoringCondition = await this.getScoringConditionByNodeId(nodeId);
+        return AssessmentHelperMapper.toNodeDto(node, children, paths, options, scoringCondition);
     }
 
     private async updateQuestionNode(
@@ -1027,6 +1028,22 @@ export class AssessmentHelperRepo implements IAssessmentHelperRepo {
             throw new ApiError(500, error.message);
         }
     };
+
+    getScoringConditionByNodeId = async (nodeId: uuid): Promise<CScoringCondition> => {
+        try {
+            const condition = await ScoringCondition.findOne(
+                {
+                    where : {
+                        NodeId : nodeId
+                    }
+                }
+            );
+            return AssessmentHelperMapper.toScoringConditionDto(condition);
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    }
 
     updateScoringCondition = async (conditionId: string, updates: any): Promise<CScoringCondition> => {
         try {

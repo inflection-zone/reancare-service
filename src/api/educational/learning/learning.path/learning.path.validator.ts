@@ -17,8 +17,8 @@ export class LearningPathValidator extends BaseValidator {
             Name             : request.body.Name,
             Description      : request.body.Description,
             ImageUrl         : request.body.ImageUrl,
-            DurationInDays   : request.body.DurationInDays,
-            PreferenceWeight : request.body.PreferenceWeight,
+            DurationInDays   : request.body.DurationInDays ?? null,
+            PreferenceWeight : request.body.PreferenceWeight ?? null,
             Enabled          : request.body.Enabled,
             CourseIds        : [],
         };

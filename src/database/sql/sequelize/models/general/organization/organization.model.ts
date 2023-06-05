@@ -72,6 +72,7 @@ export default class Organization extends Model {
     @Column({
         type      : DataType.STRING(16),
         allowNull : false,
+        unique    : true,
     })
     ContactPhone: string;
 
@@ -80,10 +81,11 @@ export default class Organization extends Model {
     @Column({
         type      : DataType.STRING(50),
         allowNull : true,
+        unique    : true,
     })
     ContactEmail: string;
 
-    @Length({ min: 12, max: 512 })
+    @Length({ min: 0, max: 512 })
     @Column({
         type      : DataType.STRING(512),
         allowNull : true,
