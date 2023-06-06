@@ -325,24 +325,27 @@ export class StatisticsRepo implements IStatisticsRepo {
             const maleUsersRatio = ((totalMaleUsers.length) / (totalUsers.count) * 100).toFixed(2);
     
             const maleUsers = {
-                Count : totalMaleUsers.length,
-                Ratio : maleUsersRatio,
+                Status : "Male",
+                Count  : totalMaleUsers.length,
+                Ratio  : maleUsersRatio,
             };
 
             const totalFemaleUsers = totalUsers_.filter(x => x === "Female");
             const femaleUsersRatio = ((totalFemaleUsers.length) / (totalUsers.count) * 100).toFixed(2);
     
             const femaleUsers = {
-                Count : totalFemaleUsers.length,
-                Ratio : femaleUsersRatio,
+                Status : "Female",
+                Count  : totalFemaleUsers.length,
+                Ratio  : femaleUsersRatio,
             };
 
             const totalIntersexUsers = totalUsers_.filter(x => x === "Intersex");
             const IntersexUsersRatio = ((totalIntersexUsers.length) / (totalUsers.count) * 100).toFixed(2);
     
             const intersexUsers = {
-                Count : totalIntersexUsers.length,
-                Ratio : IntersexUsersRatio,
+                Status : "Intersex",
+                Count  : totalIntersexUsers.length,
+                Ratio  : IntersexUsersRatio,
             };
 
             const totalGenderNotSpecifiedUsers = totalUsers_.filter(x => x === "Other" || x === "Unknown" );
@@ -351,16 +354,17 @@ export class StatisticsRepo implements IStatisticsRepo {
             ((totalGenderNotSpecifiedUsers.length) / (totalUsers.count) * 100).toFixed(2);
 
             const genderNotSpecifiedUsers = {
-                Count : totalGenderNotSpecifiedUsers.length,
-                Ratio : genderNotSpecifiedUsersRatio,
+                Status : "Not Specified",
+                Count  : totalGenderNotSpecifiedUsers.length,
+                Ratio  : genderNotSpecifiedUsersRatio,
             };
     
-            const genderWiseUsers = {
-                MaleUsers               : maleUsers,
-                FemaleUsers             : femaleUsers,
-                IntersexUsers           : intersexUsers,
-                GenderNotSpecifiedUsers : genderNotSpecifiedUsers
-            };
+            const genderWiseUsers = [
+                maleUsers,
+                femaleUsers,
+                intersexUsers,
+                genderNotSpecifiedUsers
+            ];
     
             return genderWiseUsers;
     
@@ -382,8 +386,9 @@ export class StatisticsRepo implements IStatisticsRepo {
             const ageNotSpecifiedUsersRatio = ((totalAgeNotSpecifiedUsers) / (totalUsers_.count) * 100).toFixed(2);
     
             const ageNotSpecifiedUsers = {
-                Count : totalAgeNotSpecifiedUsers,
-                Ratio : ageNotSpecifiedUsersRatio,
+                Status : 'Not Specified',
+                Count  : totalAgeNotSpecifiedUsers,
+                Ratio  : ageNotSpecifiedUsersRatio,
             };
 
             const totalUsresWithAge = [];
@@ -413,8 +418,9 @@ export class StatisticsRepo implements IStatisticsRepo {
             const usersBelowThirtyfiveRatio = ((totalUsersBelowThirtyfive.length) / (totalUsers_.count) * 100).toFixed(2);
     
             const usersBelowThirtyfive = {
-                Count : totalUsersBelowThirtyfive.length,
-                Ratio : usersBelowThirtyfiveRatio,
+                Status : 'Below 35',
+                Count  : totalUsersBelowThirtyfive.length,
+                Ratio  : usersBelowThirtyfiveRatio,
             };
 
             const totalUsersBetweenThirtysixToSeventy = totalUsresWithAge.filter(x => x >= 36 && x <= 70);
@@ -423,8 +429,9 @@ export class StatisticsRepo implements IStatisticsRepo {
             ((totalUsersBetweenThirtysixToSeventy.length) / (totalUsers_.count) * 100).toFixed(2);
     
             const usersBetweenThirtysixToSeventy = {
-                Count : totalUsersBetweenThirtysixToSeventy.length,
-                Ratio : usersBetweenThirtysixToSeventyRatio,
+                Status : '36 to 70',
+                Count  : totalUsersBetweenThirtysixToSeventy.length,
+                Ratio  : usersBetweenThirtysixToSeventyRatio,
             };
 
             const totalUsersAboveSeventy = totalUsresWithAge.filter(x => x >= 71);
@@ -432,17 +439,17 @@ export class StatisticsRepo implements IStatisticsRepo {
             ((totalUsersAboveSeventy.length) / (totalUsers_.count) * 100).toFixed(2);
     
             const usersAboveSeventy = {
-                Count : totalUsersAboveSeventy.length,
-                Ratio : usersAboveSeventyRatio,
+                Status : 'Above 71',
+                Count  : totalUsersAboveSeventy.length,
+                Ratio  : usersAboveSeventyRatio,
             };
     
-            const ageWiseUsers = {
-                UsersBelowThirtyfive           : usersBelowThirtyfive,
-                UsersBetweenThirtysixToSeventy : usersBetweenThirtysixToSeventy,
-                UsersAboveSeventy              : usersAboveSeventy,
-                UsersBetweenTwoNumbers         : usersBetweenTwoNumbers,
-                AgeNotSpecifiedUsers           : ageNotSpecifiedUsers,
-            };
+            const ageWiseUsers = [
+                usersBelowThirtyfive,
+                usersBetweenThirtysixToSeventy,
+                usersAboveSeventy,
+                ageNotSpecifiedUsers,
+            ];
     
             return ageWiseUsers;
     
