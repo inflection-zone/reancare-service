@@ -2,6 +2,7 @@ import { inject, injectable } from "tsyringe";
 import { IStatisticsRepo } from "../../database/repository.interfaces/statistics/statistics.repo.interface";
 import { AppDownloadDto } from "../../domain.types/statistics/app.download.dto";
 import { AppDownloadDomainModel } from "../../domain.types/statistics/app.download.domain.model";
+import { StatisticSearchFilters } from "../../domain.types/statistics/statistics.search.type";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -12,43 +13,35 @@ export class StatisticsService {
         @inject('IStatisticsRepo') private _statisticsRepo: IStatisticsRepo,
     ) {}
 
-    getTotalUsers = async (filters): Promise<any> => {
-        return await this._statisticsRepo.getTotalUsers(filters);
+    getUsersCount = async (filters: StatisticSearchFilters): Promise<any> => {
+        return await this._statisticsRepo.getUsersCount(filters);
     };
 
-    getNonDeletedUsers = async (filters): Promise<any> => {
-        return await this._statisticsRepo.getNonDeletedUsers(filters);
+    getUsersStats = async (filters: StatisticSearchFilters): Promise<any> => {
+        return await this._statisticsRepo.getUsersStats(filters);
     };
-
-    getActiveUsers = async (filters): Promise<any> => {
-        return await this._statisticsRepo.getActiveUsers(filters);
-    };
-
-    getDeletedUsers = async (filters): Promise<any> => {
-        return await this._statisticsRepo.getDeletedUsers(filters);
-    };
-
-    getUsersByRole = async (filters): Promise<any> => {
+    
+    getUsersByRole = async (filters: StatisticSearchFilters): Promise<any> => {
         return await this._statisticsRepo.getUsersByRole(filters);
     };
 
-    getUsersByGender = async (filters): Promise<any> => {
+    getUsersByGender = async (filters: StatisticSearchFilters): Promise<any> => {
         return await this._statisticsRepo.getUsersByGender(filters);
     };
 
-    getUsersByAge = async (filters): Promise<any> => {
+    getUsersByAge = async (filters: StatisticSearchFilters): Promise<any> => {
         return await this._statisticsRepo.getUsersByAge(filters);
     };
 
-    getUsersByMaritalStatus = async (filters): Promise<any> => {
+    getUsersByMaritalStatus = async (filters: StatisticSearchFilters): Promise<any> => {
         return await this._statisticsRepo.getUsersByMaritalStatus(filters);
     };
 
-    getUsersByDeviceDetail = async (filters): Promise<any> => {
+    getUsersByDeviceDetail = async (filters: StatisticSearchFilters): Promise<any> => {
         return await this._statisticsRepo.getUsersByDeviceDetail(filters);
     };
 
-    getUsersByEnrollment = async (filters): Promise<any> => {
+    getUsersByEnrollment = async (filters: StatisticSearchFilters): Promise<any> => {
         return await this._statisticsRepo.getUsersByEnrollment(filters);
     };
 
@@ -60,35 +53,27 @@ export class StatisticsService {
         return await this._statisticsRepo.getAppDownlodCount();
     };
 
-    getUsersByCountry = async (filters): Promise<any> => {
+    getUsersByCountry = async (filters: StatisticSearchFilters): Promise<any> => {
         return await this._statisticsRepo.getUsersByCountry(filters);
     };
 
-    getUsersByMajorAilment = async (filters): Promise<any> => {
+    getUsersByMajorAilment = async (filters: StatisticSearchFilters): Promise<any> => {
         return await this._statisticsRepo.getUsersByMajorAilment(filters);
     };
 
-    getUsersByObesity = async (filters): Promise<any> => {
+    getUsersByObesity = async (filters: StatisticSearchFilters): Promise<any> => {
         return await this._statisticsRepo.getUsersByObesity(filters);
     };
     
-    getUsersCount = async (filters): Promise<any> => {
-        return await this._statisticsRepo.getUsersCount(filters);
-    };
-
-    getUsersStats = async (filters): Promise<any> => {
-        return await this._statisticsRepo.getUsersStats(filters);
-    };
-    
-    getUsersByAddiction = async (filters): Promise<any> => {
+    getUsersByAddiction = async (filters: StatisticSearchFilters): Promise<any> => {
         return await this._statisticsRepo.getUsersByAddiction(filters);
     };
 
-    getUsersByHealthPillar = async (filters): Promise<any> => {
+    getUsersByHealthPillar = async (filters: StatisticSearchFilters): Promise<any> => {
         return await this._statisticsRepo.getUsersByHealthPillar(filters);
     };
 
-    getUsersByBiometrics = async (filters): Promise<any> => {
+    getUsersByBiometrics = async (filters: StatisticSearchFilters): Promise<any> => {
         return await this._statisticsRepo.getUsersByBiometrics(filters);
     };
     
