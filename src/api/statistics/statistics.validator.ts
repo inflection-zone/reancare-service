@@ -32,6 +32,9 @@ export class StatistcsValidator extends BaseValidator {
 
         await this.validateDecimal(request, 'year', Where.Query, false, false);
         await this.validateDecimal(request, 'month', Where.Query, false, true);
+        await this.validateDate(request, 'from', Where.Query, false, true);
+        await this.validateDate(request, 'to', Where.Query, false, true);
+        await this.validateDecimal(request, 'pastMonths', Where.Query, false, true);
         this.validateRequest(request);
 
         return this.getFilter(request);
@@ -40,8 +43,11 @@ export class StatistcsValidator extends BaseValidator {
     private getFilter(request) {
 
         const filters = {
-            Year  : request.query.year ?? null,
-            Month : request.query.month ?? null,
+            Year       : request.query.year ?? null,
+            Month      : request.query.month ?? null,
+            From       : request.query.from ?? null,
+            To         : request.query.to ?? null,
+            PastMonths : request.query.pastMonths ?? null,
         };
 
         return this.updateBaseSearchFilters(request, filters);

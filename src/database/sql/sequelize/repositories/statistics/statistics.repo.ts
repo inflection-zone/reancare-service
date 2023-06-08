@@ -33,128 +33,27 @@ import User from '../../models/users/user/user.model';
 import Role from '../../models/role/role.model';
 import Doctor from '../../models/users/doctor.model';
 import EmergencyContact from '../../models/users/patient/emergency.contact.model';
+import { DurationType } from '../../../../../domain.types/miscellaneous/time.types';
+import { StatisticSearchFilters } from '../../../../../domain.types/statistics/statistics.search.type';
 
 ///////////////////////////////////////////////////////////////////////
 
 export class StatisticsRepo implements IStatisticsRepo {
 
-    getTotalUsers = async (filters): Promise<any> => {
+    getUsersCount = async (filters: StatisticSearchFilters): Promise<any> => {
         try {
-            const { minDate, maxDate } = getMinMaxDates(filters);
-            const maxCreatedDate = getMaxDate(filters);
-            const search: any = { where: {}, include: [], paranoid: false };
-
-            const includesObj =
-            {
-                model    : Person,
-                required : true,
-                where    : {
-                    
-                },
-                paranoid : false
-            };
-     
-            includesObj.where['Phone'] = {
-                [Op.notBetween] : [1000000000, 1000000100],
-            };
-         
-            if (filters.Year != null)  {
-                includesObj.where['CreatedAt'] = {
-                    [Op.between] : [minDate, maxDate],
-                };
-            }
-
-            if (filters.Year != null && filters.Month != null)  {
-                includesObj.where['CreatedAt'] = {
-                    [Op.lt] : maxCreatedDate,
-                };
-            }
-
-            search.include.push(includesObj);
-    
-            const totalUsers = await Patient.findAndCountAll(search);
-
-            return totalUsers;
-            
-        } catch (error) {
-            Logger.instance().log(error.message);
-            throw new ApiError(500, error.message);
-        }
-    };
-
-    getNonDeletedUsers = async (filters): Promise<any> => {
-        try {
-            const totalUsers = await this.getTotalUsers(filters);
-            const { minDate, maxDate } = getMinMaxDates(filters);
-            const maxCreatedDate = getMaxDate(filters);
-            const search: any = { where: {}, include: [], paranoid: false };
-
-            const includesObj =
-            {
-                model    : Person,
-                required : true,
-                where    : {
-                    
-                },
-                paranoid : false
-            };
-     
-            includesObj.where['Phone'] = {
-                [Op.notBetween] : [1000000000, 1000000100],
-            };
-            
-            includesObj.where['DeletedAt'] = {
-                [Op.eq] : null
-            };
-
-            if (filters.Year != null)  {
-                includesObj.where['CreatedAt'] = {
-                    [Op.between] : [minDate, maxDate],
-                };
-            }
-
-            if (filters.Year != null && filters.Month != null)  {
-                includesObj.where['CreatedAt'] = {
-                    [Op.lt] : maxCreatedDate,
-                };
-            }
-
-            search.include.push(includesObj);
-
-            const nonDeletedUsers = await Patient.findAndCountAll(search);
-
-            const nonDeletedUsersRatio =  ((nonDeletedUsers.count) / (totalUsers.count) * 100).toFixed(2);
-    
-            const  nonDeletedUsersDetails = {
-                Count : nonDeletedUsers.count,
-                Ratio : nonDeletedUsersRatio
-            };
-    
-            return nonDeletedUsersDetails;
-            
-        } catch (error) {
-            Logger.instance().log(error.message);
-            throw new ApiError(500, error.message);
-        }
-    };
-
-    getUsersCount = async (filters): Promise<any> => {
-        try {
-            const totalUsers_ = await this.getTotalUsers(filters);
-            const totalUsers = {
-                Count : totalUsers_.count
-            };
-            const nonDeletedUsers = await this.getNonDeletedUsers(filters);
-            const activeUsers = await this.getActiveUsers(filters);
+            const totalUsers = await this.getOnboardedUsers(filters);
+            const notDeletedUsers = await this.getNotDeletedUsers(filters);
+            const usersWithActiveSession = await this.getUsersWithActiveSession(filters);
             const deletedUsers = await this.getDeletedUsers(filters);
-            const enrollmentUsers = await this.getUsersByEnrollment(filters);
+            const enrolledUsers = await this.getEnrolledUsers(filters);
 
             const usersData = {
-                TotalUsers      : totalUsers,
-                NonDeletedUsers : nonDeletedUsers,
-                ActiveUsers     : activeUsers,
-                DeletedUsers    : deletedUsers,
-                EnrollmentUsers : enrollmentUsers.TotalEnrollnemtUsers,
+                TotalUsers             : totalUsers,
+                NotDeletedUsers        : notDeletedUsers,
+                UsersWithActiveSession : usersWithActiveSession,
+                DeletedUsers           : deletedUsers,
+                EnrolledUsers          : enrolledUsers,
             };
 
             return usersData;
@@ -165,94 +64,9 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
-    getDeletedUsers = async (filters): Promise<any> => {
-        try {
-            const totalUsers = await this.getTotalUsers(filters);
-            const { minDate, maxDate } = getMinMaxDates(filters);
-            const maxCreatedDate = getMaxDate(filters);
-            const search: any = { where: {}, include: [],  paranoid: false };
-
-            const includesObj =
-            {
-                model    : Person,
-                required : true,
-                where    : {},
-                paranoid : false
-            };
-
-            includesObj.where['Phone'] = {
-                [Op.notBetween] : [1000000000, 1000000100],
-            };
-
-            includesObj.where['DeletedAt'] = {
-                [Op.not] : null
-            };
-     
-            if (filters.Year != null)  {
-                includesObj.where['CreatedAt'] = {
-                    [Op.between] : [minDate, maxDate],
-                };
-            }
-
-            if (filters.Year != null && filters.Month != null)  {
-                includesObj.where['CreatedAt'] = {
-                    [Op.lt] : maxCreatedDate,
-                };
-            }
-            
-            search.include.push(includesObj);
-    
-            const deletedUsers = await Patient.findAndCountAll(search);
-
-            const deletedUsersRatio =  ((deletedUsers.count) / (totalUsers.count) * 100).toFixed(2);
-    
-            const  deletedUsersDetails = {
-                Count : deletedUsers.count,
-                Ratio : deletedUsersRatio
-            };
-    
-            return deletedUsersDetails;
-            
-        } catch (error) {
-            Logger.instance().log(error.message);
-            throw new ApiError(500, error.message);
-        }
-    };
-
-    getActiveUsers = async (filters): Promise<any> => {
-        try {
-            const totalUsers_ = await this.getTotalUsers(filters);
-            const totalUsers  = totalUsers_.rows.map(x => x.UserId);
-
-            const loginSessions = [];
-            for (const u of totalUsers) {
-                const loginSession = await UserLoginSession.findOne({ where : {
-                    UserId    : u,
-                    ValidTill : { [Op.gte]: new Date() },
-                } });
-                loginSessions.push(loginSession);
-            }
-    
-            const activeUsersFromLoginSession = loginSessions.filter(x => x != null);
-
-            const activeUsersRatio = ((activeUsersFromLoginSession.length) / (totalUsers_.count) * 100).toFixed(2);
-    
-            const  activeUsers = {
-                Count : activeUsersFromLoginSession.length,
-                Ratio : activeUsersRatio,
-            };
-
-            return activeUsers;
-    
-        } catch (error) {
-            Logger.instance().log(error.message);
-            throw new ApiError(500, error.message);
-        }
-    };
-    
     getUsersByRole = async (filters): Promise<any> => {
         try {
-            const { minDate, maxDate } = getMinMaxDates(filters);
+            const { minDate, maxDate } = getMinMaxDatesForYear(filters);
             const maxCreatedDate = getMaxDate(filters);
             const search: any = { where: {}, include: [],  paranoid: false };
 
@@ -468,11 +282,13 @@ export class StatisticsRepo implements IStatisticsRepo {
                 const healthProfileDetail = await HealthProfile.findOne({ where : {
                     PatientUserId : u.UserId,
                 }, paranoid : false } );
-                healthProfileDetails.push(healthProfileDetail);
+                if (healthProfileDetail != null) {
+                    healthProfileDetails.push(healthProfileDetail);
+                }
+              
             }
 
-            const totalHealthProfileUsers_ = healthProfileDetails.filter(x => x !== null);
-            const totalHealthProfileUsers = totalHealthProfileUsers_.map(x => x.MaritalStatus);
+            const totalHealthProfileUsers = healthProfileDetails.map(x => x.MaritalStatus);
             const marriedUsers = totalHealthProfileUsers.filter(x => x === "Married");
             const singleUsers = totalHealthProfileUsers.filter(x => x === "Single");
             const divorcedUsers = totalHealthProfileUsers.filter(x => x === "Divorced");
@@ -981,7 +797,7 @@ export class StatisticsRepo implements IStatisticsRepo {
 
             const totalPatients = await this.getTotalUsers(filters);
 
-            const nonDetetedPatients = await this.getNonDeletedUsers(filters);
+            const nonDetetedPatients = await this.getNotDeletedUsers(filters);
 
             const detetedPatients = await this.getDeletedUsers(filters);
 
@@ -1071,9 +887,479 @@ export class StatisticsRepo implements IStatisticsRepo {
 
     // #private region
 
+    private getOnboardedUsers = async (filters: StatisticSearchFilters): Promise<any> => {
+        try {
+            const search: any = { where: {}, include: [], paranoid: false };
+            const includesObj =
+             {
+                 model    : Person,
+                 required : true,
+                 where    : {},
+                 paranoid : false,
+             };
+      
+            includesObj.where['Phone'] = {
+                [Op.notBetween] : [1000000000, 1000000100],
+            };
+
+            if (filters.PastMonths != null)  {
+                const usersForMonths = [];
+
+                for (var i = 0; i < filters.PastMonths; i++) {
+                    var date = TimeHelper.subtractDuration(new Date(), i, DurationType.Month);
+                    var startOfMonth = TimeHelper.startOf(date, DurationType.Month);
+                    var endOfMonth = TimeHelper.endOf(date, DurationType.Month);
+                    var monthName = TimeHelper.format(date, 'MMMM, YYYY');
+          
+                    includesObj.where['CreatedAt'] = {
+                        [Op.between] : [startOfMonth, endOfMonth],
+                    };
+                    search.include.push(includesObj);
+     
+                    const totalUsers = await Patient.findAndCountAll(search);
+      
+                    var usersForMonth = {
+                        Month : monthName,
+                        Count : totalUsers.count
+                    };
+                    usersForMonths.push(usersForMonth);
+                }
+                return usersForMonths;
+            }
+            else
+            {
+                const { minDate, maxDate } = getMinMaxDatesForYear(filters);
+                if (filters.Year != null)  {
+                    includesObj.where['CreatedAt'] = {
+                        [Op.between] : [minDate, maxDate],
+                    };
+                }
+                const maxCreatedDate = getMaxDate(filters);
+                if (filters.Year != null && filters.Month != null)  {
+                    includesObj.where['CreatedAt'] = {
+                        [Op.lt] : maxCreatedDate,
+                    };
+                }
+                if (filters.From != null && filters.To != null)  {
+                    includesObj.where['CreatedAt'] = {
+                        [Op.between] : [filters.From, filters.To],
+                    };
+                }
+ 
+                search.include.push(includesObj);
+     
+                const totalUsers = await Patient.findAndCountAll(search);
+
+                const totalUsersDetails = {
+                    Count : totalUsers.count,
+                };
+
+                return totalUsersDetails;
+            }
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+ 
+   private  getNotDeletedUsers = async (filters: StatisticSearchFilters): Promise<any> => {
+       try {
+           const totalUsers = await this.getTotalUsers(filters);
+           const { minDate, maxDate } = getMinMaxDatesForYear(filters);
+           const maxCreatedDate = getMaxDate(filters);
+           const search: any = { where: {}, include: [], paranoid: false };
+             
+           const includesObj =
+             {
+                 model    : Person,
+                 required : true,
+                 where    : {},
+                 paranoid : false
+             };
+      
+           includesObj.where['Phone'] = {
+               [Op.notBetween] : [1000000000, 1000000100],
+           };
+             
+           includesObj.where['DeletedAt'] = {
+               [Op.eq] : null
+           };
+ 
+           if (filters.PastMonths != null)  {
+               const notDeletedUsersDetails = [];
+               for (var i = 0; i < filters.PastMonths; i++) {
+                   var date = TimeHelper.subtractDuration(new Date(), i, DurationType.Month);
+                   var startOfMonth = TimeHelper.startOf(date, DurationType.Month);
+                   var endOfMonth = TimeHelper.endOf(date, DurationType.Month);
+                   var monthName = TimeHelper.format(date, 'MMMM, YYYY');
+         
+                   includesObj.where['CreatedAt'] = {
+                       [Op.between] : [startOfMonth, endOfMonth],
+                   };
+                   search.include.push(includesObj);
+     
+                   const nonDeletedUsers = await Patient.findAndCountAll(search);
+     
+                   var usersForMonth = {
+                       Month : monthName,
+                       Count : nonDeletedUsers.count
+                   };
+                   notDeletedUsersDetails.push(usersForMonth);
+               }
+               return notDeletedUsersDetails;
+           }
+            
+           else
+           {
+               if (filters.Year != null)  {
+                   includesObj.where['CreatedAt'] = {
+                       [Op.between] : [minDate, maxDate],
+                   };
+               }
+               if (filters.Year != null && filters.Month != null)  {
+                   includesObj.where['CreatedAt'] = {
+                       [Op.lt] : maxCreatedDate,
+                   };
+               }
+               if (filters.From != null && filters.To != null)  {
+                   includesObj.where['CreatedAt'] = {
+                       [Op.between] : [filters.From, filters.To],
+                   };
+               }
+               search.include.push(includesObj);
+ 
+               const nonDeletedUsers = await Patient.findAndCountAll(search);
+     
+               const nonDeletedUsersRatio =  ((nonDeletedUsers.count) / (totalUsers.count) * 100).toFixed(2);
+         
+               const notDeletedUsersDetails = {
+                   Count : nonDeletedUsers.count,
+                   Ratio : nonDeletedUsersRatio
+               };
+               return notDeletedUsersDetails;
+           }
+ 
+       } catch (error) {
+           Logger.instance().log(error.message);
+           throw new ApiError(500, error.message);
+       }
+   };
+ 
+   private  getDeletedUsers = async (filters: StatisticSearchFilters): Promise<any> => {
+       try {
+           const search: any = { where: {}, include: [],  paranoid: false };
+ 
+           const includesObj =
+             {
+                 model    : Person,
+                 required : true,
+                 where    : {},
+                 paranoid : false
+             };
+ 
+           includesObj.where['Phone'] = {
+               [Op.notBetween] : [1000000000, 1000000100],
+           };
+ 
+           includesObj.where['DeletedAt'] = {
+               [Op.not] : null
+           };
+ 
+           if (filters.PastMonths != null) {
+ 
+               const deletedUsersDetails = [];
+ 
+               for (var i = 0; i < filters.PastMonths; i++) {
+                   var date = TimeHelper.subtractDuration(new Date(), i, DurationType.Month);
+                   var startOfMonth = TimeHelper.startOf(date, DurationType.Month);
+                   var endOfMonth = TimeHelper.endOf(date, DurationType.Month);
+                   var monthName = TimeHelper.format(date, 'MMMM, YYYY');
+         
+                   includesObj.where['CreatedAt'] = {
+                       [Op.between] : [startOfMonth, endOfMonth],
+                   };
+ 
+                   search.include.push(includesObj);
+ 
+                   const deletedUsers = await Patient.findAndCountAll(search);
+     
+                   var deletedUsersForMonth = {
+                       Month : monthName,
+                       Count : deletedUsers.count
+                   };
+                   deletedUsersDetails.push(deletedUsersForMonth);
+               }
+               return deletedUsersDetails;
+           }
+           else {
+               const { minDate, maxDate } = getMinMaxDatesForYear(filters);
+               if (filters.Year != null)  {
+                   includesObj.where['CreatedAt'] = {
+                       [Op.between] : [minDate, maxDate],
+                   };
+               }
+               const maxCreatedDate = getMaxDate(filters);
+               if (filters.Year != null && filters.Month != null)  {
+                   includesObj.where['CreatedAt'] = {
+                       [Op.lt] : maxCreatedDate,
+                   };
+               }
+               if (filters.From != null && filters.To != null)  {
+                   includesObj.where['CreatedAt'] = {
+                       [Op.between] : [filters.From, filters.To],
+                   };
+               }
+ 
+               search.include.push(includesObj);
+ 
+               const deletedUsers = await Patient.findAndCountAll(search);
+
+               const totalUsers = await this.getTotalUsers(filters);
+ 
+               const deletedUsersRatio =  ((deletedUsers.count) / (totalUsers.count) * 100).toFixed(2);
+ 
+               const  deletedUsersDetails = {
+                   Count : deletedUsers.count,
+                   Ratio : deletedUsersRatio
+               };
+ 
+               return deletedUsersDetails;
+                 
+           }
+       } catch (error) {
+           Logger.instance().log(error.message);
+           throw new ApiError(500, error.message);
+       }
+   };
+ 
+    private getUsersWithActiveSession = async (filters: StatisticSearchFilters): Promise<any> => {
+        try {
+            const search: any = { where: {}, include: [], paranoid: false };
+ 
+            const includesObj =
+             {
+                 model    : Person,
+                 required : true,
+                 where    : {},
+             };
+      
+            includesObj.where['Phone'] = {
+                [Op.notBetween] : [1000000000, 1000000100],
+            };
+             
+            includesObj.where['DeletedAt'] = {
+                [Op.eq] : null
+            };
+ 
+            if (filters.PastMonths != null) {
+ 
+                const usersWithActiveSessionForMonths = [];
+ 
+                for (var i = 0; i < filters.PastMonths; i++) {
+                    var date = TimeHelper.subtractDuration(new Date(), i, DurationType.Month);
+                    var startOfMonth = TimeHelper.startOf(date, DurationType.Month);
+                    var endOfMonth = TimeHelper.endOf(date, DurationType.Month);
+                    var monthName = TimeHelper.format(date, 'MMMM, YYYY');
+         
+                    includesObj.where['CreatedAt'] = {
+                        [Op.between] : [startOfMonth, endOfMonth],
+                    };
+ 
+                    search.include.push(includesObj);
+ 
+                    const totalUsers_ = await Patient.findAndCountAll(search);
+ 
+                    const totalUsers  = totalUsers_.rows.map(x => x.UserId);
+ 
+                    const loginSessions = [];
+                    for (const u of totalUsers) {
+                        const loginSession = await UserLoginSession.findOne({ where : {
+                            UserId    : u,
+                            ValidTill : { [Op.gte]: new Date() },
+                        } });
+                        if (loginSession != null) {
+                            loginSessions.push(loginSession);
+                        }
+                    }
+ 
+                    var usersWithActiveSessionForMonth = {
+                        Month : monthName,
+                        Count : loginSessions.length
+                    };
+                    usersWithActiveSessionForMonths.push(usersWithActiveSessionForMonth);
+                }
+                return usersWithActiveSessionForMonths;
+            }
+            else {
+                const { minDate, maxDate } = getMinMaxDatesForYear(filters);
+                if (filters.Year != null)  {
+                    includesObj.where['CreatedAt'] = {
+                        [Op.between] : [minDate, maxDate],
+                    };
+                }
+
+                const maxCreatedDate = getMaxDate(filters);
+                if (filters.Year != null && filters.Month != null)  {
+                    includesObj.where['CreatedAt'] = {
+                        [Op.lt] : maxCreatedDate,
+                    };
+                }
+                if (filters.From != null && filters.To != null)  {
+                    includesObj.where['CreatedAt'] = {
+                        [Op.between] : [filters.From, filters.To],
+                    };
+                }
+ 
+                search.include.push(includesObj);
+ 
+                const totalUsers_ = await Patient.findAndCountAll(search);
+ 
+                const totalUsers  = totalUsers_.rows.map(x => x.UserId);
+ 
+                const activeLoginSessions = [];
+                for (const u of totalUsers) {
+                    const loginSession = await UserLoginSession.findOne({ where : {
+                        UserId    : u,
+                        ValidTill : { [Op.gte]: new Date() },
+                    } });
+                    if (loginSession != null) {
+                        activeLoginSessions.push(loginSession);
+                    }
+                }
+ 
+                const activeUsersRatio = ((activeLoginSessions.length) / (totalUsers_.count) * 100).toFixed(2);
+     
+                const  activeUsers = {
+                    Count : activeLoginSessions.length,
+                    Ratio : activeUsersRatio,
+                };
+                return activeUsers;
+                 
+            }
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    private getEnrolledUsers= async (filters: StatisticSearchFilters): Promise<any> => {
+        try {
+            const search: any = { where: {}, };
+ 
+            if (filters.PastMonths != null) {
+ 
+                const enrolledUsersForMonths = [];
+ 
+                for (var i = 0; i < filters.PastMonths; i++) {
+                    var date = TimeHelper.subtractDuration(new Date(), i, DurationType.Month);
+                    var startOfMonth = TimeHelper.startOf(date, DurationType.Month);
+                    var endOfMonth = TimeHelper.endOf(date, DurationType.Month);
+                    var monthName = TimeHelper.format(date, 'MMMM, YYYY');
+         
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [startOfMonth, endOfMonth],
+                    };
+
+                    const enrolledUsers = await CareplanEnrollment.findAndCountAll(search);
+ 
+                    var enrolledUsersForMonth = {
+                        Month : monthName,
+                        Count : enrolledUsers.count
+                    };
+                    enrolledUsersForMonths.push(enrolledUsersForMonth);
+                }
+                return enrolledUsersForMonths;
+            }
+            else {
+                const { minDate, maxDate } = getMinMaxDatesForYear(filters);
+                if (filters.Year != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [minDate, maxDate],
+                    };
+                }
+
+                const maxCreatedDate = getMaxDate(filters);
+                if (filters.Year != null && filters.Month != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.lt] : maxCreatedDate,
+                    };
+                }
+                if (filters.From != null && filters.To != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [filters.From, filters.To],
+                    };
+                }
+ 
+                const enrolledUsers = await CareplanEnrollment.findAndCountAll(search);
+
+                const totalUsers = await this.getTotalUsers(filters);
+     
+                const enrolledUsersRatio = ((enrolledUsers.count) / (totalUsers.count) * 100).toFixed(2);
+
+                const  enrolledUsersDetails = {
+                    Count : enrolledUsers.count,
+                    Ratio : enrolledUsersRatio,
+                };
+
+                return enrolledUsersDetails;
+                 
+            }
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+     
+    private getTotalUsers = async (filters: StatisticSearchFilters): Promise<any> => {
+        try {
+            const { minDate, maxDate } = getMinMaxDatesForYear(filters);
+            const maxCreatedDate = getMaxDate(filters);
+            const search: any = { where: {}, include: [], paranoid: false };
+ 
+            const includesObj =
+             {
+                 model    : Person,
+                 required : true,
+                 where    : {},
+                 paranoid : false,
+             };
+      
+            includesObj.where['Phone'] = {
+                [Op.notBetween] : [1000000000, 1000000100],
+            };
+
+            if (filters.Year != null)  {
+                includesObj.where['CreatedAt'] = {
+                    [Op.between] : [minDate, maxDate],
+                };
+            }
+            if (filters.Year != null && filters.Month != null)  {
+                includesObj.where['CreatedAt'] = {
+                    [Op.lt] : maxCreatedDate,
+                };
+            }
+            if (filters.From != null && filters.To != null)  {
+                includesObj.where['CreatedAt'] = {
+                    [Op.between] : [filters.From, filters.To],
+                };
+            }
+ 
+            search.include.push(includesObj);
+     
+            const totalUsers = await Patient.findAndCountAll(search);
+ 
+            return totalUsers;
+
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+ 
     private  getPhysicalActivityUsers = async (totalUsers, filters) => {
         try {
-            const { minDate, maxDate } = getMinMaxDates(filters);
+            const { minDate, maxDate } = getMinMaxDatesForYear(filters);
             const physicalActivityDetails = [];
             var physicalActivityUsers = {};
 
@@ -1125,7 +1411,7 @@ export class StatisticsRepo implements IStatisticsRepo {
 
     private  getMeditationUsers = async (totalUsers, filters) => {
         try {
-            const { minDate, maxDate } = getMinMaxDates(filters);
+            const { minDate, maxDate } = getMinMaxDatesForYear(filters);
             const meditationDetails = [];
             let meditationUsers = {};
 
@@ -1173,7 +1459,7 @@ export class StatisticsRepo implements IStatisticsRepo {
 
     private  getMedicationUsers = async (totalUsers, filters) => {
         try {
-            const { minDate, maxDate } = getMinMaxDates(filters);
+            const { minDate, maxDate } = getMinMaxDatesForYear(filters);
             const medicationDetails = [];
             let medicationUsers = {};
 
@@ -1222,7 +1508,7 @@ export class StatisticsRepo implements IStatisticsRepo {
 
     private  getSymptomUsers = async (totalUsers, filters) => {
         try {
-            const { minDate, maxDate } = getMinMaxDates(filters);
+            const { minDate, maxDate } = getMinMaxDatesForYear(filters);
             const symptomDetails = [];
             let symptomUsers = {};
 
@@ -1273,7 +1559,7 @@ export class StatisticsRepo implements IStatisticsRepo {
 
     private  getLabRecordUsers = async (totalUsers, filters) => {
         try {
-            const { minDate, maxDate } = getMinMaxDates(filters);
+            const { minDate, maxDate } = getMinMaxDatesForYear(filters);
             const labRecordDetails = [];
             let labRecordUsers = {};
 
@@ -1323,7 +1609,7 @@ export class StatisticsRepo implements IStatisticsRepo {
 
     private  getNutritionUsers = async (totalUsers, filters) => {
         try {
-            const { minDate, maxDate } = getMinMaxDates(filters);
+            const { minDate, maxDate } = getMinMaxDatesForYear(filters);
             const nutritionDetails = [];
             let nutritionUsers = {};
 
@@ -1494,7 +1780,7 @@ export class StatisticsRepo implements IStatisticsRepo {
 
     private  getPersons = async (filters) => {
         try {
-            const { minDate, maxDate } = getMinMaxDates(filters);
+            const { minDate, maxDate } = getMinMaxDatesForYear(filters);
             const search: any = { where: {}, paranoid: false };
 
             search.where['Phone'] = {
@@ -1537,7 +1823,7 @@ export class StatisticsRepo implements IStatisticsRepo {
 
     private  getUsers = async (filters) => {
         try {
-            const { minDate, maxDate } = getMinMaxDates(filters);
+            const { minDate, maxDate } = getMinMaxDatesForYear(filters);
             const search: any = { where: {}, include: [],  paranoid: false };
 
             const includesObj =
@@ -1592,7 +1878,7 @@ export class StatisticsRepo implements IStatisticsRepo {
 
     private  getDoctors = async (filters) => {
         try {
-            const { minDate, maxDate } = getMinMaxDates(filters);
+            const { minDate, maxDate } = getMinMaxDatesForYear(filters);
             const search: any = { where: {}, include: [],  paranoid: false };
 
             const includesObj =
@@ -1647,7 +1933,7 @@ export class StatisticsRepo implements IStatisticsRepo {
 
     private  getAdmins = async (filters) => {
         try {
-            const { minDate, maxDate } = getMinMaxDates(filters);
+            const { minDate, maxDate } = getMinMaxDatesForYear(filters);
             const search: any = { where: {}, include: [],  paranoid: false };
 
             const includesObj =
@@ -1697,7 +1983,7 @@ export class StatisticsRepo implements IStatisticsRepo {
     private  getEnrollments = async (filters) => {
         try {
 
-            const { minDate, maxDate } = getMinMaxDates(filters);
+            const { minDate, maxDate } = getMinMaxDatesForYear(filters);
             const maxCreatedDate = getMaxDate(filters);
             const search: any = { where: {}, include: [], paranoid: false };
 
@@ -1810,7 +2096,7 @@ export class StatisticsRepo implements IStatisticsRepo {
 
     private  getEmergencyContacts = async (filters) => {
         try {
-            const { minDate, maxDate } = getMinMaxDates(filters);
+            const { minDate, maxDate } = getMinMaxDatesForYear(filters);
             const search: any = { where: {}, paranoid: false };
 
             search.where['Phone'] = {
@@ -2128,7 +2414,7 @@ export class StatisticsRepo implements IStatisticsRepo {
 
 }
 
-function getMinMaxDates(filters) {
+function getMinMaxDatesForYear(filters) {
     const minDate = new Date();
     minDate.setUTCFullYear(filters.Year, 0, 1);
     minDate.setUTCHours(0, 0, 0, 0);
@@ -2147,6 +2433,17 @@ function getMaxDate(filters):Date {
     maxDate.setUTCHours(0, 0, 0, 0);
 
     return maxDate ;
+}
+
+function getStartAndEndDateForPastMonths (filters) {
+
+    const startDate = new Date();
+    startDate.setUTCHours(0, 0, 0, 0);
+
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() - filters.PastMonths);
+
+    return { startDate , endDate };
 }
 
 function getNumberOfDays (year: number, month: number): number {

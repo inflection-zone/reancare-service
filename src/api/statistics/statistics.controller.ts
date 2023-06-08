@@ -24,48 +24,33 @@ export class StatisticsController extends BaseController {
 
     //#region Action methods
 
-    getTotalUsers = async (request: express.Request, response: express.Response): Promise<void> => {
+    getUsersCount = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
-            await this.setContext('Statistics.GetTotalUsers', request, response);
+            await this.setContext('Statistics.GetUsersCount', request, response);
             const filters = await this._validator.searchFilter(request);
-            const totalUsers = await this._service.getTotalUsers(filters);
-            const message = 'Total users retrieved successfully!';
+            const usersCountStats  = await this._service.getUsersCount(filters);
+            const message = 'Users count stats retrieved successfully!';
             ResponseHandler.success(request, response,message, 200, {
-                TotalUsers : totalUsers });
-
+                UsersCountStats : usersCountStats  });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
         }
     };
 
-    getNonDeletedUsers = async (request: express.Request, response: express.Response): Promise<void> => {
+    getUsersStats = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
-            await this.setContext('Statistics.GetNonDeletdUsers', request, response);
+            await this.setContext('Statistics.GetUsersStats', request, response);
             const filters = await this._validator.searchFilter(request);
-            const nonDeletedUsers = await this._service.getNonDeletedUsers(filters);
-            const message = 'Non deleted users retrieved successfully!';
+            const usersStats = await this._service.getUsersStats(filters);
+            const message = 'Users stats retrieved successfully!';
             ResponseHandler.success(request, response,message, 200, {
-                NonDeletedUsers : nonDeletedUsers });
+                UsersStats : usersStats });
 
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
         }
     };
-
-    getActiveUsers = async (request: express.Request, response: express.Response): Promise<void> => {
-        try {
-            await this.setContext('Statistics.GetActiveUsers', request, response);
-            const filters = await this._validator.searchFilter(request);
-            const activeUsers = await this._service.getActiveUsers(filters);
-            const message = 'Active users retrieved successfully!';
-            ResponseHandler.success(request, response,message, 200, {
-                ActiveUsers : activeUsers });
-
-        } catch (error) {
-            ResponseHandler.handleError(request, response, error);
-        }
-    };
-
+    
     getUsersByRole = async (request: express.Request, response: express.Response): Promise<void> => {
         try {
             await this.setContext('Statistics.GetUsersByRole', request, response);
@@ -74,20 +59,6 @@ export class StatisticsController extends BaseController {
             const message = 'Role wise distribution retrieved successfully!';
             ResponseHandler.success(request, response,message, 200, {
                 RoleDistribution : roleDistribution });
-
-        } catch (error) {
-            ResponseHandler.handleError(request, response, error);
-        }
-    };
-
-    getDeletedUsers = async (request: express.Request, response: express.Response): Promise<void> => {
-        try {
-            await this.setContext('Statistics.GetDeletdUsers', request, response);
-            const filters = await this._validator.searchFilter(request);
-            const deletedUsers = await this._service.getDeletedUsers(filters);
-            const message = 'Deleted users retrieved successfully!';
-            ResponseHandler.success(request, response,message, 200, {
-                DeletedUsers : deletedUsers });
 
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -234,33 +205,6 @@ export class StatisticsController extends BaseController {
             const message = 'Obesity distribution wise users retrieved successfully!';
             ResponseHandler.success(request, response,message, 200, {
                 ObesityDistribution : obesityDistribution });
-        } catch (error) {
-            ResponseHandler.handleError(request, response, error);
-        }
-    };
-
-    getUsersCount = async (request: express.Request, response: express.Response): Promise<void> => {
-        try {
-            await this.setContext('Statistics.GetUsersCount', request, response);
-            const filters = await this._validator.searchFilter(request);
-            const overallUsers  = await this._service.getUsersCount(filters);
-            const message = 'Overall users data retrieved successfully!';
-            ResponseHandler.success(request, response,message, 200, {
-                OverallUsers : overallUsers  });
-        } catch (error) {
-            ResponseHandler.handleError(request, response, error);
-        }
-    };
-
-    getUsersStats = async (request: express.Request, response: express.Response): Promise<void> => {
-        try {
-            await this.setContext('Statistics.GetUsersStats', request, response);
-            const filters = await this._validator.searchFilter(request);
-            const usersStats = await this._service.getUsersStats(filters);
-            const message = 'Users stats retrieved successfully!';
-            ResponseHandler.success(request, response,message, 200, {
-                UsersStats : usersStats });
-
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
         }
