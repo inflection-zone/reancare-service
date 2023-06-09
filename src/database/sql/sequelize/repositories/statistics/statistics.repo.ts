@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+import { Op, QueryTypes } from 'sequelize';
 import { CountryCurrencyPhone } from 'country-currency-phone';
 import { ApiError } from '../../../../../common/api.error';
 import { Logger } from '../../../../../common/logger';
@@ -35,10 +35,13 @@ import Doctor from '../../models/users/doctor.model';
 import EmergencyContact from '../../models/users/patient/emergency.contact.model';
 import { DurationType } from '../../../../../domain.types/miscellaneous/time.types';
 import { StatisticSearchFilters } from '../../../../../domain.types/statistics/statistics.search.type';
+import { Sequelize } from 'sequelize-typescript';
 
 ///////////////////////////////////////////////////////////////////////
 
 export class StatisticsRepo implements IStatisticsRepo {
+    
+    private _sequelize: Sequelize = null;
 
     getUsersCount = async (filters: StatisticSearchFilters): Promise<any> => {
         try {
@@ -396,7 +399,7 @@ export class StatisticsRepo implements IStatisticsRepo {
     getUsersByEnrollment = async (filters): Promise<any> => {
         try {
             const totalUsers = await this.getTotalUsers(filters);
-
+           
             const enrollmentDetails = [];
             for (const u of totalUsers.rows) {
                 const enrollmentDetail = await CareplanEnrollment.findOne({ where : {
@@ -834,7 +837,7 @@ export class StatisticsRepo implements IStatisticsRepo {
             const totalUsers = await this.getTotalUsers(filters);
             let biometricUsers = {} || [] ;
 
-            const cholesterolUsers = await this.getCholestrolUsers(totalUsers, filters);
+            const cholesterolUsers = await this.getCholestrolUsers(totalUsers,filters);
 
             const glucoseUsers = await this.getGlucoseUsers(totalUsers, filters);
 
@@ -850,7 +853,7 @@ export class StatisticsRepo implements IStatisticsRepo {
 
             const pulseUsers = await this.getPulseUsers(totalUsers, filters);
 
-            if (filters.Year != null) {
+            if (filters.PastMonths != null) {
                 biometricUsers = {
                     CholesterolUsers      : cholesterolUsers,
                     GlucoseUsers          : glucoseUsers,
@@ -2148,33 +2151,205 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
-    private  getCholestrolUsers = async (totalUsers, filters) => {
+    private  getCholestrolUsers = async (totalUsers, filters: StatisticSearchFilters) => {
         try {
-            let cholestrolUsers = {};
-            const cholestrolDetails = [];
-            for (const u of totalUsers.rows) {
-                const cholestrolDetail = await BloodCholesterol.findOne({
-                    where : {
-                        PatientUserId : u.UserId,
-                    }, paranoid : false
-                });
-                if (cholestrolDetail !== null) {
-                    cholestrolDetails.push(cholestrolDetail);
+            const search: any = { where: {}, };
+ 
+            if (filters.PastMonths != null) {
+ 
+                const cholestrolUsersForMonths = [];
+ 
+                for (var i = 0; i < filters.PastMonths; i++) {
+                    var date = TimeHelper.subtractDuration(new Date(), i, DurationType.Month);
+                    var startOfMonth = TimeHelper.startOf(date, DurationType.Month);
+                    var endOfMonth = TimeHelper.endOf(date, DurationType.Month);
+                    var monthName = TimeHelper.format(date, 'MMMM, YYYY');
+         
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [startOfMonth, endOfMonth],
+                    };
+
+                    const cholestrolUsers = await BloodCholesterol.findAndCountAll(search);
+ 
+                    var cholestrolUsersForMonth = {
+                        Month : monthName,
+                        Count : cholestrolUsers.count
+                    };
+                    cholestrolUsersForMonths.push(cholestrolUsersForMonth);
                 }
+                return cholestrolUsersForMonths;
             }
+            else {
+                const { minDate, maxDate } = getMinMaxDatesForYear(filters);
+                if (filters.Year != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [minDate, maxDate],
+                    };
+                }
 
-            const cholestrolUsersRatio = ((cholestrolDetails.length) / (totalUsers.count) * 100).toFixed(2);
-            cholestrolUsers = {
-                Biometrics : 'Cholestrol',
-                Count      : cholestrolDetails.length,
-                Ratio      : cholestrolUsersRatio
-            };
+                const maxCreatedDate = getMaxDate(filters);
+                if (filters.Year != null && filters.Month != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.lt] : maxCreatedDate,
+                    };
+                }
+                if (filters.From != null && filters.To != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [filters.From, filters.To],
+                    };
+                }
+ 
+                const cholestrols = await BloodCholesterol.findAndCountAll(search);
+     
+                const cholestrolUsersRatio = ((cholestrols.count) / (totalUsers.count) * 100).toFixed(2);
 
-            if (filters.Year !== null) {
-                cholestrolUsers = getMonthlyUsers(cholestrolDetails, totalUsers);
+                const  cholestrolUsers = {
+                    Biometrics : 'Cholestrol',
+                    Count      : cholestrols.count,
+                    Ratio      : cholestrolUsersRatio
+                };
+
+                return cholestrolUsers;
+
             }
+        }
+        catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
 
-            return cholestrolUsers;
+    private  getGlucoseUsers = async (totalUsers, filters: StatisticSearchFilters) => {
+        try {
+            const search: any = { where: {}, };
+ 
+            if (filters.PastMonths != null) {
+ 
+                const glucoseUsersForMonths = [];
+ 
+                for (var i = 0; i < filters.PastMonths; i++) {
+                    var date = TimeHelper.subtractDuration(new Date(), i, DurationType.Month);
+                    var startOfMonth = TimeHelper.startOf(date, DurationType.Month);
+                    var endOfMonth = TimeHelper.endOf(date, DurationType.Month);
+                    var monthName = TimeHelper.format(date, 'MMMM, YYYY');
+         
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [startOfMonth, endOfMonth],
+                    };
+
+                    const glucoseUsers = await BloodGlucose.findAndCountAll(search);
+ 
+                    var glucoseUsersForMonth = {
+                        Month : monthName,
+                        Count : glucoseUsers.count
+                    };
+                    glucoseUsersForMonths.push(glucoseUsersForMonth);
+                }
+
+                return glucoseUsersForMonths;
+
+            }
+            else {
+                const { minDate, maxDate } = getMinMaxDatesForYear(filters);
+                if (filters.Year != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [minDate, maxDate],
+                    };
+                }
+
+                const maxCreatedDate = getMaxDate(filters);
+                if (filters.Year != null && filters.Month != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.lt] : maxCreatedDate,
+                    };
+                }
+                if (filters.From != null && filters.To != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [filters.From, filters.To],
+                    };
+                }
+ 
+                const glucoseUsers = await BloodGlucose.findAndCountAll(search);
+     
+                const glucoseUsersUsersRatio = ((glucoseUsers.count) / (totalUsers.count) * 100).toFixed(2);
+
+                const glucoseUsersData = {
+                    Biometrics : 'Glucose',
+                    Count      : glucoseUsers.count,
+                    Ratio      : glucoseUsersUsersRatio
+                };
+        
+                return glucoseUsersData;
+
+            }
+        } catch (error) {
+            Logger.instance().log(error.message);
+            throw new ApiError(500, error.message);
+        }
+    };
+
+    private  getOxygenSaturationUsers = async (totalUsers, filters: StatisticSearchFilters) => {
+        try {
+
+            const search: any = { where: {}, };
+ 
+            if (filters.PastMonths != null) {
+ 
+                const oxygenSaturationUsersForMonths = [];
+ 
+                for (var i = 0; i < filters.PastMonths; i++) {
+                    var date = TimeHelper.subtractDuration(new Date(), i, DurationType.Month);
+                    var startOfMonth = TimeHelper.startOf(date, DurationType.Month);
+                    var endOfMonth = TimeHelper.endOf(date, DurationType.Month);
+                    var monthName = TimeHelper.format(date, 'MMMM, YYYY');
+         
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [startOfMonth, endOfMonth],
+                    };
+
+                    const oxygenSaturationUsers = await BloodOxygenSaturation.findAndCountAll(search);
+ 
+                    var oxygenSaturationUsersForMonth = {
+                        Month : monthName,
+                        Count : oxygenSaturationUsers.count
+                    };
+                    oxygenSaturationUsersForMonths.push(oxygenSaturationUsersForMonth);
+                }
+                return oxygenSaturationUsersForMonths;
+            }
+            else {
+                const { minDate, maxDate } = getMinMaxDatesForYear(filters);
+                if (filters.Year != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [minDate, maxDate],
+                    };
+                }
+
+                const maxCreatedDate = getMaxDate(filters);
+                if (filters.Year != null && filters.Month != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.lt] : maxCreatedDate,
+                    };
+                }
+                if (filters.From != null && filters.To != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [filters.From, filters.To],
+                    };
+                }
+ 
+                const oxygenSaturationUsers = await BloodOxygenSaturation.findAndCountAll(search);
+     
+                const oxygenSaturationUsersRatio = ((oxygenSaturationUsers.count) / (totalUsers.count) * 100).toFixed(2);
+
+                const oxygenSaturationUsersData = {
+                    Biometrics : 'Oxygen Saturation',
+                    Count      : oxygenSaturationUsers.count,
+                    Ratio      : oxygenSaturationUsersRatio
+                };
+    
+                return oxygenSaturationUsersData;
+
+            }
 
         } catch (error) {
             Logger.instance().log(error.message);
@@ -2182,230 +2357,335 @@ export class StatisticsRepo implements IStatisticsRepo {
         }
     };
 
-    private  getGlucoseUsers = async (totalUsers, filters) => {
+    private  getBloodPressureUsers = async (totalUsers, filters: StatisticSearchFilters) => {
         try {
-            let glucoseUsers = {};
-            const glucoseDetails = [];
-            for (const u of totalUsers.rows) {
-                const glucoseDetail = await BloodGlucose.findOne({ where : {
-                    PatientUserId : u.UserId,
-                }, paranoid : false });
-                if (glucoseDetail !== null){
-                    glucoseDetails.push(glucoseDetail);
+            const search: any = { where: {}, };
+ 
+            if (filters.PastMonths != null) {
+ 
+                const bloodPressureUsersForMonths = [];
+ 
+                for (var i = 0; i < filters.PastMonths; i++) {
+                    var date = TimeHelper.subtractDuration(new Date(), i, DurationType.Month);
+                    var startOfMonth = TimeHelper.startOf(date, DurationType.Month);
+                    var endOfMonth = TimeHelper.endOf(date, DurationType.Month);
+                    var monthName = TimeHelper.format(date, 'MMMM, YYYY');
+         
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [startOfMonth, endOfMonth],
+                    };
+
+                    const bloodPressureUsers = await BloodPressure.findAndCountAll(search);
+ 
+                    var bloodPressureUsersForMonth = {
+                        Month : monthName,
+                        Count : bloodPressureUsers.count
+                    };
+                    bloodPressureUsersForMonths.push(bloodPressureUsersForMonth);
                 }
+                return bloodPressureUsersForMonths;
             }
+            else {
+                const { minDate, maxDate } = getMinMaxDatesForYear(filters);
+                if (filters.Year != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [minDate, maxDate],
+                    };
+                }
 
-            const glucoseUsersRatio = ((glucoseDetails.length) / (totalUsers.count) * 100).toFixed(2);
+                const maxCreatedDate = getMaxDate(filters);
+                if (filters.Year != null && filters.Month != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.lt] : maxCreatedDate,
+                    };
+                }
+                if (filters.From != null && filters.To != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [filters.From, filters.To],
+                    };
+                }
+ 
+                const bloodPressureUsers = await BloodPressure.findAndCountAll(search);
+     
+                const bloodPressureUsersRatio = ((bloodPressureUsers.count) / (totalUsers.count) * 100).toFixed(2);
 
-            glucoseUsers = {
-                Biometrics : 'Glucose',
-                Count      : glucoseDetails.length,
-                Ratio      : glucoseUsersRatio
-            };
+                const bloodPressureUsersData = {
+                    Biometrics : 'Blood Pressure',
+                    Count      : bloodPressureUsers.count,
+                    Ratio      : bloodPressureUsersRatio
+                };
+        
+                return bloodPressureUsersData;
 
-            if (filters.Year !== null) {
-                glucoseUsers = getMonthlyUsers(glucoseDetails,totalUsers);
             }
-
-            return glucoseUsers;
-
         } catch (error) {
             Logger.instance().log(error.message);
             throw new ApiError(500, error.message);
         }
     };
 
-    private  getOxygenSaturationUsers = async (totalUsers, filters) => {
+    private  getBodyHeightUsers = async (totalUsers, filters: StatisticSearchFilters) => {
         try {
-            let oxygenSaturationUsers = {};
-            const oxygenSaturationDetails = [];
-            for (const u of totalUsers.rows) {
-                const oxygenSaturationDetail = await BloodOxygenSaturation.findOne({ where : {
-                    PatientUserId : u.UserId,
-                }, paranoid : false });
-                if (oxygenSaturationDetail !== null){
-                    oxygenSaturationDetails.push(oxygenSaturationDetail);
+            const search: any = { where: {}, };
+ 
+            if (filters.PastMonths != null) {
+ 
+                const bodyHeightUsersForMonths = [];
+ 
+                for (var i = 0; i < filters.PastMonths; i++) {
+                    var date = TimeHelper.subtractDuration(new Date(), i, DurationType.Month);
+                    var startOfMonth = TimeHelper.startOf(date, DurationType.Month);
+                    var endOfMonth = TimeHelper.endOf(date, DurationType.Month);
+                    var monthName = TimeHelper.format(date, 'MMMM, YYYY');
+         
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [startOfMonth, endOfMonth],
+                    };
+
+                    const bodyHeightUsers = await BodyHeight.findAndCountAll(search);
+ 
+                    var bodyHeightUsersForMonth = {
+                        Month : monthName,
+                        Count : bodyHeightUsers.count
+                    };
+                    bodyHeightUsersForMonths.push(bodyHeightUsersForMonth);
                 }
+                return bodyHeightUsersForMonths;
             }
+            else {
+                const { minDate, maxDate } = getMinMaxDatesForYear(filters);
+                if (filters.Year != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [minDate, maxDate],
+                    };
+                }
 
-            const oxygenSaturationUsersRatio = ((oxygenSaturationDetails.length) / (totalUsers.count) * 100).toFixed(2);
+                const maxCreatedDate = getMaxDate(filters);
+                if (filters.Year != null && filters.Month != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.lt] : maxCreatedDate,
+                    };
+                }
+                if (filters.From != null && filters.To != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [filters.From, filters.To],
+                    };
+                }
+ 
+                const bodyHeightUsers = await BodyHeight.findAndCountAll(search);
+     
+                const bodyHeightUsersRatio = ((bodyHeightUsers.count) / (totalUsers.count) * 100).toFixed(2);
 
-            oxygenSaturationUsers = {
-                Biometrics : 'Oxygen Saturation',
-                Count      : oxygenSaturationDetails.length,
-                Ratio      : oxygenSaturationUsersRatio
-            };
+                const bodyHeightUsersData = {
+                    Biometrics : 'Body Height',
+                    Count      : bodyHeightUsers.count,
+                    Ratio      : bodyHeightUsersRatio
+                };
+        
+                return bodyHeightUsersData;
 
-            if (filters.Year !== null) {
-                oxygenSaturationUsers = getMonthlyUsers(oxygenSaturationDetails,totalUsers);
             }
-
-            return oxygenSaturationUsers;
-
         } catch (error) {
             Logger.instance().log(error.message);
             throw new ApiError(500, error.message);
         }
     };
 
-    private  getBloodPressureUsers = async (totalUsers, filters) => {
+    private  getBodyWeightUsers = async (totalUsers, filters: StatisticSearchFilters) => {
         try {
-            let bloodPressureUsers = {};
+            const search: any = { where: {}, };
+ 
+            if (filters.PastMonths != null) {
+ 
+                const bodyWeightUsersForMonths = [];
+ 
+                for (var i = 0; i < filters.PastMonths; i++) {
+                    var date = TimeHelper.subtractDuration(new Date(), i, DurationType.Month);
+                    var startOfMonth = TimeHelper.startOf(date, DurationType.Month);
+                    var endOfMonth = TimeHelper.endOf(date, DurationType.Month);
+                    var monthName = TimeHelper.format(date, 'MMMM, YYYY');
+         
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [startOfMonth, endOfMonth],
+                    };
 
-            const bloodPressureDetails = [];
-            for (const u of totalUsers.rows) {
-                const bloodPressureDetail = await BloodPressure.findOne({ where : {
-                    PatientUserId : u.UserId,
-                }, paranoid : false });
-                if (bloodPressureDetail !== null){
-                    bloodPressureDetails.push(bloodPressureDetail);
+                    const bodyWeightUsers = await BodyWeight.findAndCountAll(search);
+ 
+                    var bodyWeightUsersForMonth = {
+                        Month : monthName,
+                        Count : bodyWeightUsers.count
+                    };
+                    bodyWeightUsersForMonths.push(bodyWeightUsersForMonth);
                 }
+                return bodyWeightUsersForMonths;
             }
+            else {
+                const { minDate, maxDate } = getMinMaxDatesForYear(filters);
+                if (filters.Year != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [minDate, maxDate],
+                    };
+                }
 
-            const bloodPressureUsersRatio = ((bloodPressureDetails.length) / (totalUsers.count) * 100).toFixed(2);
-            bloodPressureUsers = {
-                Biometrics : 'Blood Pressure',
-                Count      : bloodPressureDetails.length,
-                Ratio      : bloodPressureUsersRatio
-            };
+                const maxCreatedDate = getMaxDate(filters);
+                if (filters.Year != null && filters.Month != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.lt] : maxCreatedDate,
+                    };
+                }
+                if (filters.From != null && filters.To != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [filters.From, filters.To],
+                    };
+                }
+ 
+                const bodyWeightUsers = await BodyWeight.findAndCountAll(search);
+     
+                const bodyWeightUsersRatio = ((bodyWeightUsers.count) / (totalUsers.count) * 100).toFixed(2);
 
-            if (filters.Year !== null) {
-                bloodPressureUsers = getMonthlyUsers(bloodPressureDetails,totalUsers);
+                const bodyWeightUsersData = {
+                    Biometrics : 'Body Weight',
+                    Count      : bodyWeightUsers.count,
+                    Ratio      : bodyWeightUsersRatio
+                };
+        
+                return bodyWeightUsersData;
+
             }
-
-            return bloodPressureUsers;
-
         } catch (error) {
             Logger.instance().log(error.message);
             throw new ApiError(500, error.message);
         }
     };
 
-    private  getBodyHeightUsers = async (totalUsers, filters) => {
+    private  getBodyTempratureUsers = async (totalUsers, filters: StatisticSearchFilters) => {
         try {
-            let bodyHeightUsers = {};
-            const bodyHeightDetails = [];
-            for (const u of totalUsers.rows) {
-                const bodyHeightDetail = await BodyHeight.findOne({ where : {
-                    PatientUserId : u.UserId,
-                }, paranoid : false });
-                if (bodyHeightDetail !== null){
-                    bodyHeightDetails.push(bodyHeightDetail);
+            const search: any = { where: {}, };
+ 
+            if (filters.PastMonths != null) {
+ 
+                const bodyTempratureUsersForMonths = [];
+ 
+                for (var i = 0; i < filters.PastMonths; i++) {
+                    var date = TimeHelper.subtractDuration(new Date(), i, DurationType.Month);
+                    var startOfMonth = TimeHelper.startOf(date, DurationType.Month);
+                    var endOfMonth = TimeHelper.endOf(date, DurationType.Month);
+                    var monthName = TimeHelper.format(date, 'MMMM, YYYY');
+         
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [startOfMonth, endOfMonth],
+                    };
+
+                    const bodyTempratureUsers = await BodyTemperature.findAndCountAll(search);
+ 
+                    var bodyTempratureUsersForMonth = {
+                        Month : monthName,
+                        Count : bodyTempratureUsers.count
+                    };
+                    bodyTempratureUsersForMonths.push(bodyTempratureUsersForMonth);
                 }
+                return bodyTempratureUsersForMonths;
             }
+            else {
+                const { minDate, maxDate } = getMinMaxDatesForYear(filters);
+                if (filters.Year != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [minDate, maxDate],
+                    };
+                }
 
-            const bodyHeightUsersRatio = ((bodyHeightDetails.length) / (totalUsers.count) * 100).toFixed(2);
-            
-            bodyHeightUsers = {
-                Biometrics : 'Body Height',
-                Count      : bodyHeightDetails.length,
-                Ratio      : bodyHeightUsersRatio
-            };
+                const maxCreatedDate = getMaxDate(filters);
+                if (filters.Year != null && filters.Month != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.lt] : maxCreatedDate,
+                    };
+                }
+                if (filters.From != null && filters.To != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [filters.From, filters.To],
+                    };
+                }
+ 
+                const bodyTempratureUsers = await BodyTemperature.findAndCountAll(search);
+     
+                const bodyTempratureUsersRatio = ((bodyTempratureUsers.count) / (totalUsers.count) * 100).toFixed(2);
 
-            if (filters.Year !== null) {
-                bodyHeightUsers = getMonthlyUsers(bodyHeightDetails,totalUsers);
+                const bodyTempratureUsersData = {
+                    Biometrics : 'Body Temprature',
+                    Count      : bodyTempratureUsers.count,
+                    Ratio      : bodyTempratureUsersRatio
+                };
+        
+                return bodyTempratureUsersData;
+
             }
-
-            return bodyHeightUsers;
-
         } catch (error) {
             Logger.instance().log(error.message);
             throw new ApiError(500, error.message);
         }
     };
 
-    private  getBodyWeightUsers = async (totalUsers, filters) => {
+    private  getPulseUsers = async (totalUsers, filters: StatisticSearchFilters) => {
         try {
-            let bodyWeightUsers = {};
-            const bodyWeightDetails = [];
-            for (const u of totalUsers.rows) {
-                const bodyWeightDetail = await BodyWeight.findOne({ where : {
-                    PatientUserId : u.UserId,
-                }, paranoid : false });
-                if (bodyWeightDetail !== null){
-                    bodyWeightDetails.push(bodyWeightDetail);
+            const search: any = { where: {}, };
+ 
+            if (filters.PastMonths != null) {
+ 
+                const pulseUsersForMonths = [];
+ 
+                for (var i = 0; i < filters.PastMonths; i++) {
+                    var date = TimeHelper.subtractDuration(new Date(), i, DurationType.Month);
+                    var startOfMonth = TimeHelper.startOf(date, DurationType.Month);
+                    var endOfMonth = TimeHelper.endOf(date, DurationType.Month);
+                    var monthName = TimeHelper.format(date, 'MMMM, YYYY');
+         
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [startOfMonth, endOfMonth],
+                    };
+
+                    const pulseUsers = await Pulse.findAndCountAll(search);
+ 
+                    var pulseUsersForMonth = {
+                        Month : monthName,
+                        Count : pulseUsers.count
+                    };
+                    pulseUsersForMonths.push(pulseUsersForMonth);
                 }
+                return pulseUsersForMonths;
             }
-
-            const bodyWeightUsersRatio = ((bodyWeightDetails.length) / (totalUsers.count) * 100).toFixed(2);
-
-            bodyWeightUsers = {
-                Biometrics : 'Body Weight',
-                Count      : bodyWeightDetails.length,
-                Ratio      : bodyWeightUsersRatio
-            };
-
-            if (filters.Year !== null) {
-                bodyWeightUsers = getMonthlyUsers(bodyWeightDetails,totalUsers);
-            }
-
-            return bodyWeightUsers;
-
-        } catch (error) {
-            Logger.instance().log(error.message);
-            throw new ApiError(500, error.message);
-        }
-    };
-
-    private  getBodyTempratureUsers = async (totalUsers, filters) => {
-        try {
-            let bodyTempratureUsers = {};
-            const bodyTempratureDetails = [];
-            for (const u of totalUsers.rows) {
-                const bodyTempratureDetail = await BodyTemperature.findOne({ where : {
-                    PatientUserId : u.UserId,
-                }, paranoid : false });
-                if (bodyTempratureDetail !== null){
-                    bodyTempratureDetails.push(bodyTempratureDetail);
+            else {
+                const { minDate, maxDate } = getMinMaxDatesForYear(filters);
+                if (filters.Year != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [minDate, maxDate],
+                    };
                 }
-            }
 
-            const bodyTempratureUsersRatio = ((bodyTempratureDetails.length) / (totalUsers.count) * 100).toFixed(2);
-
-            bodyTempratureUsers = {
-                Biometrics : 'Body Temprature',
-                Count      : bodyTempratureDetails.length,
-                Ratio      : bodyTempratureUsersRatio
-            };
-
-            if (filters.Year !== null) {
-                bodyTempratureUsers = getMonthlyUsers(bodyTempratureDetails,totalUsers);
-            }
-
-            return bodyTempratureUsers;
-
-        } catch (error) {
-            Logger.instance().log(error.message);
-            throw new ApiError(500, error.message);
-        }
-    };
-
-    private  getPulseUsers = async (totalUsers, filters) => {
-        try {
-            let pulseUsers = {};
-            const pulseDetails = [];
-            for (const u of totalUsers.rows) {
-                const pulseDetail = await Pulse.findOne({ where : {
-                    PatientUserId : u.UserId,
-                }, paranoid : false });
-                if (pulseDetail !== null){
-                    pulseDetails.push(pulseDetail);
+                const maxCreatedDate = getMaxDate(filters);
+                if (filters.Year != null && filters.Month != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.lt] : maxCreatedDate,
+                    };
                 }
+                if (filters.From != null && filters.To != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [filters.From, filters.To],
+                    };
+                }
+ 
+                const pulseUsers = await Pulse.findAndCountAll(search);
+     
+                const pulseUsersRatio = ((pulseUsers.count) / (totalUsers.count) * 100).toFixed(2);
+
+                const pulseUsersData = {
+                    Biometrics : 'Pulse',
+                    Count      : pulseUsers.count,
+                    Ratio      : pulseUsersRatio
+                };
+        
+                return pulseUsersData;
+
             }
-
-            const pulseUsersRatio = ((pulseDetails.length) / (totalUsers.count) * 100).toFixed(2);
-            pulseUsers = {
-                Biometrics : 'Pulse',
-                Count      : pulseDetails.length,
-                Ratio      : pulseUsersRatio
-            };
-
-            if (filters.Year !== null) {
-                pulseUsers = getMonthlyUsers(pulseDetails,totalUsers);
-            }
-
-            return pulseUsers;
-
         } catch (error) {
             Logger.instance().log(error.message);
             throw new ApiError(500, error.message);
