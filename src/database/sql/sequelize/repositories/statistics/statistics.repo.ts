@@ -39,9 +39,11 @@ import { Sequelize } from 'sequelize-typescript';
 
 ///////////////////////////////////////////////////////////////////////
 
+const sequelize = new Sequelize("reanadmindata", "root", "root", {
+    host    : "localhost",
+    dialect : "mysql",
+});
 export class StatisticsRepo implements IStatisticsRepo {
-    
-    private _sequelize: Sequelize = null;
 
     getUsersCount = async (filters: StatisticSearchFilters): Promise<any> => {
         try {
@@ -278,59 +280,81 @@ export class StatisticsRepo implements IStatisticsRepo {
 
     getUsersByMaritalStatus = async (filters): Promise<any> => {
         try {
-            const totalUsers = await this.getTotalUsers(filters);
+            const search: any = {
+                where      : {},
+                include    : [],
+                paranoid   : false,
+                attributes : ['MaritalStatus'],
+                group      : ['MaritalStatus']
+            };
 
-            const healthProfileDetails = [];
-            for (const u of totalUsers.rows) {
-                const healthProfileDetail = await HealthProfile.findOne({ where : {
-                    PatientUserId : u.UserId,
-                }, paranoid : false } );
-                if (healthProfileDetail != null) {
-                    healthProfileDetails.push(healthProfileDetail);
+            const includeObj =
+            {
+                model    : User,
+                required : true,
+                where    : {},
+                include  : [{
+                    model    : Person,
+                    required : true,
+                    where    : {
+                        Phone : {
+                            [Op.notBetween] : [1000000000, 1000000100]
+                        }
+                    },
+                }]
+            };
+            
+            search.include.push(includeObj);
+
+            if (filters.PastMonths != null) {
+
+                const usersByMaritalStatusForMonths = [];
+
+                for (var i = 0; i < filters.PastMonths; i++) {
+                    var date = TimeHelper.subtractDuration(new Date(), i, DurationType.Month);
+                    var startOfMonth = TimeHelper.startOf(date, DurationType.Month);
+                    var endOfMonth = TimeHelper.endOf(date, DurationType.Month);
+                    var monthName = TimeHelper.format(date, 'MMMM, YYYY');
+     
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [startOfMonth, endOfMonth],
+                    };
+
+                    const healthProfileDetails = await HealthProfile.findAndCountAll(search);
+
+                    var usersByMaritalStatusForMonth = {
+                        Month : monthName,
+                        Count : healthProfileDetails.count
+                    };
+                    usersByMaritalStatusForMonths.push(usersByMaritalStatusForMonth);
                 }
-              
+                return usersByMaritalStatusForMonths;
             }
+            else {
+                const { minDate, maxDate } = getMinMaxDatesForYear(filters);
+                if (filters.Year != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [minDate, maxDate],
+                    };
+                }
 
-            const totalHealthProfileUsers = healthProfileDetails.map(x => x.MaritalStatus);
-            const marriedUsers = totalHealthProfileUsers.filter(x => x === "Married");
-            const singleUsers = totalHealthProfileUsers.filter(x => x === "Single");
-            const divorcedUsers = totalHealthProfileUsers.filter(x => x === "Divorced");
-            const widowedUsers = totalHealthProfileUsers.filter(x => x === "Widowed");
-            const statusNotSpecifiedUsers = totalHealthProfileUsers.filter(x => x === "Unknown");
+                const maxCreatedDate = getMaxDate(filters);
+                if (filters.Year != null && filters.Month != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.lt] : maxCreatedDate,
+                    };
+                }
+                if (filters.From != null && filters.To != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [filters.From, filters.To],
+                    };
+                }
 
-            const  marriedUsersDetails = {
-                status : "Married",
-                count  : marriedUsers.length
-            };
+                const usersByMaritalStatus = await HealthProfile.findAndCountAll(search);
 
-            const  singleUsersDetails = {
-                status : "Single",
-                count  : singleUsers.length
-            };
+                return usersByMaritalStatus.count;
 
-            const  divorcedUsersDetails = {
-                status : "Divorced",
-                count  : divorcedUsers.length
-            };
-
-            const widowedUsersDetails = {
-                status : "Widowed",
-                count  : widowedUsers.length
-            };
-
-            const statusNotSpecifiedUsersDetails = {
-                status : "Not Specified",
-                count  : statusNotSpecifiedUsers.length
-            };
-    
-            const  maritalStatusWiseUsers =
-                [marriedUsersDetails,
-                    singleUsersDetails,
-                    divorcedUsersDetails,
-                    widowedUsersDetails,
-                    statusNotSpecifiedUsersDetails];
-               
-            return maritalStatusWiseUsers;
+            }
     
         } catch (error) {
             Logger.instance().log(error.message);
@@ -340,56 +364,83 @@ export class StatisticsRepo implements IStatisticsRepo {
 
     getUsersByDeviceDetail = async (filters): Promise<any> => {
         try {
-            const _totalUsers = await this.getTotalUsers(filters);
 
-            const totalUsers  = _totalUsers.rows.map(x => x.UserId);
+            const search: any = {
+                where      : {},
+                include    : [],
+                paranoid   : false,
+                attributes : ['OSType'],
+                group      : ['OSType']
+            };
 
-            const deviceDetails = [];
-            for (const u of totalUsers) {
-                const deviceDetail = await UserDeviceDetails.findOne({ where : {
-                    UserId : u,
-                }, paranoid : false });
-                deviceDetails.push(deviceDetail);
+            const includeObj =
+            {
+                model    : User,
+                required : true,
+                where    : {},
+                include  : [{
+                    model    : Person,
+                    required : true,
+                    where    : {
+                        Phone : {
+                            [Op.notBetween] : [1000000000, 1000000100]
+                        }
+                    },
+                }]
+            };
+            
+            search.include.push(includeObj);
+
+            if (filters.PastMonths != null) {
+ 
+                const userDeviceDetailsForMonths = [];
+ 
+                for (var i = 0; i < filters.PastMonths; i++) {
+                    var date = TimeHelper.subtractDuration(new Date(), i, DurationType.Month);
+                    var startOfMonth = TimeHelper.startOf(date, DurationType.Month);
+                    var endOfMonth = TimeHelper.endOf(date, DurationType.Month);
+                    var monthName = TimeHelper.format(date, 'MMMM, YYYY');
+         
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [startOfMonth, endOfMonth],
+                    };
+
+                    const usersByDeviceDetails = await UserDeviceDetails.findAndCountAll(search);
+ 
+                    var userDeviceDetailsForMonth = {
+                        Month : monthName,
+                        Count : usersByDeviceDetails.count
+                    };
+                    userDeviceDetailsForMonths.push(userDeviceDetailsForMonth);
+                }
+                return userDeviceDetailsForMonths;
+            }
+            else {
+                const { minDate, maxDate } = getMinMaxDatesForYear(filters);
+                if (filters.Year != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [minDate, maxDate],
+                    };
+                }
+
+                const maxCreatedDate = getMaxDate(filters);
+                if (filters.Year != null && filters.Month != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.lt] : maxCreatedDate,
+                    };
+                }
+                if (filters.From != null && filters.To != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [filters.From, filters.To],
+                    };
+                }
+
+                const usersByDeviceDetails = await UserDeviceDetails.findAndCountAll(search);
+
+                return usersByDeviceDetails.count;
+
             }
 
-            const deviceDatilUsers = deviceDetails.filter(x => x !== null);
-
-            const androidUsers = deviceDatilUsers.filter(x => x.OSType === 'Android');
-
-            const androidUsersRatio = ((androidUsers.length) / (_totalUsers.count) * 100).toFixed(2);
-
-            const iOSUsers = deviceDatilUsers.filter(x => x.OSType === 'iOS');
-
-            const iOSUsersRatio = ((iOSUsers.length) / (_totalUsers.count) * 100).toFixed(2);
-
-            const deviceDetailNotSpecifiedUsers = deviceDetails.filter(x => x === null);
-
-            const deviceDetailNotSpecifiedUsersRatio =
-             ((deviceDetailNotSpecifiedUsers.length) / (_totalUsers.count) * 100).toFixed(2);
-
-            const  androidUsersDetails = {
-                Count : androidUsers.length,
-                Ratio : androidUsersRatio
-            };
-
-            const  iOSUsersDetails = {
-                Count : iOSUsers.length,
-                Ratio : iOSUsersRatio
-            };
-            
-            const  deviceDetailNotSpecifiedUsersDetails = {
-                Count : deviceDetailNotSpecifiedUsers.length,
-                Ratio : deviceDetailNotSpecifiedUsersRatio
-            };
-
-            const  deviceDetailsWiseUsers = {
-                AndroidUsers         : androidUsersDetails,
-                IOSUsers             : iOSUsersDetails,
-                MissingDeviceDetails : deviceDetailNotSpecifiedUsersDetails
-            };
-    
-            return deviceDetailsWiseUsers;
-            
         } catch (error) {
             Logger.instance().log(error.message);
             throw new ApiError(500, error.message);
@@ -398,60 +449,76 @@ export class StatisticsRepo implements IStatisticsRepo {
 
     getUsersByEnrollment = async (filters): Promise<any> => {
         try {
-            const totalUsers = await this.getTotalUsers(filters);
-           
-            const enrollmentDetails = [];
-            for (const u of totalUsers.rows) {
-                const enrollmentDetail = await CareplanEnrollment.findOne({ where : {
-                    PatientUserId : u.UserId,
-                }, paranoid : false });
-                enrollmentDetails.push(enrollmentDetail);
-            }
+      
+            const query = `select distinct (ce.PatientUserId) from careplan_enrollments as ce where ce.PlanCode = "Cholesterol" 
+            AND ce.PatientUserId IN 
+            (
+             SELECT distinct (pt.UserId) from patients as pt
+                JOIN users as u ON pt.UserId = u.id
+                JOIN persons as p ON u.PersonId = p.id
+                WHERE p.Phone not between "1000000000" and "1000000100" AND p.DeletedAt is null
+            )`;
+ 
+            const response = await sequelize.query(query,
+                {
+                    type : QueryTypes.SELECT,
+                }
+            );
 
-            const totalEnrollnemtUsers = enrollmentDetails.filter(x => x !== null);
+            return response;
+            // const totalUsers = await this.getTotalUsers(filters);
+            // const enrollmentDetails = [];
+            // for (const u of totalUsers.rows) {
+            //     const enrollmentDetail = await CareplanEnrollment.findOne({ where : {
+            //         PatientUserId : u.UserId,
+            //     }, paranoid : false });
+            //     enrollmentDetails.push(enrollmentDetail);
+            // }
 
-            const totalEnrollnemtUsersRatio =
-             ((totalEnrollnemtUsers.length) / (totalUsers.count) * 100).toFixed(2);
+            // const totalEnrollnemtUsers = enrollmentDetails.filter(x => x !== null);
 
-            const deviceDetails = [];
-            for (const u of totalEnrollnemtUsers) {
-                const deviceDetail  = await UserDeviceDetails.findOne({ where : {
-                    UserId : u.PatientUserId,
-                } });
-                deviceDetails.push(deviceDetail);
-            }
+            // const totalEnrollnemtUsersRatio =
+            //  ((totalEnrollnemtUsers.length) / (totalUsers.count) * 100).toFixed(2);
 
-            const deviceDatilUsers = deviceDetails.filter(x => x !== null);
+            // const deviceDetails = [];
+            // for (const u of totalEnrollnemtUsers) {
+            //     const deviceDetail  = await UserDeviceDetails.findOne({ where : {
+            //         UserId : u.PatientUserId,
+            //     } });
+            //     deviceDetails.push(deviceDetail);
+            // }
 
-            const androidUsers = deviceDatilUsers.filter(x => x.OSType === 'Android');
+            // const deviceDatilUsers = deviceDetails.filter(x => x !== null);
 
-            const androidUsersRatio = ((androidUsers.length) / (totalEnrollnemtUsers.length) * 100).toFixed(2);
+            // const androidUsers = deviceDatilUsers.filter(x => x.OSType === 'Android');
 
-            const iOSUsers = deviceDatilUsers.filter(x => x.OSType === 'iOS');
+            // const androidUsersRatio = ((androidUsers.length) / (totalEnrollnemtUsers.length) * 100).toFixed(2);
 
-            const iOSUsersRatio = ((iOSUsers.length) / (totalEnrollnemtUsers.length) * 100).toFixed(2);
+            // const iOSUsers = deviceDatilUsers.filter(x => x.OSType === 'iOS');
 
-            const  androidUsersDetails = {
-                Count : androidUsers.length,
-                Ratio : androidUsersRatio
-            };
+            // const iOSUsersRatio = ((iOSUsers.length) / (totalEnrollnemtUsers.length) * 100).toFixed(2);
 
-            const  iOSUsersDetails = {
-                Count : iOSUsers.length,
-                Ratio : iOSUsersRatio
-            };
-            const  totalEnrollnemtUsersDetails = {
-                Count : totalEnrollnemtUsers.length,
-                Ratio : totalEnrollnemtUsersRatio,
-            };
+            // const  androidUsersDetails = {
+            //     Count : androidUsers.length,
+            //     Ratio : androidUsersRatio
+            // };
 
-            const  enrollmentUsers = {
-                TotalEnrollnemtUsers : totalEnrollnemtUsersDetails,
-                AndroidUsers         : androidUsersDetails,
-                IOSUsers             : iOSUsersDetails,
-            };
+            // const  iOSUsersDetails = {
+            //     Count : iOSUsers.length,
+            //     Ratio : iOSUsersRatio
+            // };
+            // const  totalEnrollnemtUsersDetails = {
+            //     Count : totalEnrollnemtUsers.length,
+            //     Ratio : totalEnrollnemtUsersRatio,
+            // };
+
+            // const  enrollmentUsers = {
+            //     TotalEnrollnemtUsers : totalEnrollnemtUsersDetails,
+            //     AndroidUsers         : androidUsersDetails,
+            //     IOSUsers             : iOSUsersDetails,
+            // };
     
-            return enrollmentUsers;
+            // return enrollmentUsers;
             
         } catch (error) {
             Logger.instance().log(error.message);
@@ -536,47 +603,81 @@ export class StatisticsRepo implements IStatisticsRepo {
 
     getUsersByMajorAilment = async (filters): Promise<any> => {
         try {
-            const totalUsers = await this.getTotalUsers(filters);
-
-            const healthProfileDetails = [];
-            for (const u of totalUsers.rows) {
-                const healthProfileDetail = await HealthProfile.findOne({ where : {
-                    PatientUserId : u.UserId,
-                }, paranoid : false });
-                healthProfileDetails.push(healthProfileDetail);
-            }
-            
-            const totalMajorAilment_ = healthProfileDetails.filter(x => x !== null);
-            const totalMajorAilment = totalMajorAilment_.map(x => x.MajorAilment);
-            const majorAilments = totalMajorAilment.filter(x => x !== '');
-
-            const majorAilmentNotSpecified = (totalMajorAilment.length) - (majorAilments.length);
-            const ratio = ((majorAilmentNotSpecified) / (totalUsers.count) * 100).toFixed(2);
-
-            const majorAilmentDetail = {
-                MajorAilment : "Not Specified",
-                Count        : majorAilmentNotSpecified,
-                Ratio        : ratio,
+            const search: any = {
+                where      : {},
+                include    : [],
+                paranoid   : false,
+                attributes : ['MajorAilment'],
+                group      : ['MajorAilment']
             };
 
-            const uniqueMajorAilment = Array.from(new Set(majorAilments));
+            const includeObj =
+            {
+                model    : User,
+                required : true,
+                where    : {},
+                include  : [{
+                    model    : Person,
+                    required : true,
+                    where    : {
+                        Phone : {
+                            [Op.notBetween] : [1000000000, 1000000100]
+                        }
+                    },
+                }]
+            };
+            
+            search.include.push(includeObj);
 
-            const majorAilmentDistributionOfUsers = [];
+            if (filters.PastMonths != null) {
 
-            for (const m of uniqueMajorAilment) {
-                const majorAilment = majorAilments.filter(x => x === m);
-                const ratio = ((majorAilment.length) / (totalUsers.count) * 100).toFixed(2);
-                const majorAilmentDetail = {
-                    MajorAilment : m,
-                    Count        : majorAilment.length,
-                    Ratio        : ratio,
-                };
-                majorAilmentDistributionOfUsers.push(majorAilmentDetail);
+                const majorAilmentUsersForMonths = [];
+
+                for (var i = 0; i < filters.PastMonths; i++) {
+                    var date = TimeHelper.subtractDuration(new Date(), i, DurationType.Month);
+                    var startOfMonth = TimeHelper.startOf(date, DurationType.Month);
+                    var endOfMonth = TimeHelper.endOf(date, DurationType.Month);
+                    var monthName = TimeHelper.format(date, 'MMMM, YYYY');
+     
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [startOfMonth, endOfMonth],
+                    };
+
+                    const usersBymajorAilments = await HealthProfile.findAndCountAll(search);
+
+                    var majorAilmentUsersForMonth = {
+                        Month : monthName,
+                        Count : usersBymajorAilments.count
+                    };
+                    majorAilmentUsersForMonths.push(majorAilmentUsersForMonth);
+                }
+                return majorAilmentUsersForMonths;
             }
+            else {
+                const { minDate, maxDate } = getMinMaxDatesForYear(filters);
+                if (filters.Year != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [minDate, maxDate],
+                    };
+                }
 
-            majorAilmentDistributionOfUsers.push(majorAilmentDetail);
-            return majorAilmentDistributionOfUsers;
+                const maxCreatedDate = getMaxDate(filters);
+                if (filters.Year != null && filters.Month != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.lt] : maxCreatedDate,
+                    };
+                }
+                if (filters.From != null && filters.To != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [filters.From, filters.To],
+                    };
+                }
 
+                const usersBymajorAilments = await HealthProfile.findAndCountAll(search);
+
+                return usersBymajorAilments.count;
+
+            }
         } catch (error) {
             Logger.instance().log(error.message);
             throw new ApiError(500, error.message);
@@ -585,77 +686,178 @@ export class StatisticsRepo implements IStatisticsRepo {
 
     getUsersByObesity = async (filters): Promise<any> => {
         try {
-            const totalUsers = await this.getTotalUsers(filters);
+            const search: any = {
+                where    : {},
+                include  : [],
+                paranoid : false,
+            };
 
-            const heightDetails = [];
-            for (const u of totalUsers.rows) {
-                const heightDetail = await BodyHeight.findOne({ where : {
-                    PatientUserId : u.UserId,
-                } });
-                if (heightDetail !== null){
-                    heightDetails.push(heightDetail);
-                }
-            }
+            const includeObj =
+            {
+                model    : User,
+                required : true,
+                where    : {},
+                include  : [{
+                    model    : Person,
+                    required : true,
+                    where    : {
+                        Phone : {
+                            [Op.notBetween] : [1000000000, 1000000100]
+                        }
+                    },
+                }]
+            };
             
-            const weightDetails = [];
-            for (const u of totalUsers.rows) {
-                const weightDetail = await BodyWeight.findOne({ where : {
-                    PatientUserId : u.UserId,
-                } });
-                if (weightDetail !== null){
-                    weightDetails.push(weightDetail);
+            search.include.push(includeObj);
+
+            if (filters.PastMonths != null) {
+
+                const majorAilmentUsersForMonths = [];
+
+                for (var i = 0; i < filters.PastMonths; i++) {
+                    var date = TimeHelper.subtractDuration(new Date(), i, DurationType.Month);
+                    var startOfMonth = TimeHelper.startOf(date, DurationType.Month);
+                    var endOfMonth = TimeHelper.endOf(date, DurationType.Month);
+                    var monthName = TimeHelper.format(date, 'MMMM, YYYY');
+     
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [startOfMonth, endOfMonth],
+                    };
+
+                    const weightDetails = await BodyWeight.findAndCountAll(search);
+
+                    const heightDetails = await BodyHeight.findAndCountAll(search);
+    
+                    const heightWeightArray = [];
+                    for (const x of heightDetails.rows) {
+                        for (const y of weightDetails.rows) {
+                            if (x.PatientUserId === y.PatientUserId) {
+                                heightWeightArray.push({
+                                    bodyHeight  : x.BodyHeight ?? null,
+                                    heightUnits : x.Unit ?? null,
+                                    bodyWeight  : y.BodyWeight ?? null,
+                                    weightUnits : y.Unit ?? null,
+                                });
+                            }
+                        }
+                    }
+    
+                    const usresBmi = [];
+                    for (const u of heightWeightArray) {
+                        const bmi = Helper.calculateBMI(u.bodyHeight, u.heightUnits, u.bodyWeight, u.weightUnits);
+                        usresBmi.push((bmi.bmi).toFixed(2));
+                    }
+        
+                    const underWeight = usresBmi.filter(x => x < 18.5);
+                    const healthy  = usresBmi.filter(x => x >= 18.5 && x <= 24.9);
+                    const overWeight  = usresBmi.filter(x => x >= 25 && x <= 29.9);
+                    const obese  = usresBmi.filter(x => x >= 30);
+        
+                    const underWeightUsers = {
+                        Status : "Under Weight",
+                        Count  : underWeight.length
+                    };
+        
+                    const healthyUsers = {
+                        Status : "Healthy",
+                        Count  : healthy.length
+                    };
+        
+                    const overWeightUsers = {
+                        Status : "Over Weight",
+                        Count  : overWeight.length
+                    };
+        
+                    const obeseUsers = {
+                        Status : "Obese",
+                        Count  : obese.length
+                    };
+        
+                    const obesityUsers = [underWeightUsers, healthyUsers, overWeightUsers, obeseUsers];
+        
+                    var majorAilmentUsersForMonth = {
+                        Month        : monthName,
+                        ObesityUsers : obesityUsers
+
+                    };
+                    majorAilmentUsersForMonths.push(majorAilmentUsersForMonth);
                 }
+                return majorAilmentUsersForMonths;
             }
+            else {
+                const { minDate, maxDate } = getMinMaxDatesForYear(filters);
+                if (filters.Year != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [minDate, maxDate],
+                    };
+                }
 
-            const heightWeightArray = [];
+                const maxCreatedDate = getMaxDate(filters);
+                if (filters.Year != null && filters.Month != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.lt] : maxCreatedDate,
+                    };
+                }
+                if (filters.From != null && filters.To != null)  {
+                    search.where['CreatedAt'] = {
+                        [Op.between] : [filters.From, filters.To],
+                    };
+                }
 
-            for (const x of heightDetails) {
-                for (const y of weightDetails) {
-                    if (x.PatientUserId === y.PatientUserId) {
-                        heightWeightArray.push({
-                            bodyHeight  : x.BodyHeight ?? null,
-                            heightUnits : x.Unit ?? null,
-                            bodyWeight  : y.BodyWeight ?? null,
-                            weightUnits : y.unit ?? null,
-                        });
+                const weightDetails = await BodyWeight.findAndCountAll(search);
+
+                const heightDetails = await BodyHeight.findAndCountAll(search);
+
+                const heightWeightArray = [];
+                for (const x of heightDetails.rows) {
+                    for (const y of weightDetails.rows) {
+                        if (x.PatientUserId === y.PatientUserId) {
+                            heightWeightArray.push({
+                                bodyHeight  : x.BodyHeight ?? null,
+                                heightUnits : x.Unit ?? null,
+                                bodyWeight  : y.BodyWeight ?? null,
+                                weightUnits : y.Unit ?? null,
+                            });
+                        }
                     }
                 }
+
+                const usresBmi = [];
+                for (const u of heightWeightArray) {
+                    const bmi = Helper.calculateBMI(u.bodyHeight, u.heightUnits, u.bodyWeight, u.weightUnits);
+                    usresBmi.push((bmi.bmi).toFixed(2));
+                }
+    
+                const underWeight = usresBmi.filter(x => x < 18.5);
+                const healthy  = usresBmi.filter(x => x >= 18.5 && x <= 24.9);
+                const overWeight  = usresBmi.filter(x => x >= 25 && x <= 29.9);
+                const obese  = usresBmi.filter(x => x >= 30);
+    
+                const underWeightUsers = {
+                    Status : "Under Weight",
+                    Count  : underWeight.length
+                };
+    
+                const healthyUsers = {
+                    Status : "Healthy",
+                    Count  : healthy.length
+                };
+    
+                const overWeightUsers = {
+                    Status : "Over Weight",
+                    Count  : overWeight.length
+                };
+    
+                const obeseUsers = {
+                    Status : "Obese",
+                    Count  : obese.length
+                };
+    
+                const obesityUsers = [underWeightUsers, healthyUsers, overWeightUsers, obeseUsers];
+    
+                return obesityUsers;
+
             }
-
-            const usresBmi = [];
-            for (const u of heightWeightArray) {
-                const bmi = Helper.calculateBMI(u.bodyHeight, u.heightUnits, u.bodyWeight, u.weightUnits);
-                usresBmi.push((bmi.bmi).toFixed(2));
-            }
-
-            const underWeight = usresBmi.filter(x => x < 18.5);
-            const healthy  = usresBmi.filter(x => x >= 18.5 && x <= 24.9);
-            const overWeight  = usresBmi.filter(x => x >= 25 && x <= 29.9);
-            const obese  = usresBmi.filter(x => x >= 30);
-
-            const underWeightUsers = {
-                Status : "Under Weight",
-                Count  : underWeight.length
-            };
-
-            const healthyUsers = {
-                Status : "Healthy",
-                Count  : healthy.length
-            };
-
-            const overWeightUsers = {
-                Status : "Over Weight",
-                Count  : overWeight.length
-            };
-
-            const obeseUsers = {
-                Status : "Obese",
-                Count  : obese.length
-            };
-
-            const obesityUsers = [underWeightUsers, healthyUsers, overWeightUsers, obeseUsers];
-
-            return obesityUsers;
 
         } catch (error) {
             Logger.instance().log(error.message);
@@ -667,23 +869,39 @@ export class StatisticsRepo implements IStatisticsRepo {
         try {
             const totalUsers = await this.getTotalUsers(filters);
 
-            const healthProfileDetails = [];
-            for (const u of totalUsers.rows) {
-                const healthProfileDetail = await HealthProfile.findOne({ where : {
-                    PatientUserId : u.UserId,
-                }, paranoid : false });
-                healthProfileDetails.push(healthProfileDetail);
-            }
+            const search: any = {
+                where    : {},
+                include  : [],
+                paranoid : false,
+            };
+
+            const includeObj =
+            {
+                model    : User,
+                required : true,
+                where    : {},
+                include  : [{
+                    model    : Person,
+                    required : true,
+                    where    : {
+                        Phone : {
+                            [Op.notBetween] : [1000000000, 1000000100]
+                        }
+                    },
+                }]
+            };
             
-            const totalHealthProfileUsers = healthProfileDetails.filter(x => x !== null);
+            search.include.push(includeObj);
 
-            const tobaccoSmokers = totalHealthProfileUsers.filter(x => x.TobaccoQuestionAns === true);
+            const healthProfileDetails = await HealthProfile.findAndCountAll(search);
 
-            const heavyDrinkers = totalHealthProfileUsers.filter(x => x.IsDrinker === true && x.DrinkingSeverity === 'High');
+            const tobaccoSmokers = healthProfileDetails.rows.filter(x => x.TobaccoQuestionAns === true);
 
-            const substanceAbuse = totalHealthProfileUsers.filter(x => x.SubstanceAbuse === true);
+            const heavyDrinkers = healthProfileDetails.rows.filter(x => x.IsDrinker === true && x.DrinkingSeverity === 'High');
 
-            const nonAddicted  = totalHealthProfileUsers.filter(
+            const substanceAbuse = healthProfileDetails.rows.filter(x => x.SubstanceAbuse === true);
+
+            const nonAddicted  = healthProfileDetails.rows.filter(
                 x => x.SubstanceAbuse === false &&
                 x.IsDrinker === false &&
                 (x.TobaccoQuestionAns === false) || (x.TobaccoQuestionAns === null));
@@ -2713,17 +2931,6 @@ function getMaxDate(filters):Date {
     maxDate.setUTCHours(0, 0, 0, 0);
 
     return maxDate ;
-}
-
-function getStartAndEndDateForPastMonths (filters) {
-
-    const startDate = new Date();
-    startDate.setUTCHours(0, 0, 0, 0);
-
-    const endDate = new Date();
-    endDate.setMonth(endDate.getMonth() - filters.PastMonths);
-
-    return { startDate , endDate };
 }
 
 function getNumberOfDays (year: number, month: number): number {
