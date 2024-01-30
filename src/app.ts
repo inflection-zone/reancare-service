@@ -2,6 +2,8 @@ import cors from 'cors';
 import express from 'express';
 import fileUpload from 'express-fileupload';
 import helmet from 'helmet';
+import dotenv from 'dotenv';
+dotenv.config();
 import "reflect-metadata";
 import { Router } from './api/router';
 import { Helper } from './common/helper';
@@ -17,20 +19,20 @@ import { DatabaseSchemaType } from './common/database.utils/database.config';
 
 /////////////////////////////////////////////////////////////////////////
 
-export default class Application {
+export default class MainApplication {
 
-    public _app: express.Application = null;
+    public _app: express.Application;
 
-    private _router: Router = null;
+    private _router: Router;
 
-    private static _instance: Application = null;
+    private static _instance: MainApplication;
 
     private constructor() {
         this._app = express();
         this._router = new Router(this._app);
     }
 
-    public static instance(): Application {
+    public static instance(): MainApplication {
         return this._instance || (this._instance = new this());
     }
 
@@ -110,7 +112,7 @@ export default class Application {
             }
         });
     };
-
+    // trail 1
     private listen = () => {
         return new Promise((resolve, reject) => {
             try {

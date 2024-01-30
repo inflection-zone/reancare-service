@@ -1,0 +1,7 @@
+{
+    "SystemIdentifier": "REAN Background Worker",
+    "Database" : {
+        "Type": "SQL",
+        "ORM": "Sequelize"
+    }
+}

@@ -1,0 +1,1992 @@
+{
+    "Assorted": {
+        "BloodDonation": {
+            "Bridge": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": false
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "Communication": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": false
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "Donation": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": false
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "Donor": {
+                "Create": {
+                    "Enabled": false
+                },
+                "DeleteByUserId": {
+                    "Enabled": false
+                },
+                "GetByUserId": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": false
+                },
+                "UpdateByUserId": {
+                    "Enabled": false
+                }
+            },
+            "Volunteer": {
+                "Create": {
+                    "Enabled": false
+                },
+                "DeleteByUserId": {
+                    "Enabled": false
+                },
+                "GetByUserId": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": false
+                },
+                "UpdateByUserId": {
+                    "Enabled": false
+                }
+            }
+        }
+    },
+    "Auth": {
+        "Consent": {
+            "Create": {
+                "Enabled": false
+            },
+            "Delete": {
+                "Enabled": false
+            },
+            "GetById": {
+                "Enabled": false
+            },
+            "Search": {
+                "Enabled": false
+            },
+            "Update": {
+                "Enabled": false
+            }
+        }
+    },
+    "ClientApp": {
+        "Create": {
+            "Enabled": false
+        },
+        "Delete": {
+            "Enabled": false
+        },
+        "GetById": {
+            "Enabled": false
+        },
+        "GetCurrentApiKey": {
+            "Enabled": false
+        },
+        "RenewApiKey": {
+            "Enabled": false
+        },
+        "Search": {
+            "Enabled": false
+        },
+        "Update": {
+            "Enabled": false
+        }
+    },
+    "Clinical": {
+        "Allergy": {
+            "Create": {
+                "Enabled": false
+            },
+            "Delete": {
+                "Enabled": false
+            },
+            "GetAllergenCategories": {
+                "Enabled": true
+            },
+            "GetAllergenExposureRoutes": {
+                "Enabled": true
+            },
+            "GetById": {
+                "Enabled": false
+            },
+            "GetForPatient": {
+                "Enabled": false
+            },
+            "Search": {
+                "Enabled": false
+            },
+            "Update": {
+                "Enabled": false
+            }
+        },
+        "Assessments": {
+            "Assessment": {
+                "AnswerQuestion": {
+                    "Enabled": false
+                },
+                "AnswerQuestionList": {
+                    "Enabled": false
+                },
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "GetNextQuestion": {
+                    "Enabled": false
+                },
+                "GetQuestionById": {
+                    "Enabled": false
+                },
+                "ScoreAssessment": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": false
+                },
+                "StartAssessment": {
+                    "Enabled": false
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "AssessmentTemplate": {
+                "AddNode": {
+                    "Enabled": true
+                },
+                "AddScoringCondition": {
+                    "Enabled": true
+                },
+                "Create": {
+                    "Enabled": true
+                },
+                "Delete": {
+                    "Enabled": true
+                },
+                "DeleteNode": {
+                    "Enabled": true
+                },
+                "DeleteScoringCondition": {
+                    "Enabled": true
+                },
+                "Export": {
+                    "Enabled": true
+                },
+                "GetById": {
+                    "Enabled": true
+                },
+                "GetNode": {
+                    "Enabled": true
+                },
+                "GetScoringCondition": {
+                    "Enabled": true
+                },
+                "ImportFromFile": {
+                    "Enabled": true
+                },
+                "ImportFromJson": {
+                    "Enabled": true
+                },
+                "Search": {
+                    "Enabled": true
+                },
+                "SearchNode": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": true
+                },
+                "UpdateNode": {
+                    "Enabled": true
+                },
+                "UpdateScoringCondition": {
+                    "Enabled": true
+                }
+            },
+            "DailyAssessment": {
+                "Create": {
+                    "Enabled": true
+                },
+                "Search": {
+                    "Enabled": true
+                }
+            },
+            "Forms": {
+                "Connect": {
+                    "Enabled": true
+                },
+                "GetFormsList": {
+                    "Enabled": true
+                }
+            },
+            "SymptomAssessment": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": false
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "SymptomAssessmentTemplate": {
+                "AddSymptomTypes": {
+                    "Enabled": true
+                },
+                "Create": {
+                    "Enabled": true
+                },
+                "Delete": {
+                    "Enabled": true
+                },
+                "GetById": {
+                    "Enabled": true
+                },
+                "RemoveSymptomTypes": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": true
+                },
+                "search": {
+                    "Enabled": true
+                }
+            }
+        },
+        "Biometrics": {
+            "BloodCholesterol": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": false
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "BloodGlucose": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": false
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "BloodOxygenSaturation": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": false
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "BloodPressure": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": false
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "BodyHeight": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": false
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "BodyTemperature": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": false
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "BodyWeight": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": false
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "Pulse": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": false
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            }
+        },
+        "Careplan": {
+            "Enroll": {
+                "Enabled": false
+            },
+            "FetchTasks": {
+                "Enabled": false
+            },
+            "GetAvailableCareplans": {
+                "Enabled": false
+            },
+            "GetPatientEligibility": {
+                "Enabled": false
+            },
+            "GetPatientEnrollments": {
+                "Enabled": false
+            },
+            "GetWeeklyStatus": {
+                "Enabled": false
+            },
+            "UpdateRisk": {
+                "Enabled": false
+            }
+        },
+        "ClinicalTypes": {
+            "GetClinicalValidationStatuses": {
+                "Enabled": true
+            },
+            "GetInterpretations": {
+                "Enabled": true
+            },
+            "GetSeverities": {
+                "Enabled": true
+            }
+        },
+        "Complaint": {
+            "Create": {
+                "Enabled": false
+            },
+            "Delete": {
+                "Enabled": false
+            },
+            "GetById": {
+                "Enabled": false
+            },
+            "Search": {
+                "Enabled": false
+            },
+            "Update": {
+                "Enabled": false
+            }
+        },
+        "Diagnosis": {
+            "Create": {
+                "Enabled": false
+            },
+            "Delete": {
+                "Enabled": false
+            },
+            "GetById": {
+                "Enabled": false
+            },
+            "Search": {
+                "Enabled": false
+            },
+            "Update": {
+                "Enabled": false
+            }
+        },
+        "DoctorNote": {
+            "Create": {
+                "Enabled": false
+            },
+            "Delete": {
+                "Enabled": false
+            },
+            "GetById": {
+                "Enabled": false
+            },
+            "Search": {
+                "Enabled": false
+            },
+            "Update": {
+                "Enabled": false
+            }
+        },
+        "EmergencyEvent": {
+            "Create": {
+                "Enabled": false
+            },
+            "Delete": {
+                "Enabled": false
+            },
+            "GetById": {
+                "Enabled": false
+            },
+            "Search": {
+                "Enabled": false
+            },
+            "Update": {
+                "Enabled": false
+            }
+        },
+        "LabRecord": {
+            "Create": {
+                "Enabled": false
+            },
+            "Delete": {
+                "Enabled": false
+            },
+            "GetById": {
+                "Enabled": false
+            },
+            "Search": {
+                "Enabled": false
+            },
+            "Update": {
+                "Enabled": false
+            }
+        },
+        "MedicalCondition": {
+            "Create": {
+                "Enabled": false
+            },
+            "Delete": {
+                "Enabled": false
+            },
+            "GetById": {
+                "Enabled": false
+            },
+            "Search": {
+                "Enabled": false
+            },
+            "Update": {
+                "Enabled": false
+            }
+        },
+        "Medications": {
+            "Drug": {
+                "Create": {
+                    "Enabled": true
+                },
+                "Delete": {
+                    "Enabled": true
+                },
+                "GetById": {
+                    "Enabled": true
+                },
+                "Search": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": true
+                }
+            },
+            "Medication": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "DownloadStockMedicationImageById": {
+                    "Enabled": false
+                },
+                "GetAdministrationRoutes": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "GetCurrentMedications": {
+                    "Enabled": false
+                },
+                "GetDosageUnits": {
+                    "Enabled": true
+                },
+                "GetDurationUnits": {
+                    "Enabled": true
+                },
+                "GetFrequencyUnits": {
+                    "Enabled": true
+                },
+                "GetStockMedicationImageById": {
+                    "Enabled": true
+                },
+                "GetStockMedicationImages": {
+                    "Enabled": true
+                },
+                "GetTimeSchedules": {
+                    "Enabled": true
+                },
+                "Search": {
+                    "Enabled": false
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "MedicationConsumption": {
+                "DeleteFutureMedicationSchedules": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "GetMedicationConsumptionSummaryForDay": {
+                    "Enabled": true
+                },
+                "GetMedicationSchedule": {
+                    "Enabled": false
+                },
+                "GetMedicationScheduleForDay": {
+                    "Enabled": false
+                },
+                "GetSummaryByCalendarMonths": {
+                    "Enabled": false
+                },
+                "MarkAsMissed": {
+                    "Enabled": false
+                },
+                "MarkAsTaken": {
+                    "Enabled": false
+                },
+                "MarkListAsMissed": {
+                    "Enabled": false
+                },
+                "MarkListAsTaken": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": false
+                }
+            }
+        },
+        "Order": {
+            "Create": {
+                "Enabled": false
+            },
+            "Delete": {
+                "Enabled": false
+            },
+            "GetById": {
+                "Enabled": false
+            },
+            "Search": {
+                "Enabled": false
+            },
+            "Update": {
+                "Enabled": false
+            }
+        },
+        "Symptoms": {
+            "HowDoYouFeel": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": false
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "Symptom": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": false
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "SymptomType": {
+                "Create": {
+                    "Enabled": true
+                },
+                "Delete": {
+                    "Enabled": true
+                },
+                "GetById": {
+                    "Enabled": true
+                },
+                "Search": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": true
+                }
+            }
+        }
+    },
+    "Community": {
+        "Chat": {
+            "AddUserToConversation": {
+                "Enabled": false
+            },
+            "DeleteConversation": {
+                "Enabled": false
+            },
+            "DeleteMessage": {
+                "Enabled": false
+            },
+            "GetConversationBetweenTwoUsers": {
+                "Enabled": false
+            },
+            "GetConversationById": {
+                "Enabled": false
+            },
+            "GetConversationMessages": {
+                "Enabled": false
+            },
+            "GetMarkedConversationsForUser": {
+                "Enabled": false
+            },
+            "GetMessage": {
+                "Enabled": false
+            },
+            "GetRecentConversationsForUser": {
+                "Enabled": false
+            },
+            "RemoveUserFromConversation": {
+                "Enabled": false
+            },
+            "SearchUserConversations": {
+                "Enabled": false
+            },
+            "SendMessage": {
+                "Enabled": false
+            },
+            "StartConversation": {
+                "Enabled": false
+            },
+            "UpdateConversation": {
+                "Enabled": false
+            },
+            "UpdateMessage": {
+                "Enabled": false
+            }
+        },
+        "Cohort": {
+            "AddUserToCohort": {
+                "Enabled": true
+            },
+            "Create": {
+                "Enabled": true
+            },
+            "Delete": {
+                "Enabled": true
+            },
+            "GetById": {
+                "Enabled": true
+            },
+            "GetCohortStats": {
+                "Enabled": true
+            },
+            "GetCohortUsers": {
+                "Enabled": true
+            },
+            "GetCohortsForTenant": {
+                "Enabled": true
+            },
+            "RemoveUserFromCohort": {
+                "Enabled": true
+            },
+            "Search": {
+                "Enabled": true
+            },
+            "Update": {
+                "Enabled": true
+            }
+        },
+        "Notice": {
+            "Create": {
+                "Enabled": true
+            },
+            "Delete": {
+                "Enabled": true
+            },
+            "GetAllNoticeActionsForUser": {
+                "Enabled": false
+            },
+            "GetById": {
+                "Enabled": true
+            },
+            "GetNoticeActionForUser": {
+                "Enabled": false
+            },
+            "Search": {
+                "Enabled": true
+            },
+            "TakeAction": {
+                "Enabled": false
+            },
+            "Update": {
+                "Enabled": true
+            }
+        },
+        "Rssfeed": {
+            "AddFeedItem": {
+                "Enabled": true
+            },
+            "Create": {
+                "Enabled": true
+            },
+            "Delete": {
+                "Enabled": true
+            },
+            "DeleteFeedItem": {
+                "Enabled": true
+            },
+            "GetAtomFeed": {
+                "Enabled": true
+            },
+            "GetById": {
+                "Enabled": true
+            },
+            "GetFeedItemById": {
+                "Enabled": true
+            },
+            "GetJsonFeed": {
+                "Enabled": true
+            },
+            "GetRssFeed": {
+                "Enabled": true
+            },
+            "Search": {
+                "Enabled": true
+            },
+            "Update": {
+                "Enabled": true
+            },
+            "UpdateFeedItem": {
+                "Enabled": true
+            }
+        },
+        "UserGroup": {
+            "AddUserToGroup": {
+                "Enabled": false
+            },
+            "Create": {
+                "Enabled": false
+            },
+            "Delete": {
+                "Enabled": false
+            },
+            "GetById": {
+                "Enabled": true
+            },
+            "GetGroupActivityTypes": {
+                "Enabled": true
+            },
+            "GetGroupAdmins": {
+                "Enabled": false
+            },
+            "GetGroupUsers": {
+                "Enabled": false
+            },
+            "MakeUserAdmin": {
+                "Enabled": false
+            },
+            "RemoveUserAdmin": {
+                "Enabled": false
+            },
+            "RemoveUserFromGroup": {
+                "Enabled": false
+            },
+            "Search": {
+                "Enabled": true
+            },
+            "SetGroupActivityTypes": {
+                "Enabled": false
+            },
+            "Update": {
+                "Enabled": false
+            }
+        }
+    },
+    "Devices": {
+        "Wearables": {
+            "Create": {
+                "Enabled": true
+            },
+            "Delete": {
+                "Enabled": true
+            },
+            "GetById": {
+                "Enabled": true
+            },
+            "GetUserWearables": {
+                "Enabled": true
+            },
+            "Search": {
+                "Enabled": true
+            },
+            "Update": {
+                "Enabled": true
+            }
+        }
+    },
+    "Educational": {
+        "Course": {
+            "Create": {
+                "Enabled": true
+            },
+            "Delete": {
+                "Enabled": true
+            },
+            "GetById": {
+                "Enabled": true
+            },
+            "Search": {
+                "Enabled": true
+            },
+            "Update": {
+                "Enabled": true
+            }
+        },
+        "CourseContent": {
+            "Create": {
+                "Enabled": true
+            },
+            "Delete": {
+                "Enabled": true
+            },
+            "GetById": {
+                "Enabled": true
+            },
+            "GetContentsForCourse": {
+                "Enabled": true
+            },
+            "GetContentsForLearningPath": {
+                "Enabled": true
+            },
+            "Search": {
+                "Enabled": true
+            },
+            "Update": {
+                "Enabled": true
+            }
+        },
+        "CourseModule": {
+            "Create": {
+                "Enabled": true
+            },
+            "Delete": {
+                "Enabled": true
+            },
+            "GetById": {
+                "Enabled": true
+            },
+            "Search": {
+                "Enabled": true
+            },
+            "Update": {
+                "Enabled": true
+            }
+        },
+        "KnowledgeNugget": {
+            "Create": {
+                "Enabled": true
+            },
+            "Delete": {
+                "Enabled": true
+            },
+            "GetById": {
+                "Enabled": true
+            },
+            "GetTodaysTopic": {
+                "Enabled": true
+            },
+            "Search": {
+                "Enabled": true
+            },
+            "Update": {
+                "Enabled": true
+            }
+        },
+        "LearningPath": {
+            "Create": {
+                "Enabled": true
+            },
+            "Delete": {
+                "Enabled": true
+            },
+            "GetById": {
+                "Enabled": true
+            },
+            "Search": {
+                "Enabled": true
+            },
+            "Update": {
+                "Enabled": true
+            }
+        },
+        "UserLearning": {
+            "GetContentProgress": {
+                "Enabled": false
+            },
+            "GetCourseProgress": {
+                "Enabled": false
+            },
+            "GetLearningPathProgress": {
+                "Enabled": false
+            },
+            "GetModuleProgress": {
+                "Enabled": false
+            },
+            "GetUserCourseContents": {
+                "Enabled": false
+            },
+            "GetUserLearningPaths": {
+                "Enabled": false
+            },
+            "UpdateUserLearning": {
+                "Enabled": false
+            }
+        }
+    },
+    "General": {
+        "Address": {
+            "Create": {
+                "Enabled": false
+            },
+            "Delete": {
+                "Enabled": false
+            },
+            "GetById": {
+                "Enabled": false
+            },
+            "Search": {
+                "Enabled": false
+            },
+            "Update": {
+                "Enabled": false
+            }
+        },
+        "FileResource": {
+            "Delete": {
+                "Enabled": true
+            },
+            "DeleteVersionByVersionId": {
+                "Enabled": true
+            },
+            "DownloadById": {
+                "Enabled": true
+            },
+            "DownloadByVersionId": {
+                "Enabled": true
+            },
+            "DownloadByVersionName": {
+                "Enabled": true
+            },
+            "GetResourceInfo": {
+                "Enabled": true
+            },
+            "GetVersionById": {
+                "Enabled": true
+            },
+            "GetVersions": {
+                "Enabled": true
+            },
+            "Rename": {
+                "Enabled": true
+            },
+            "Search": {
+                "Enabled": true
+            },
+            "SearchAndDownload": {
+                "Enabled": true
+            },
+            "Update": {
+                "Enabled": true
+            },
+            "Upload": {
+                "Enabled": true
+            }
+        },
+        "Notification": {
+            "Create": {
+                "Enabled": false
+            },
+            "Delete": {
+                "Enabled": false
+            },
+            "GetById": {
+                "Enabled": false
+            },
+            "MarkAsRead": {
+                "Enabled": false
+            },
+            "Search": {
+                "Enabled": false
+            },
+            "Update": {
+                "Enabled": false
+            }
+        },
+        "Organization": {
+            "AddAddress": {
+                "Enabled": false
+            },
+            "AddPerson": {
+                "Enabled": false
+            },
+            "Create": {
+                "Enabled": false
+            },
+            "Delete": {
+                "Enabled": false
+            },
+            "GetAddresses": {
+                "Enabled": false
+            },
+            "GetByContactUserId": {
+                "Enabled": false
+            },
+            "GetById": {
+                "Enabled": true
+            },
+            "GetPersons": {
+                "Enabled": false
+            },
+            "RemoveAddress": {
+                "Enabled": false
+            },
+            "RemovePerson": {
+                "Enabled": false
+            },
+            "Search": {
+                "Enabled": true
+            },
+            "Update": {
+                "Enabled": false
+            }
+        },
+        "Reminder": {
+            "CreateOneTimeReminder": {
+                "Enabled": false
+            },
+            "CreateReminderWithEveryMonthOn": {
+                "Enabled": false
+            },
+            "CreateReminderWithEveryQuarterOn": {
+                "Enabled": false
+            },
+            "CreateReminderWithRepeatAfterEveryN": {
+                "Enabled": false
+            },
+            "CreateReminderWithRepeatEveryDay": {
+                "Enabled": false
+            },
+            "CreateReminderWithRepeatEveryHour": {
+                "Enabled": false
+            },
+            "CreateReminderWithRepeatEveryWeekOnDays": {
+                "Enabled": false
+            },
+            "CreateReminderWithRepeatEveryWeekday": {
+                "Enabled": false
+            },
+            "Delete": {
+                "Enabled": false
+            },
+            "GetById": {
+                "Enabled": true
+            },
+            "Search": {
+                "Enabled": true
+            }
+        },
+        "Types": {
+            "GetBloodGroups": {
+                "Enabled": true
+            },
+            "GetEthnicityTypes": {
+                "Enabled": true
+            },
+            "GetGenderTypes": {
+                "Enabled": true
+            },
+            "GetMaritalStatuses": {
+                "Enabled": true
+            },
+            "GetOrganizationTypes": {
+                "Enabled": true
+            },
+            "GetPersonRoleTypes": {
+                "Enabled": true
+            },
+            "GetQueryResponseTypes": {
+                "Enabled": true
+            },
+            "GetRaceTypes": {
+                "Enabled": true
+            },
+            "GetSeverities": {
+                "Enabled": true
+            },
+            "GetUserEngagementCategories": {
+                "Enabled": true
+            },
+            "GoalType": {
+                "Create": {
+                    "Enabled": true
+                },
+                "Delete": {
+                    "Enabled": true
+                },
+                "GetById": {
+                    "Enabled": true
+                },
+                "GetGoalTypes": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": true
+                }
+            },
+            "GroupActivityTypes": {
+                "Enabled": true
+            },
+            "HealthPriority": {
+                "GetPriorityTypes": {
+                    "Enabled": true
+                }
+            },
+            "HealthPriorityType": {
+                "Create": {
+                    "Enabled": true
+                },
+                "Delete": {
+                    "Enabled": true
+                },
+                "GetById": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": true
+                }
+            },
+            "LabRecordType": {
+                "Create": {
+                    "Enabled": true
+                },
+                "Delete": {
+                    "Enabled": true
+                },
+                "GetById": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": true
+                }
+            },
+            "LabRecords": {
+                "Enabled": true
+            },
+            "ReminderRepeatAfterEveryNUnits": {
+                "Enabled": true
+            },
+            "ReminderTypes": {
+                "Enabled": true
+            },
+            "RoleType": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            }
+        }
+    },
+    "Person": {
+        "AddAddress": {
+            "Enabled": false
+        },
+        "GetAddresses": {
+            "Enabled": false
+        },
+        "GetAllPersonsWithPhone": {
+            "Enabled": false
+        },
+        "GetAllPersonsWithPhoneAndRole": {
+            "Enabled": false
+        },
+        "GetById": {
+            "Enabled": false
+        },
+        "GetOrganizations": {
+            "Enabled": false
+        },
+        "RemoveAddress": {
+            "Enabled": false
+        }
+    },
+    "Role": {
+        "Create": {
+            "Enabled": false
+        },
+        "Delete": {
+            "Enabled": false
+        },
+        "GetById": {
+            "Enabled": true
+        },
+        "Search": {
+            "Enabled": true
+        },
+        "Update": {
+            "Enabled": false
+        }
+    },
+    "Statistics": {
+        "AppStats": {
+            "GetAllYears": {
+                "Enabled": false
+            },
+            "GetAppDownlodCount": {
+                "Enabled": false
+            },
+            "GetUsersByAddiction": {
+                "Enabled": false
+            },
+            "GetUsersByAge": {
+                "Enabled": false
+            },
+            "GetUsersByBiometrics": {
+                "Enabled": false
+            },
+            "GetUsersByCountry": {
+                "Enabled": false
+            },
+            "GetUsersByDeviceDetail": {
+                "Enabled": false
+            },
+            "GetUsersByEnrollment": {
+                "Enabled": false
+            },
+            "GetUsersByGender": {
+                "Enabled": false
+            },
+            "GetUsersByHealthPillar": {
+                "Enabled": false
+            },
+            "GetUsersByMajorAilment": {
+                "Enabled": false
+            },
+            "GetUsersByMaritalStatus": {
+                "Enabled": false
+            },
+            "GetUsersByObesity": {
+                "Enabled": false
+            },
+            "GetUsersByRole": {
+                "Enabled": false
+            },
+            "GetUsersCount": {
+                "Enabled": false
+            },
+            "GetUsersStats": {
+                "Enabled": false
+            },
+            "UpdateAppDownloadCount": {
+                "Enabled": false
+            }
+        },
+        "CustomQuery": {
+            "Delete": {
+                "Enabled": true
+            },
+            "ExecuteQuery": {
+                "Enabled": true
+            },
+            "GetById": {
+                "Enabled": true
+            },
+            "Search": {
+                "Enabled": true
+            },
+            "Update": {
+                "Enabled": true
+            }
+        },
+        "UserEngagement": {
+            "GetUserEngagementStatsByDateRange": {
+                "Enabled": false
+            },
+            "GetUserEngagementStatsByMonth": {
+                "Enabled": false
+            },
+            "GetUserEngagementStatsByQuarter": {
+                "Enabled": false
+            },
+            "GetUserEngagementStatsByWeek": {
+                "Enabled": false
+            },
+            "GetUserEngagementStatsByYear": {
+                "Enabled": false
+            },
+            "GetUserEngagementStatsForUser": {
+                "Enabled": false
+            }
+        }
+    },
+    "Tenant": {
+        "Create": {
+            "Enabled": false
+        },
+        "Delete": {
+            "Enabled": false
+        },
+        "DemoteAdmin": {
+            "Enabled": false
+        },
+        "GetById": {
+            "Enabled": false
+        },
+        "GetTenantAdmins": {
+            "Enabled": false
+        },
+        "GetTenantRegularUsers": {
+            "Enabled": false
+        },
+        "GetTenantStats": {
+            "Enabled": false
+        },
+        "PromoteTenantUserAsAdmin": {
+            "Enabled": false
+        },
+        "Search": {
+            "Enabled": false
+        },
+        "Update": {
+            "Enabled": false
+        }
+    },
+    "Users": {
+        "CustomTask": {
+            "Create": {
+                "Enabled": false
+            },
+            "GetById": {
+                "Enabled": false
+            },
+            "Update": {
+                "Enabled": false
+            }
+        },
+        "DeviceDetails": {
+            "Create": {
+                "Enabled": false
+            },
+            "Delete": {
+                "Enabled": false
+            },
+            "GetById": {
+                "Enabled": false
+            },
+            "GetByUserId": {
+                "Enabled": false
+            },
+            "Search": {
+                "Enabled": true
+            },
+            "SendTestNotification": {
+                "Enabled": false
+            },
+            "Update": {
+                "Enabled": false
+            }
+        },
+        "Doctor": {
+            "Create": {
+                "Enabled": true
+            },
+            "DeleteByUserId": {
+                "Enabled": true
+            },
+            "GetByUserId": {
+                "Enabled": true
+            },
+            "Search": {
+                "Enabled": true
+            },
+            "UpdateByUserId": {
+                "Enabled": true
+            }
+        },
+        "Patients": {
+            "ActionPlan": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetActionPlans": {
+                    "Enabled": false
+                },
+                "GetSelectedActionPlans": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "Document": {
+                "Delete": {
+                    "Enabled": false
+                },
+                "Download": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "GetTypes": {
+                    "Enabled": false
+                },
+                "Rename": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": true
+                },
+                "Share": {
+                    "Enabled": false
+                },
+                "Update": {
+                    "Enabled": false
+                },
+                "Upload": {
+                    "Enabled": false
+                }
+            },
+            "EmergencyContact": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "GetContactRoles": {
+                    "Enabled": false
+                },
+                "GetHealthSystemHospitals": {
+                    "Enabled": false
+                },
+                "GetHealthSystems": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "Goal": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "GetGoalsByPriority": {
+                    "Enabled": false
+                },
+                "GetPatientGoals": {
+                    "Enabled": true
+                },
+                "Search": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "HealthPriority": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": false
+                },
+                "getPatientHealthPriorities": {
+                    "Enabled": false
+                }
+            },
+            "HealthProfile": {
+                "GetByPatientUserId": {
+                    "Enabled": true
+                },
+                "UpdateByPatientUserId": {
+                    "Enabled": false
+                }
+            },
+            "Patient": {
+                "Create": {
+                    "Enabled": false
+                },
+                "DeleteByUserId": {
+                    "Enabled": false
+                },
+                "GetByPhone": {
+                    "Enabled": true
+                },
+                "GetByUserId": {
+                    "Enabled": false
+                },
+                "GetPatientByPhone": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": true
+                },
+                "UpdateByUserId": {
+                    "Enabled": false
+                }
+            },
+            "Statistics": {
+                "GetPatientStats": {
+                    "Enabled": true
+                },
+                "GetPatientStatsReport": {
+                    "Enabled": true
+                }
+            }
+        },
+        "User": {
+            "Create": {
+                "Enabled": true
+            },
+            "GenerateOtp": {
+                "Enabled": true
+            },
+            "GetById": {
+                "Enabled": true
+            },
+            "GetTenantsForUserWithEmail": {
+                "Enabled": true
+            },
+            "GetTenantsForUserWithPhone": {
+                "Enabled": true
+            },
+            "LoginWithOtp": {
+                "Enabled": true
+            },
+            "LoginWithPassword": {
+                "Enabled": true
+            },
+            "Logout": {
+                "Enabled": true
+            },
+            "ResetPassword": {
+                "Enabled": true
+            },
+            "RotateUserAccessToken": {
+                "Enabled": true
+            },
+            "Search": {
+                "Enabled": true
+            }
+        },
+        "UserTask": {
+            "CancelTask": {
+                "Enabled": false
+            },
+            "Create": {
+                "Enabled": false
+            },
+            "Delete": {
+                "Enabled": false
+            },
+            "DeleteFutureTask": {
+                "Enabled": false
+            },
+            "FinishTask": {
+                "Enabled": false
+            },
+            "GetByDisplayId": {
+                "Enabled": false
+            },
+            "GetById": {
+                "Enabled": false
+            },
+            "GetCategories": {
+                "Enabled": false
+            },
+            "GetUserActionTypes": {
+                "Enabled": false
+            },
+            "Search": {
+                "Enabled": true
+            },
+            "StartTask": {
+                "Enabled": false
+            },
+            "SummaryForDay": {
+                "Enabled": true
+            },
+            "Update": {
+                "Enabled": false
+            }
+        }
+    },
+    "Wellness": {
+        "DailyRecords": {
+            "CalorieBalance": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "HeartPoints": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "MoveMinutes": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "Sleep": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "Stand": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "StepCount": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            }
+        },
+        "Exercise": {
+            "Meditation": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "PhysicalActivity": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            }
+        },
+        "Nutrition": {
+            "FoodComponentMonitoring": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "FoodConsumption": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetByEvent": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "GetForDay": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            },
+            "Questionnaire": {
+                "GetNutritionQuestionnaire": {
+                    "Enabled": true
+                }
+            },
+            "WaterConsumption": {
+                "Create": {
+                    "Enabled": false
+                },
+                "Delete": {
+                    "Enabled": false
+                },
+                "GetById": {
+                    "Enabled": false
+                },
+                "Search": {
+                    "Enabled": true
+                },
+                "Update": {
+                    "Enabled": false
+                }
+            }
+        }
+    }
+}
