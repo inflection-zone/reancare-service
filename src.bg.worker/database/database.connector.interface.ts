@@ -1,8 +1,8 @@
-export interface IPrimaryDatabaseConnector {
+// export interface IPrimaryDatabaseConnector {
 
-    connect(): Promise<boolean>;
+//     connect(): Promise<boolean>;
 
-    sync(): Promise<boolean>;
+//     sync(): Promise<boolean>;
 
-    migrate(): Promise<boolean>;
-}
+//     migrate(): Promise<boolean>;
+// }

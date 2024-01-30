@@ -1,7 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
 dotenv.config({path:'../.env'});
-import "reflect-metadata";
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -45,8 +44,3 @@ export default class MainApplication {
         });
     }
 }
-
-// async function connectDatabase_Primary() {
-//     //const primaryDatabaseConnector = Loader.container.resolve(PrimaryDatabaseConnector);
-//     await primaryDatabaseConnector.init();
-// }
