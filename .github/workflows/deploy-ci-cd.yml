@@ -41,9 +41,16 @@ jobs:
         docker build -t 443751504066.dkr.ecr.ap-south-1.amazonaws.com/reancare:${{ github.sha }} .
         docker push 443751504066.dkr.ecr.ap-south-1.amazonaws.com/reancare:${{ github.sha }}
 
+    - name: Get the latest revision of ECS task definition
+      id: get-latest-revision
+      run: |
+        latest_revision=$(aws ecs describe-task-definition --task-definition reancare-service --query 'taskDefinition.revision' --output text)
+        echo "Latest revision: $latest_revision"
+        echo "::set-output name=revision::$latest_revision"
+
     - name: Download task definition
       run: |
-        aws ecs describe-task-definition --task-definition reancare-service \
+        aws ecs describe-task-definition --task-definition reancare-service:${{ steps.get-latest-revision.outputs.revision }} \
         --query taskDefinition > task-definition.json
 
     - name: New image ID in the Amazon ECS task definition
@@ -53,13 +60,14 @@ jobs:
         task-definition: task-definition.json
         container-name: reancare-container
         image: 443751504066.dkr.ecr.ap-south-1.amazonaws.com/reancare:${{ github.sha }}
+        revision: ${{ steps.get-latest-revision.outputs.revision }}
 
     - name: Task Definition Variable
       id: taskdefintionvar
       shell: bash
       run: |
-        echo "task_definition_arn=$(aws ecs describe-task-definition --task-definition reancare-service | jq '.[] | .taskDefinitionArn')" >> $GITHUB_OUTPUT
+        echo "task_definition_arn=$(aws ecs describe-task-definition --task-definition reancare-service | jq -r '.taskDefinition.taskDefinitionArn')" >> $GITHUB_OUTPUT
 
     - name: Deploy to ECS
       run: |
-        aws ecs update-service --cluster reancare-cluster --service rean-backend --task-definition ${{ steps.taskdefintionvar.outputs.task_definition_arn }} --force-new-deployment
+        aws ecs update-service --cluster reancare-cluster --service rean-backend --task-definition reancare-service:${{ steps.get-latest-revision.outputs.revision }} --force-new-deployment
