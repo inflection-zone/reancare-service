@@ -56,8 +56,10 @@ jobs:
 
     - name: Update container image in task definition
       run: |
-        jq '.containerDefinitions[0].image="443751504066.dkr.ecr.ap-south-1.amazonaws.com/reancare:${GITHUB_SHA}"' task-definition.json > new-task-definition.json
-        cat new-task-definition.json
+        jq '.containerDefinitions[0].image="443751504066.dkr.ecr.ap-south-1.amazonaws.com/reancare:${{ github.sha }}"' task-definition.json > new-task-definition.json
+        jq 'del(.taskDefinitionArn)' new-task-definition.json > modified-task-definition.json
+        cat modified-task-definition.json
+        mv modified-task-definition.json new-task-definition.json
 
 
     # - name: New image ID in the Amazon ECS task definition
