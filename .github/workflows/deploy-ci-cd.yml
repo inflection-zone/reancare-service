@@ -57,8 +57,11 @@ jobs:
     - name: Update container image in task definition
       run: |
         jq '.containerDefinitions[0].image="443751504066.dkr.ecr.ap-south-1.amazonaws.com/reancare:${{ github.sha }}"' task-definition.json > new-task-definition.json
+        jq 'del(.taskDefinitionArn, .revision)' new-task-definition.json > modified-task-definition.json
+        cat modified-task-definition.json
+        mv modified-task-definition.json new-task-definition.json
         cat new-task-definition.json
-        mv new-task-definition.json task-definition.json
+
 
     # - name: New image ID in the Amazon ECS task definition
     #   id: task-def
@@ -68,12 +71,12 @@ jobs:
     #     container-name: reancare-container
     #     image: 443751504066.dkr.ecr.ap-south-1.amazonaws.com/reancare:${{ github.sha }}
 
-    # - name: Create a new revision of ECS task definition
-    #   id: create-new-revision
-    #   run: |
-    #     new_revision=$(aws ecs register-task-definition --cli-input-json file://new-task-definition.json --query 'taskDefinition.revision' --output text)
-    #     echo "New revision created: $new_revision"
-    #     echo "::set-output name=new-revision::$new_revision"
+    - name: Create a new revision of ECS task definition
+      id: create-new-revision
+      run: |
+        new_revision=$(aws ecs register-task-definition --cli-input-json file://new-task-definition.json --query 'taskDefinition.revision' --output text)
+        echo "New revision created: $new_revision"
+        echo "::set-output name=new-revision::$new_revision"
 
     - name: Task Definition Variable
       id: taskdefintionvar
@@ -83,4 +86,4 @@ jobs:
 
     - name: Deploy to ECS
       run: |
-        aws ecs update-service --cluster reancare-cluster --service rean-backend --task-definition reancare-service:${{ steps.get-latest-revision.outputs.revision }} --force-new-deployment
+        aws ecs update-service --cluster reancare-cluster --service rean-backend --task-definition reancare-service:${{ steps.create-new-revision.outputs.new-revision }} --force-new-deployment
