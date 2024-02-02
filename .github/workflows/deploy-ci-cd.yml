@@ -1,0 +1,46 @@
+name: Reancare ECS Deployment
+
+on:
+  push:
+    branches:
+      - develop-inflection
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18
+
+    - name: Install AWS CLI
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y awscli
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-south-1
+
+    - name: Login to Amazon ECR
+      run: aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 443751504066.dkr.ecr.your-ecs-region.amazonaws.com
+
+    - name: Build Docker image
+      run: |
+        docker build -t 443751504066.dkr.ecr.your-ecs-region.amazonaws.com/reancare:${{ github.sha }} .
+        docker push 443751504066.dkr.ecr.your-ecs-region.amazonaws.com/reancare:${{ github.sha }}
+
+    - name: Deploy to ECS
+      run: |
+        aws ecs update-service --cluster reancare-cluster --service rean-backend --force-new-deployment

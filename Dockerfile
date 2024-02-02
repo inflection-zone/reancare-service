@@ -1,6 +1,9 @@
 FROM node:18.12.0-alpine3.15 AS builder
 ADD . /app
 RUN apk add bash
+RUN apk --no-cache add \
+    build-base \
+    g++
 RUN apk add --no-cache \
         python3 \
         py3-pip \
@@ -9,16 +12,17 @@ RUN apk add --no-cache \
         awscli \
     && rm -rf /var/cache/apk/*
 RUN apk add --update alpine-sdk
-RUN apk add chromium \
+RUN apk add --no-cache chromium \
     harfbuzz
 WORKDIR /app
 COPY package*.json /app/
 RUN npm install -g typescript
 COPY src ./src
 COPY tsconfig.json ./
+RUN npm cache clean --force
 RUN npm install
+RUN npm rm @types/glob @types/rimraf @types/minimatch
 RUN npm run build
-
 ##RUN npm run build
 
 FROM node:18.12.0-alpine3.15
@@ -31,7 +35,7 @@ RUN apk add --no-cache \
         awscli \
     && rm -rf /var/cache/apk/*
 RUN apk add --update alpine-sdk
-RUN apk add chromium \
+RUN apk add --no-cache chromium \
     harfbuzz
 RUN apk update
 RUN apk upgrade
@@ -40,8 +44,13 @@ WORKDIR /app
 
 COPY package*.json /app/
 RUN npm install pm2 -g
-RUN npm install sharp
+RUN npm install --cpu=x64 --os=linux sharp
 COPY --from=builder ./app/dist/ .
+
+COPY entrypoint.sh /app/entrypoint.sh
+RUN dos2unix /app/entrypoint.sh
+
 
 RUN chmod +x /app/entrypoint.sh
 ENTRYPOINT ["/bin/bash", "-c", "/app/entrypoint.sh"]
+
