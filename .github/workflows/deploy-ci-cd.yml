@@ -57,7 +57,7 @@ jobs:
     - name: Update container image in task definition
       run: |
         jq '.containerDefinitions[0].image="443751504066.dkr.ecr.ap-south-1.amazonaws.com/reancare:${{ github.sha }}"' task-definition.json > new-task-definition.json
-        jq 'del(.taskDefinitionArn, .revision)' new-task-definition.json > modified-task-definition.json
+        jq 'del(.taskDefinitionArn, .revision, .status, .registeredAt, .registeredBy)' new-task-definition.json > modified-task-definition.json
         cat modified-task-definition.json
         mv modified-task-definition.json new-task-definition.json
         cat new-task-definition.json
