@@ -54,6 +54,12 @@ jobs:
         container-name: reancare-container
         image: 443751504066.dkr.ecr.ap-south-1.amazonaws.com/reancare:${{ github.sha }}
 
+    - name: Task Definition Variable
+      id: taskdefintionvar
+      shell: bash
+      run: |
+        echo "task_definition_arn=$(aws ecs describe-task-definition --task-definition reancare-service | jq '.[] | .taskDefinitionArn')" >> $GITHUB_OUTPUT
+
     - name: Deploy to ECS
       run: |
-        aws ecs update-service --cluster reancare-cluster --service rean-backend --task-definition ${{ steps.task-def.outputs.task_definition_arn }} --force-new-deployment
+        aws ecs update-service --cluster reancare-cluster --service rean-backend --task-definition ${{ steps.taskdefintionvar.outputs.task_definition_arn }} --force-new-deployment
