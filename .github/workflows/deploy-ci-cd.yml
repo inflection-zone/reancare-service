@@ -52,15 +52,27 @@ jobs:
       run: |
         aws ecs describe-task-definition --task-definition reancare-service:${{ steps.get-latest-revision.outputs.revision }} \
         --query taskDefinition > task-definition.json
+        cat task-definition.json
 
-    - name: New image ID in the Amazon ECS task definition
-      id: task-def
-      uses: aws-actions/amazon-ecs-render-task-definition@v1
-      with:
-        task-definition: task-definition.json
-        container-name: reancare-container
-        image: 443751504066.dkr.ecr.ap-south-1.amazonaws.com/reancare:${{ github.sha }}
-        revision: ${{ steps.get-latest-revision.outputs.revision }}
+    - name: Update container image in task definition
+      run: |
+        jq '.containerDefinitions[0].image="443751504066.dkr.ecr.ap-south-1.amazonaws.com/reancare:${GITHUB_SHA}"' task-definition.json > new-task-definition.json
+
+
+    # - name: New image ID in the Amazon ECS task definition
+    #   id: task-def
+    #   uses: aws-actions/amazon-ecs-render-task-definition@v1
+    #   with:
+    #     task-definition: task-definition.json
+    #     container-name: reancare-container
+    #     image: 443751504066.dkr.ecr.ap-south-1.amazonaws.com/reancare:${{ github.sha }}
+
+    - name: Create a new revision of ECS task definition
+      id: create-new-revision
+      run: |
+        new_revision=$(aws ecs register-task-definition --cli-input-json file://new-task-definition.json --query 'taskDefinition.revision' --output text)
+        echo "New revision created: $new_revision"
+        echo "::set-output name=new-revision::$new_revision"
 
     - name: Task Definition Variable
       id: taskdefintionvar
@@ -70,4 +82,4 @@ jobs:
 
     - name: Deploy to ECS
       run: |
-        aws ecs update-service --cluster reancare-cluster --service rean-backend --task-definition reancare-service:${{ steps.get-latest-revision.outputs.revision }} --force-new-deployment
+        aws ecs update-service --cluster reancare-cluster --service rean-backend --task-definition reancare-service:${{ steps.create-new-revision.outputs.new-revision }} --force-new-deployment
