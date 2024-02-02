@@ -38,8 +38,8 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t 443751504066.dkr.ecr.your-ecs-region.amazonaws.com/reancare:${{ github.sha }} .
-        docker push 443751504066.dkr.ecr.your-ecs-region.amazonaws.com/reancare:${{ github.sha }}
+        docker build -t 443751504066.dkr.ecr.ap-south-1.amazonaws.com/reancare:${{ github.sha }} .
+        docker push 443751504066.dkr.ecr.ap-south-1.amazonaws.com/reancare:${{ github.sha }}
 
     - name: Deploy to ECS
       run: |
