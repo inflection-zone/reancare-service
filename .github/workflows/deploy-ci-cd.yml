@@ -41,6 +41,19 @@ jobs:
         docker build -t 443751504066.dkr.ecr.ap-south-1.amazonaws.com/reancare:${{ github.sha }} .
         docker push 443751504066.dkr.ecr.ap-south-1.amazonaws.com/reancare:${{ github.sha }}
 
+    - name: Download task definition
+      run: |
+        aws ecs describe-task-definition --task-definition reancare-service \
+        --query taskDefinition > task-definition.json
+
+    - name: New image ID in the Amazon ECS task definition
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: task-definition.json
+        container-name: reancare-container
+        image: 443751504066.dkr.ecr.ap-south-1.amazonaws.com/reancare:${{ github.sha }}
+
     - name: Deploy to ECS
       run: |
-        aws ecs update-service --cluster reancare-cluster --service rean-backend --force-new-deployment
+        aws ecs update-service --cluster reancare-cluster --service rean-backend --task-definition ${{ steps.task-def.outputs.task_definition_arn }} --force-new-deployment
