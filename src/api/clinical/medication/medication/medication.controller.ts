@@ -7,7 +7,13 @@ import { DrugDomainModel } from '../../../../domain.types/clinical/medication/dr
 import { MedicationStockImageDto } from '../../../../domain.types/clinical/medication/medication.stock.image/medication.stock.image.dto';
 import { MedicationDomainModel } from '../../../../domain.types/clinical/medication/medication/medication.domain.model';
 import { ConsumptionSummaryDto, MedicationDto } from '../../../../domain.types/clinical/medication/medication/medication.dto';
-import { MedicationAdministrationRoutesList, MedicationDosageUnitsList, MedicationDurationUnitsList, MedicationFrequencyUnitsList, MedicationTimeSchedulesList } from '../../../../domain.types/clinical/medication/medication/medication.types';
+import {
+    MedicationAdministrationRoutesList,
+    MedicationDosageUnitsList,
+    MedicationDurationUnitsList,
+    MedicationFrequencyUnitsList,
+    MedicationTimeSchedulesList
+} from '../../../../domain.types/clinical/medication/medication/medication.types';
 import { DrugService } from '../../../../services/clinical/medication/drug.service';
 import { MedicationConsumptionService } from '../../../../services/clinical/medication/medication.consumption.service';
 import { MedicationService } from '../../../../services/clinical/medication/medication.service';
@@ -214,8 +220,23 @@ export class MedicationController {
 
             this.updateMedicationConsumption(domainModel, id, updated);
 
-            Logger.instance().log(`[MedicationTime] Update - medication response returned`);
-            ResponseHandler.success(request, response, 'Medication record updated successfully! Updates will be available shortly.', 200, {
+            await this._medicationConsumptionService.deleteFutureMedicationSchedules(id);
+
+            if (updated.FrequencyUnit !== 'Other') {
+                var stats = await this._medicationConsumptionService.create(updated);
+                var doseValue = Helper.parseIntegerFromString(updated.Dose.toString()) ?? 1;
+
+                var consumptionSummary: ConsumptionSummaryDto = {
+                    TotalConsumptionCount   : stats.TotalConsumptionCount,
+                    TotalDoseCount          : stats.TotalConsumptionCount * doseValue,
+                    PendingConsumptionCount : stats.PendingConsumptionCount,
+                    PendingDoseCount        : stats.PendingConsumptionCount * doseValue,
+                };
+
+                updated.ConsumptionSummary = consumptionSummary;
+            }
+
+            ResponseHandler.success(request, response, 'Medication record updated successfully!', 200, {
                 Medication : updated,
             });
         } catch (error) {

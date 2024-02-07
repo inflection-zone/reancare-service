@@ -80,13 +80,15 @@ import { register as registerStatisticsRoutes } from './statistics/app.statistic
 import { register as registerDonationCommunicationRoutes } from './assorted/blood.donation/communication/communication.routes';
 import { register as registerUserGroupRoutes } from './community/user.groups/user.group.routes';
 import { register as registerReminderRoutes } from './general/reminder/reminder.routes';
-import { register as registerTenantRoutes } from './tenant/tenant.routes';
+import { register as registerTenantRoutes } from './tenant/tenants/tenant.routes';
 import { register as registerCohortRoutes } from './community/cohorts/cohort.routes';
 import { register as registerCustomQueryRoutes } from './statistics/custom.query/custom.query.routes';
 import { register as registerConsentRoutes } from './auth/consent/consent.routes';
 import { register as registerHealthSystemRoutes } from './hospitals/health.system/health.system.routes';
 import { register as registerHospitalRoutes } from './hospitals/hospital/hospital.routes';
 import { register as registerDailyStatisticsRoutes } from './statistics/daily.statistics/daily.statistics.routes';
+import { register as registerAhaStatisticsRoutes } from './statistics/aha.statistics/aha.statistics.routes';
+import { register as registerTenantFeatureSettingRoutes } from './tenant/settings/tenant.settings.routes';
 
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -198,7 +200,10 @@ export class Router {
                 registerHealthSystemRoutes(this._app);
                 registerHospitalRoutes(this._app);
                 registerDailyStatisticsRoutes(this._app);
+                registerAhaStatisticsRoutes(this._app);
 
+                registerTenantFeatureSettingRoutes(this._app);
+                
                 resolve(true);
 
             } catch (error) {

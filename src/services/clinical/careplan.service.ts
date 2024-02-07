@@ -29,7 +29,7 @@ import { CareplanActivityDto } from "../../domain.types/clinical/careplan/activi
 import { AssessmentDto } from "../../domain.types/clinical/assessment/assessment.dto";
 import { UserTaskDomainModel } from "../../domain.types/users/user.task/user.task.domain.model";
 import { Loader } from "../../startup/loader";
-import { IDonorRepo } from "./../../database/repository.interfaces/assorted/blood.donation/donor.repo.interface";
+import { IDonorRepo } from "../../database/repository.interfaces/assorted/blood.donation/donor.repo.interface";
 import { IDonationCommunicationRepo } from "../../database/repository.interfaces/assorted/blood.donation/communication.repo.interface";
 import { PatientDetailsDto } from "../../domain.types/users/patient/patient/patient.dto";
 import { EHRCareplanActivityService } from "../../modules/ehr.analytics/ehr.services/ehr.careplan.activity.service";

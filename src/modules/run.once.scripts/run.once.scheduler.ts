@@ -40,7 +40,6 @@ import { EHRHowDoYouFeelService } from '../ehr.analytics/ehr.services/ehr.how.do
 
 @injectable()
 export class RunOnceScheduler {
-
     //#region member variables and constructors
 
     _patientService: PatientService = Injector.Container.resolve(PatientService);
@@ -114,7 +113,6 @@ export class RunOnceScheduler {
     public static instance(): RunOnceScheduler {
         return this._instance || (this._instance = Injector.Container.resolve(RunOnceScheduler));
     }
-
     public schedule(schedules: any) {
         this.scheduleExistingVitalDataToEHR(schedules);
         this.scheduleExistingLabDataToEHR(schedules);
@@ -245,8 +243,8 @@ export class RunOnceScheduler {
             var pageIndex = 0;
             while (moreItems) {
                 var filters = {
-                    PageIndex    : pageIndex,
-                    ItemsPerPage : 1000,
+                    PageIndex   : pageIndex,
+                    ItemsPerPage: 1000,
                 };
 
                 var searchResults = null;
@@ -430,8 +428,8 @@ export class RunOnceScheduler {
             var pageIndex = 0;
             while (moreItems) {
                 var filters = {
-                    PageIndex    : pageIndex,
-                    ItemsPerPage : 1000,
+                    PageIndex   : pageIndex,
+                    ItemsPerPage: 1000,
                 };
 
                 var searchResults = null;
@@ -623,5 +621,4 @@ export class RunOnceScheduler {
             Logger.instance().log(`[ScheduleExistingVitalDataToEHR] : ${JSON.stringify(error)}`);
         }
     };
-
 }

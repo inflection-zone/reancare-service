@@ -5,8 +5,8 @@ import { BodyWeightDomainModel } from '../../../domain.types/clinical/biometrics
 import { BodyWeightDto } from '../../../domain.types/clinical/biometrics/body.weight/body.weight.dto';
 import { BodyWeightSearchFilters, BodyWeightSearchResults } from '../../../domain.types/clinical/biometrics/body.weight/body.weight.search.types';
 import { BodyWeightStore } from "../../../modules/ehr/services/body.weight.store";
-import { Injector } from "../../../startup/injector";
 import { ConfigurationManager } from "../../../config/configuration.manager";
+import { Injector } from "../../../startup/injector";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
