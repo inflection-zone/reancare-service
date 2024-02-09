@@ -1,8 +1,13 @@
 import express from 'express';
 import dotenv from 'dotenv';
-dotenv.config({path:'../.env'});
-
-/////////////////////////////////////////////////////////////////////////
+dotenv.config();
+import "reflect-metadata";
+import { ConfigurationManager } from "../../src/config/configuration.manager";
+import { EHRDbConnector } from '../../src/modules/ehr.analytics/ehr.db.connector';
+import { AwardsFactsDBConnector } from '../../src/modules/awards.facts/awards.facts.db.connector';
+import { Loader } from '../../src/startup/loader';
+import { AwardsFactsService } from '../../src/modules/awards.facts/awards.facts.service';
+///////////////////////////////////////////////////////////////////////// 
 
 export default class MainApplication {
 
@@ -23,11 +28,26 @@ export default class MainApplication {
     }
 
     public start = async (): Promise<void> => {
+
+        //Load configurations
+        ConfigurationManager.loadConfigurations();
+
+        //Load the modules
+        await Loader.init();
+
+        if (ConfigurationManager.EHRAnalyticsEnabled()) {
+            await connectDatabase_EHRInsights();
+        }
+        if (ConfigurationManager.GamificationEnabled()) {
+            await connectDatabase_AwardsFacts();
+        }
+
+        // rabbitMQ
+        // RabbitMQClient.initialize();
+
         //Start listening
         await this.listen();
 
-        //Connect databases
-       // await connectDatabase_Primary();
     };
 
     private listen = () => {
@@ -43,4 +63,16 @@ export default class MainApplication {
             }
         });
     }
+}
+
+async function connectDatabase_EHRInsights() {
+    //Connect with EHR insights database
+    await EHRDbConnector.connect();
+}
+
+async function connectDatabase_AwardsFacts() {
+    //Connect with Awards facts database
+    await AwardsFactsDBConnector.connect();
+    //Fetch the event types from awards service
+    await AwardsFactsService.initialize();
 }

@@ -4,7 +4,7 @@
         "Authentication": "Custom",
         "Authorization": "Custom",
         "UseRefreshToken": true,
-        "AccessTokenExpiresInSeconds": 108000,
+        "AccessTokenExpiresInSeconds": 2592000,
         "RefreshTokenExpiresInSeconds": 2592000
     },
     "Database" : {
@@ -17,20 +17,20 @@
         "Provider": "GCP-FHIR"
     },
     "FileStorage" : {
-        "Provider": "Custom"
+        "Provider": "AWS-S3"
     },
     "FeatureFlags" : {
-        "Provider": "Custom"
+        "Provider": "Firebase-Remote-Config"
     },
     "Communication" : {
         "SMS": {
             "Provider": "Twilio"
         },
         "Email": {
-            "Provider": "Mock"
+            "Provider": "SendGrid"
         },
         "InAppNotifications": {
-            "Provider": "Mock"
+            "Provider": "Firebase"
         }
     },
     "TemporaryFolders": {
@@ -40,7 +40,7 @@
     },
     "Careplans" : [
         {
-            "Enabled" : false,
+            "Enabled": true,
             "Provider": "AHA",
             "Service": "AhaCarePlanService",
             "Plans": [

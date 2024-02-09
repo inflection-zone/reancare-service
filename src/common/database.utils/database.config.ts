@@ -82,9 +82,9 @@ Logger.instance().log('Primary database name      : ' + process.env.DB_NAME);
 if (ConfigurationManager.EHRAnalyticsEnabled()) {
     Logger.instance().log('EHR insights database name : ' + process.env.DB_NAME_EHR_INSIGHTS);
 }
-if (ConfigurationManager.GamificationEnabled()) {
-    Logger.instance().log('Awards facts database name : ' + process.env.DB_NAME_AWARDS_FACTS);
-}
+// if (ConfigurationManager.GamificationEnabled()) {
+//     Logger.instance().log('Awards facts database name : ' + process.env.DB_NAME_AWARDS_FACTS);
+// }
 
 Logger.instance().log('================================================');
 

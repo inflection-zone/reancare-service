@@ -141,8 +141,8 @@ export class Helper {
         }
 
         const rawdata = fs.readFileSync(jsonPath, {
-            encoding : 'utf8',
-            flag     : 'r',
+            encoding: 'utf8',
+            flag: 'r',
         });
 
         const obj = JSON.parse(rawdata);
@@ -170,20 +170,20 @@ export class Helper {
 
     static getSessionHeaders = (token: string) => {
         return {
-            'Content-Type'    : 'application/json; charset=utf-8',
-            Accept            : '*/*',
-            'Cache-Control'   : 'no-cache',
-            'Accept-Encoding' : 'gzip, deflate, br',
-            Connection        : 'keep-alive',
-            Authorization     : 'Bearer ' + token,
+            'Content-Type': 'application/json; charset=utf-8',
+            Accept: '*/*',
+            'Cache-Control': 'no-cache',
+            'Accept-Encoding': 'gzip, deflate, br',
+            Connection: 'keep-alive',
+            Authorization: 'Bearer ' + token,
         };
     };
 
     static getNeedleOptions = (headers) => {
         return {
-            headers    : headers,
-            compressed : true,
-            json       : true,
+            headers: headers,
+            compressed: true,
+            json: true,
         };
     };
 
@@ -360,11 +360,11 @@ export class Helper {
 
     static generatePassword(): string {
         const password = generate({
-            length    : 8,
-            numbers   : true,
-            lowercase : true,
-            uppercase : true,
-            symbols   : true,
+            length: 8,
+            numbers: true,
+            lowercase: true,
+            uppercase: true,
+            symbols: true,
         });
         return password;
     }
@@ -376,14 +376,14 @@ export class Helper {
         if (phone.includes('-')) {
             const tokens = phone.split('-');
             let countryCode = tokens[0];
-            let phoneNumber = tokens.length > 2 ? tokens.slice(1, ).join() : tokens[1];
+            let phoneNumber = tokens.length > 2 ? tokens.slice(1,).join() : tokens[1];
             countryCode = '+' + Helper.getDigitsOnly(countryCode);
             phoneNumber = Helper.getDigitsOnly(phoneNumber);
             return countryCode + '-' + phoneNumber;
         }
         else if (phone.startsWith('+')) {
             var countryCodes = Countries.map(x => x.PhoneCode);
-            var countryCodesSorted = countryCodes.sort((a,b) => b.length - a.length);
+            var countryCodesSorted = countryCodes.sort((a, b) => b.length - a.length);
             for (var cc of countryCodesSorted) {
                 if (phone.startsWith(cc)) {
                     var phoneNumber = phone.substring(cc.length);
@@ -521,7 +521,7 @@ export class Helper {
         var tmp = (Math.floor(Math.random() * 9000000000) + 1000000000).toString();
         var displayId = tmp.slice(0, 4) + '-' + tmp.slice(4, 8);
         var identifier = displayId;
-        if (prefix != null){
+        if (prefix != null) {
             identifier = prefix + '-' + identifier;
         }
         return identifier;
@@ -529,11 +529,11 @@ export class Helper {
 
     public static generateDisplayCode = (prefix = null) => {
         const code = generate({
-            length    : 24,
-            numbers   : true,
-            lowercase : true,
-            uppercase : false,
-            symbols   : false,
+            length: 24,
+            numbers: true,
+            lowercase: true,
+            uppercase: false,
+            symbols: false,
         });
         return prefix ? prefix + '#' + code : code;
     };
@@ -545,7 +545,7 @@ export class Helper {
         return str;
     };
 
-    public static generateDownloadFolderPath = async() => {
+    public static generateDownloadFolderPath = async () => {
 
         var timestamp = TimeHelper.timestamp(new Date());
         var tempDownloadFolder = ConfigurationManager.DownloadTemporaryFolder();
@@ -556,7 +556,7 @@ export class Helper {
         return downloadFolderPath;
     };
 
-    public static createTempDownloadFolder = async() => {
+    public static createTempDownloadFolder = async () => {
         var tempDownloadFolder = ConfigurationManager.DownloadTemporaryFolder();
         if (fs.existsSync(tempDownloadFolder)) {
             return tempDownloadFolder;
@@ -565,7 +565,7 @@ export class Helper {
         return tempDownloadFolder;
     };
 
-    public static createTempUploadFolder = async() => {
+    public static createTempUploadFolder = async () => {
         var tempUploadFolder = ConfigurationManager.UploadTemporaryFolder();
         if (fs.existsSync(tempUploadFolder)) {
             return tempUploadFolder;
@@ -638,14 +638,14 @@ export class Helper {
 
     public static parseIntegerFromString = (input: string): number | null => {
         try {
-          // Attempt to parse the integer from the input string
-          const digitRegex = /^[0-9]+$/;
-          digitRegex.test(input);
-          const parsedInt = digitRegex.test(input) ? parseInt(input, 10) : null;
-          return parsedInt;
+            // Attempt to parse the integer from the input string
+            const digitRegex = /^[0-9]+$/;
+            digitRegex.test(input);
+            const parsedInt = digitRegex.test(input) ? parseInt(input, 10) : null;
+            return parsedInt;
         } catch (error: any) {
-          Logger.instance().log(`Error: ${error.message}`);
-          return null;
+            Logger.instance().log(`Error: ${error.message}`);
+            return null;
         }
     };
 

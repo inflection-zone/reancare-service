@@ -5,6 +5,7 @@ import { uuid } from '../../domain.types/miscellaneous/system.types';
 import * as asyncLib from 'async';
 import needle = require('needle');
 import axios from 'axios';
+// import amqp from 'amqplib';
 import { Helper } from '../../common/helper';
 import { updateMedicationFact } from './medication.facts.service';
 import { updateNutritionFact } from './nutrition.facts.service';
@@ -215,6 +216,17 @@ export class AwardsFactsService {
         }
     };
 
+    // public static addOrUpdateMedicationFact = async (model: AwardsFact) => {
+    //     try {
+    //         model.FactType = 'Medication';
+    //         model.RecordDateStr = (model.RecordDate).toISOString().split('T')[0];
+    //         // Instead of directly calling enqueue, publish a message to RabbitMQ
+    //         await AwardsFactsService.publishToQueue(model);
+    //     } catch (error) {
+    //         Logger.instance().log(`${JSON.stringify(error.message, null, 2)}`);
+    //     }
+    // };
+
     public static addOrUpdateNutritionResponseFact = (model: AwardsFact) => {
         try {
             model.FactType = 'Nutrition';
@@ -272,5 +284,23 @@ export class AwardsFactsService {
         await this.getGroupActivityTypes();
         return await this.getEventTypes();
     };
+
+    // rabbitmq connection
+
+    // private static async publishToQueue(model: AwardsFact) {
+    //     const connection = await amqp.connect('amqp://localhost');
+    //     const channel = await connection.createChannel();
+
+    //     const queueName = 'awardsQueue';
+    //     await channel.assertQueue(queueName, { durable: true });
+
+    //     // Convert model to JSON string and send it to the queue
+    //     await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(model)), { persistent: true });
+
+    //     console.log(`Message sent to queue: ${JSON.stringify(model)}`);
+
+    //     await channel.close();
+    //     await connection.close();
+    // }
 
 }
