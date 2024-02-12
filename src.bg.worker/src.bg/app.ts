@@ -7,6 +7,8 @@ import { EHRDbConnector } from '../../src/modules/ehr.analytics/ehr.db.connector
 import { AwardsFactsDBConnector } from '../../src/modules/awards.facts/awards.facts.db.connector';
 import { Loader } from '../../src/startup/loader';
 import { AwardsFactsService } from '../../src/modules/awards.facts/awards.facts.service';
+import * as amqp from 'amqplib';
+import { rabbitmqConfig } from '../rabbitmq/config'
 ///////////////////////////////////////////////////////////////////////// 
 
 export default class MainApplication {
@@ -38,12 +40,13 @@ export default class MainApplication {
         if (ConfigurationManager.EHRAnalyticsEnabled()) {
             await connectDatabase_EHRInsights();
         }
+        
         if (ConfigurationManager.GamificationEnabled()) {
             await connectDatabase_AwardsFacts();
         }
 
-        // rabbitMQ
-        // RabbitMQClient.initialize();
+        // RabbitMQ connection
+        await connectToRabbitMQ();
 
         //Start listening
         await this.listen();
@@ -75,4 +78,20 @@ async function connectDatabase_AwardsFacts() {
     await AwardsFactsDBConnector.connect();
     //Fetch the event types from awards service
     await AwardsFactsService.initialize();
+}
+
+async function connectToRabbitMQ() {
+    try {
+        const connection = await amqp.connect(rabbitmqConfig);
+        const channel = await connection.createChannel();
+
+        // Example: Declare a queue for cron job messages
+        await channel.assertQueue('cronJobQueue');
+
+        console.log('Connected to RabbitMQ');
+        return channel;
+    } catch (error) {
+        console.error('Error connecting to RabbitMQ:', error);
+        throw error;
+    }
 }

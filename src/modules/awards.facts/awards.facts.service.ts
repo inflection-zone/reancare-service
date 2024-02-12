@@ -5,7 +5,7 @@ import { uuid } from '../../domain.types/miscellaneous/system.types';
 import * as asyncLib from 'async';
 import needle = require('needle');
 import axios from 'axios';
-// import amqp from 'amqplib';
+import amqp from 'amqplib';
 import { Helper } from '../../common/helper';
 import { updateMedicationFact } from './medication.facts.service';
 import { updateNutritionFact } from './nutrition.facts.service';
@@ -17,11 +17,11 @@ import { ConfigurationManager } from "../../config/configuration.manager";
 ///////////////////////////////////////////////////////////////////////////////////
 
 export interface AwardsFact {
-    PatientUserId : uuid;
-    RecordId      : uuid;
-    FactType     ?: string;
-    Facts         : any;
-    RecordDate    : Date;
+    PatientUserId: uuid;
+    RecordId: uuid;
+    FactType?: string;
+    Facts: any;
+    RecordDate: Date;
     RecordDateStr?: string;
     RecordTimeZone?: string;
 }
@@ -31,22 +31,22 @@ export interface AwardsFact {
 const ASYNC_TASK_COUNT = 4;
 
 const headers = {
-    'Content-Type'    : 'application/x-www-form-urlencoded',
-    Accept            : '*/*',
-    'Cache-Control'   : 'no-cache',
-    'Accept-Encoding' : 'gzip, deflate, br',
-    Connection        : 'keep-alive',
-    'x-api-key'       : process.env.AWARDS_SERVICE_API_KEY,
+    'Content-Type': 'application/x-www-form-urlencoded',
+    Accept: '*/*',
+    'Cache-Control': 'no-cache',
+    'Accept-Encoding': 'gzip, deflate, br',
+    Connection: 'keep-alive',
+    'x-api-key': process.env.AWARDS_SERVICE_API_KEY,
 };
 
 const enum FactType {
-    Medication       = 'Medication',
-    Nutrition        = 'Nutrition',
+    Medication = 'Medication',
+    Nutrition = 'Nutrition',
     PhysicalActivity = 'Physical-Activity',
-    Vitals           = 'Vitals',
-    Symptoms         = 'Symptoms',
-    MentalHealth     = 'Mental-Health',
-    Mindfulness      = 'Mindfullness'
+    Vitals = 'Vitals',
+    Symptoms = 'Symptoms',
+    MentalHealth = 'Mental-Health',
+    Mindfulness = 'Mindfullness'
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ export class AwardsFactsService {
     //#region Task queue
 
     static _q = asyncLib.queue((model: AwardsFact, onCompleted) => {
-                        
+
         //Only if gamification is enabled
         if (ConfigurationManager.GamificationEnabled() === false) {
             return;
@@ -94,7 +94,7 @@ export class AwardsFactsService {
 
     //#region Private static methods
 
-    private static record = async(model: AwardsFact) => {
+    private static record = async (model: AwardsFact) => {
 
         if (!AwardsFactsService._initialized) {
             await this.initialize();
@@ -185,9 +185,9 @@ export class AwardsFactsService {
         try {
             var url = process.env.AWARDS_SERVICE_BASE_URL + '/api/v1/engine/events';
             var body = {
-                TypeId      : eventTypeId,
-                ReferenceId : model.PatientUserId,
-                Payload     : model,
+                TypeId: eventTypeId,
+                ReferenceId: model.PatientUserId,
+                Payload: model,
             };
             var response = await axios.post(url, body, { headers });
             if (response.status === 201) {
@@ -205,27 +205,27 @@ export class AwardsFactsService {
 
     //#endregion
 
-    public static addOrUpdateMedicationFact = (model: AwardsFact) => {
-        try {
-            model.FactType = 'Medication';
-            model.RecordDateStr = (model.RecordDate).toISOString().split('T')[0];
-            AwardsFactsService.enqueue(model);
-        }
-        catch (error) {
-            Logger.instance().log(`${JSON.stringify(error.message, null, 2)}`);
-        }
-    };
-
-    // public static addOrUpdateMedicationFact = async (model: AwardsFact) => {
+    // public static addOrUpdateMedicationFact = (model: AwardsFact) => {
     //     try {
     //         model.FactType = 'Medication';
     //         model.RecordDateStr = (model.RecordDate).toISOString().split('T')[0];
-    //         // Instead of directly calling enqueue, publish a message to RabbitMQ
-    //         await AwardsFactsService.publishToQueue(model);
-    //     } catch (error) {
+    //         AwardsFactsService.enqueue(model);
+    //     }
+    //     catch (error) {
     //         Logger.instance().log(`${JSON.stringify(error.message, null, 2)}`);
     //     }
     // };
+
+    public static addOrUpdateMedicationFact = async (model: AwardsFact) => {
+        try {
+            model.FactType = 'Medication';
+            model.RecordDateStr = (model.RecordDate).toISOString().split('T')[0];
+            // Instead of directly calling enqueue, publish a message to RabbitMQ
+            // await publishToQueue(model);
+        } catch (error) {
+            Logger.instance().log(`${JSON.stringify(error.message, null, 2)}`);
+        }
+    };
 
     public static addOrUpdateNutritionResponseFact = (model: AwardsFact) => {
         try {
@@ -284,23 +284,5 @@ export class AwardsFactsService {
         await this.getGroupActivityTypes();
         return await this.getEventTypes();
     };
-
-    // rabbitmq connection
-
-    // private static async publishToQueue(model: AwardsFact) {
-    //     const connection = await amqp.connect('amqp://localhost');
-    //     const channel = await connection.createChannel();
-
-    //     const queueName = 'awardsQueue';
-    //     await channel.assertQueue(queueName, { durable: true });
-
-    //     // Convert model to JSON string and send it to the queue
-    //     await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(model)), { persistent: true });
-
-    //     console.log(`Message sent to queue: ${JSON.stringify(model)}`);
-
-    //     await channel.close();
-    //     await connection.close();
-    // }
 
 }

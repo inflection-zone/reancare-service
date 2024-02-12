@@ -17,6 +17,9 @@ import { AwardsFactsService } from './modules/awards.facts/awards.facts.service'
 import { DatabaseClient } from './common/database.utils/dialect.clients/database.client';
 import { DatabaseSchemaType } from './common/database.utils/database.config';
 
+import * as amqp from 'amqplib';
+import { rabbitmqConfig } from '../src/rabbitmq/config'
+
 /////////////////////////////////////////////////////////////////////////
 
 export default class MainApplication {
@@ -67,6 +70,9 @@ export default class MainApplication {
 
             //Seed the service
             await Loader.seeder.init();
+
+            // RabbitMQ connection
+            await connectToRabbitMQ();
 
             if (process.env.NODE_ENV !== 'test') {
                 //Set-up cron jobs
@@ -155,3 +161,20 @@ async function connectDatabase_AwardsFacts() {
     //Fetch the event types from awards service
     await AwardsFactsService.initialize();
 }
+
+// Connect to RabbitMQ
+async function connectToRabbitMQ() {
+    try {
+      const connection = await amqp.connect(rabbitmqConfig);
+      const channel = await connection.createChannel();
+  
+      // Example: Declare a queue for cron job messages
+      await channel.assertQueue('cronJobQueue');
+  
+      console.log('Connected to RabbitMQ');
+      return channel;
+    } catch (error) {
+      console.error('Error connecting to RabbitMQ:', error);
+      throw error;
+    }
+  }
