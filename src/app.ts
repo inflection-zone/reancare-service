@@ -16,9 +16,7 @@ import { Loader } from './startup/loader';
 import { AwardsFactsService } from './modules/awards.facts/awards.facts.service';
 import { DatabaseClient } from './common/database.utils/dialect.clients/database.client';
 import { DatabaseSchemaType } from './common/database.utils/database.config';
-
-import * as amqp from 'amqplib';
-import { rabbitmqConfig } from '../src/rabbitmq/config'
+import { initializeRabbitMQ } from '../src/rabbitmq/rabbitmq.connection'
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -43,7 +41,7 @@ export default class MainApplication {
         return this._app;
     }
 
-    public start = async(): Promise<void> => {
+    public start = async (): Promise<void> => {
         try {
 
             //Load configurations
@@ -72,7 +70,7 @@ export default class MainApplication {
             await Loader.seeder.init();
 
             // RabbitMQ connection
-            await connectToRabbitMQ();
+            await initializeRabbitMQ()
 
             if (process.env.NODE_ENV !== 'test') {
                 //Set-up cron jobs
@@ -87,7 +85,7 @@ export default class MainApplication {
             await this.listen();
 
         }
-        catch (error){
+        catch (error) {
             Logger.instance().log('An error occurred while starting reancare-api service.' + error.message);
         }
     };
@@ -97,19 +95,19 @@ export default class MainApplication {
         return new Promise((resolve, reject) => {
             try {
                 this._app.use(express.urlencoded({ limit: '50mb', extended: true }));
-                this._app.use(express.json( { limit: '50mb' }));
+                this._app.use(express.json({ limit: '50mb' }));
                 this._app.use(helmet());
                 this._app.use(cors());
 
                 const MAX_UPLOAD_FILE_SIZE = ConfigurationManager.MaxUploadFileSize();
 
                 this._app.use(fileUpload({
-                    limits            : { fileSize: MAX_UPLOAD_FILE_SIZE },
-                    preserveExtension : true,
-                    createParentPath  : true,
-                    parseNested       : true,
-                    useTempFiles      : true,
-                    tempFileDir       : '/tmp/uploads/'
+                    limits: { fileSize: MAX_UPLOAD_FILE_SIZE },
+                    preserveExtension: true,
+                    createParentPath: true,
+                    parseNested: true,
+                    useTempFiles: true,
+                    tempFileDir: '/tmp/uploads/'
                 }));
                 resolve(true);
             }
@@ -161,20 +159,3 @@ async function connectDatabase_AwardsFacts() {
     //Fetch the event types from awards service
     await AwardsFactsService.initialize();
 }
-
-// Connect to RabbitMQ
-async function connectToRabbitMQ() {
-    try {
-      const connection = await amqp.connect(rabbitmqConfig);
-      const channel = await connection.createChannel();
-  
-      // Example: Declare a queue for cron job messages
-      await channel.assertQueue('cronJobQueue');
-  
-      console.log('Connected to RabbitMQ');
-      return channel;
-    } catch (error) {
-      console.error('Error connecting to RabbitMQ:', error);
-      throw error;
-    }
-  }

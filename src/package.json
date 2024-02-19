@@ -34,6 +34,7 @@
     "@types/sharp": "^0.31.1",
     "@types/sqlite3": "^3.1.8",
     "adm-zip": "^0.5.10",
+    "amqplib": "^0.10.3",
     "approx-string-match": "^1.1.0",
     "async": "^3.2.4",
     "aws-sdk": "^2.1450.0",
@@ -84,6 +85,7 @@
     "xmlbuilder": "^15.1.1"
   },
   "devDependencies": {
+    "@types/amqplib": "^0.10.4",
     "@types/body-parser": "^1.19.0",
     "@types/chai": "^4.3.5",
     "@types/fs-extra": "^9.0.11",
