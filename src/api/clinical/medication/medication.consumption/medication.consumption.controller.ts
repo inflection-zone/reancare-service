@@ -15,6 +15,8 @@ import { HelperRepo } from '../../../../database/sql/sequelize/repositories/comm
 import { DurationType } from '../../../../domain.types/miscellaneous/time.types';
 import { TimeHelper } from '../../../../common/time.helper';
 import { Logger } from '../../../../common/logger';
+import { publishMedicationFactToQueue } from '../../../../rabbitmq/rabbitmq.publisher'
+import { getRabbitMQConnection } from '../../../../../src/rabbitmq/rabbitmq.connection';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -63,7 +65,7 @@ export class MedicationConsumptionController {
             for (var dto of dtos) {
                 var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(dto.PatientUserId);
                 if (eligibleAppNames.length > 0) {
-                    for await (var appName of eligibleAppNames) { 
+                    for await (var appName of eligibleAppNames) {
                         this._service.addEHRRecord(dto.PatientUserId, dto.id, dto, appName);
                     }
                 } else {
@@ -75,22 +77,35 @@ export class MedicationConsumptionController {
             const offsetMinutes = await HelperRepo.getPatientTimezoneOffsets(patientUserId);
             for (var dto of dtos) {
                 const tempDate = TimeHelper.addDuration(dto.TimeScheduleEnd, offsetMinutes, DurationType.Minute);
-                AwardsFactsService.addOrUpdateMedicationFact({
-                    PatientUserId : dto.PatientUserId,
-                    Facts         : {
-                        DrugName : dto.DrugName,
-                        Taken    : true,
-                        Missed   : false,
+                // AwardsFactsService.addOrUpdateMedicationFact({
+                //     PatientUserId : dto.PatientUserId,
+                //     Facts         : {
+                //         DrugName : dto.DrugName,
+                //         Taken    : true,
+                //         Missed   : false,
+                //     },
+                //     RecordId       : dto.id,
+                //     RecordDate     : tempDate,
+                //     RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(dto.TimeScheduleEnd),
+                //     RecordTimeZone : currentTimeZone,
+                // });
+                const message = {
+                    PatientUserId: dto.PatientUserId,
+                    Facts: {
+                        DrugName: dto.DrugName,
+                        Taken: true,
+                        Missed: false,
                     },
-                    RecordId       : dto.id,
-                    RecordDate     : tempDate,
-                    RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(dto.TimeScheduleEnd),
-                    RecordTimeZone : currentTimeZone,
-                });
+                    RecordId: dto.id,
+                    RecordDate: tempDate,
+                    RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(dto.TimeScheduleEnd),
+                    RecordTimeZone: currentTimeZone,
+                };
+                await publishMedicationFactToQueue(message);
             }
 
             ResponseHandler.success(request, response, 'Medication consumptions marked as taken successfully!', 200, {
-                MedicationConsumptions : dtos,
+                MedicationConsumptions: dtos,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -114,7 +129,7 @@ export class MedicationConsumptionController {
             for (var dto of dtos) {
                 var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(dto.PatientUserId);
                 if (eligibleAppNames.length > 0) {
-                    for await (var appName of eligibleAppNames) { 
+                    for await (var appName of eligibleAppNames) {
                         this._service.addEHRRecord(dto.PatientUserId, dto.id, dto, appName);
                     }
                 } else {
@@ -128,21 +143,21 @@ export class MedicationConsumptionController {
             for (var dto of dtos) {
                 const tempDate = TimeHelper.addDuration(dto.TimeScheduleEnd, offsetMinutes, DurationType.Minute);
                 AwardsFactsService.addOrUpdateMedicationFact({
-                    PatientUserId : dto.PatientUserId,
-                    Facts         : {
-                        DrugName : dto.DrugName,
-                        Taken    : false,
-                        Missed   : true,
+                    PatientUserId: dto.PatientUserId,
+                    Facts: {
+                        DrugName: dto.DrugName,
+                        Taken: false,
+                        Missed: true,
                     },
-                    RecordId       : dto.id,
-                    RecordDate     : tempDate,
-                    RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(dto.TimeScheduleEnd),
-                    RecordTimeZone : currentTimeZone,
+                    RecordId: dto.id,
+                    RecordDate: tempDate,
+                    RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(dto.TimeScheduleEnd),
+                    RecordTimeZone: currentTimeZone,
                 });
             }
 
             ResponseHandler.success(request, response, 'Medication consumptions marked as missed successfully!', 200, {
-                MedicationConsumptions : dtos,
+                MedicationConsumptions: dtos,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -163,7 +178,7 @@ export class MedicationConsumptionController {
             // get user details to add records in ehr database
             var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(dto.PatientUserId);
             if (eligibleAppNames.length > 0) {
-                for await (var appName of eligibleAppNames) { 
+                for await (var appName of eligibleAppNames) {
                     this._service.addEHRRecord(dto.PatientUserId, dto.id, dto, appName);
                 }
             } else {
@@ -175,20 +190,20 @@ export class MedicationConsumptionController {
             const tempDateStr = await TimeHelper.formatDateToLocal_YYYY_MM_DD(dto.TimeScheduleEnd);
             const tempDate = TimeHelper.addDuration(dto.TimeScheduleEnd, offsetMinutes, DurationType.Minute);
             AwardsFactsService.addOrUpdateMedicationFact({
-                PatientUserId : dto.PatientUserId,
-                Facts         : {
-                    DrugName : dto.DrugName,
-                    Taken    : true,
-                    Missed   : false,
+                PatientUserId: dto.PatientUserId,
+                Facts: {
+                    DrugName: dto.DrugName,
+                    Taken: true,
+                    Missed: false,
                 },
-                RecordId       : dto.id,
-                RecordDate     : tempDate,
-                RecordDateStr  : tempDateStr,
-                RecordTimeZone : currentTimeZone,
+                RecordId: dto.id,
+                RecordDate: tempDate,
+                RecordDateStr: tempDateStr,
+                RecordTimeZone: currentTimeZone,
             });
 
             ResponseHandler.success(request, response, 'Medication consumptions marked as taken successfully!', 200, {
-                MedicationConsumption : dto,
+                MedicationConsumption: dto,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -209,7 +224,7 @@ export class MedicationConsumptionController {
             // get user details to add records in ehr database
             var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(dto.PatientUserId);
             if (eligibleAppNames.length > 0) {
-                for await (var appName of eligibleAppNames) { 
+                for await (var appName of eligibleAppNames) {
                     this._service.addEHRRecord(dto.PatientUserId, dto.id, dto, appName);
                 }
             } else {
@@ -221,20 +236,20 @@ export class MedicationConsumptionController {
             const offsetMinutes = await HelperRepo.getPatientTimezoneOffsets(patientUserId);
             const tempDate = TimeHelper.addDuration(dto.TimeScheduleEnd, offsetMinutes, DurationType.Minute);
             AwardsFactsService.addOrUpdateMedicationFact({
-                PatientUserId : dto.PatientUserId,
-                Facts         : {
-                    DrugName : dto.DrugName,
-                    Taken    : false,
-                    Missed   : true,
+                PatientUserId: dto.PatientUserId,
+                Facts: {
+                    DrugName: dto.DrugName,
+                    Taken: false,
+                    Missed: true,
                 },
-                RecordId       : dto.id,
-                RecordDate     : tempDate,
-                RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(dto.TimeScheduleEnd),
-                RecordTimeZone : currentTimeZone,
+                RecordId: dto.id,
+                RecordDate: tempDate,
+                RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(dto.TimeScheduleEnd),
+                RecordTimeZone: currentTimeZone,
             });
 
             ResponseHandler.success(request, response, 'Medication consumptions marked as missed successfully!', 200, {
-                MedicationConsumption : dto,
+                MedicationConsumption: dto,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -250,8 +265,8 @@ export class MedicationConsumptionController {
             const deletedCount = await this._service.deleteFutureMedicationSchedules(medicationId);
 
             ResponseHandler.success(request, response, 'Deleted future medication schedules successfully!', 200, {
-                Deleted      : true,
-                DeletedCount : deletedCount
+                Deleted: true,
+                DeletedCount: deletedCount
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -296,7 +311,7 @@ export class MedicationConsumptionController {
             }
 
             ResponseHandler.success(request, response, 'Medication consumption retrieved successfully!', 200, {
-                MedicationConsumption : medicationConsumption,
+                MedicationConsumption: medicationConsumption,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -343,7 +358,7 @@ export class MedicationConsumptionController {
             }
 
             ResponseHandler.success(request, response, 'Medication consumptions retrieved successfully!', 200, {
-                MedicationConsumptions : dtos,
+                MedicationConsumptions: dtos,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -368,7 +383,7 @@ export class MedicationConsumptionController {
             }
 
             ResponseHandler.success(request, response, 'Medication consumptions retrieved successfully!', 200, {
-                MedicationSchedulesForDay : schedules,
+                MedicationSchedulesForDay: schedules,
             });
 
         } catch (error) {
@@ -393,7 +408,7 @@ export class MedicationConsumptionController {
             }
 
             ResponseHandler.success(request, response, 'Medication consumption summary retrieved successfully!', 200, {
-                MedicationConsumptionSummary : summary,
+                MedicationConsumptionSummary: summary,
             });
 
         } catch (error) {
@@ -419,7 +434,7 @@ export class MedicationConsumptionController {
             }
 
             ResponseHandler.success(request, response, 'Monthly medication consumption summary retrieved successfully!', 200, {
-                MedicationConsumptionSummary : summary,
+                MedicationConsumptionSummary: summary,
             });
 
         } catch (error) {

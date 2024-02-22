@@ -13,6 +13,7 @@ import { updatePhysicalActivityFact } from './exercise.physical.activity.facts.s
 import { updateVitalFact } from './vital.facts.service';
 import { updateMentalHealthFact } from './mental.health.facts.service';
 import { ConfigurationManager } from "../../config/configuration.manager";
+//import { sendMessageToQueue } from '../../../src/rabbitmq/rabbitmq.publisher';
 
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -205,27 +206,27 @@ export class AwardsFactsService {
 
     //#endregion
 
-    // public static addOrUpdateMedicationFact = (model: AwardsFact) => {
-    //     try {
-    //         model.FactType = 'Medication';
-    //         model.RecordDateStr = (model.RecordDate).toISOString().split('T')[0];
-    //         AwardsFactsService.enqueue(model);
-    //     }
-    //     catch (error) {
-    //         Logger.instance().log(`${JSON.stringify(error.message, null, 2)}`);
-    //     }
-    // };
-
-    public static addOrUpdateMedicationFact = async (model: AwardsFact) => {
+    public static addOrUpdateMedicationFact = (model: AwardsFact) => {
         try {
             model.FactType = 'Medication';
             model.RecordDateStr = (model.RecordDate).toISOString().split('T')[0];
-            // Instead of directly calling enqueue, publish a message to RabbitMQ
-            // await publishToQueue(model);
-        } catch (error) {
+            AwardsFactsService.enqueue(model);
+        }
+        catch (error) {
             Logger.instance().log(`${JSON.stringify(error.message, null, 2)}`);
         }
     };
+
+    // public static addOrUpdateMedicationFact = async (model: AwardsFact) => {
+    //     try {
+    //         model.FactType = 'Medication';
+    //         model.RecordDateStr = (model.RecordDate).toISOString().split('T')[0];
+    //         // Instead of directly calling enqueue, publish a message to RabbitMQ
+    //         // await publishToQueue(model);
+    //     } catch (error) {
+    //         Logger.instance().log(`${JSON.stringify(error.message, null, 2)}`);
+    //     }
+    // };
 
     public static addOrUpdateNutritionResponseFact = (model: AwardsFact) => {
         try {

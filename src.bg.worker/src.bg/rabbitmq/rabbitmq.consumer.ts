@@ -1,43 +1,53 @@
-import { getBackgroundRabbitMQConnection } from './rabbitmq.connection';
+import { getBackgroundRabbitMQConnection } from '../../src.bg/rabbitmq/rabbitmq.connection';
+import { AwardsFactsService } from '../../../src/modules/awards.facts/awards.facts.service'
 
-export async function consumeMedicationFactToQueue() {
+///////////////////////////////////////////////////////////////////////////////////////////
+
+
+export async function consumeMedicationFactsFromQueue(): Promise<void> {
     try {
+        // Create a channel from the connection
         const connection = getBackgroundRabbitMQConnection();
+
         const channel = await connection.createChannel();
-        const exchangeName = 'medicationQueue';
 
-        // Assert the exchange
-        await channel.assertExchange(exchangeName, 'fanout', { durable: false });
+        // Specify the queue name
+        const queueName = 'medication_queue'; // Make sure it matches your queue name
 
-        // Create a queue and bind it to the exchange
-        channel.assertQueue(exchangeName, { durable: true });
-        // Consume messages from the queue
-        channel.consume(exchangeName, async (message) => {
+        // Assert the queue to make sure it exists, otherwise create it
+        await channel.assertQueue(queueName, { durable: true });
 
-            //console.log(message)
+        console.log('Waiting for messages in RabbitMQ queue...');
 
-            try {
-                const content = message.content.toString();
-                //console.log(content)
+        // Set up the message consumer
+        channel.consume(queueName, async (message) => {
+            if (message !== null) {
 
-                const event = JSON.parse(content);
+                try {
 
+                    // Parse the message
+                    const messageContent = JSON.parse(message.content.toString());
 
-                // Process the event object and store the data
-                // await processData(event);
+                    console.log('Received message from RabbitMQ:', messageContent);
 
-                console.log('Event processed:', event);
+                    // Process the message (handle database operations, etc.)
+                    await AwardsFactsService.addOrUpdateMedicationFact(messageContent);
 
-                // Acknowledge the message
-                channel.ack(message);
-            } catch (error) {
-                console.error('Error processing event object:', error);
-                // Reject the message to prevent it from being requeued indefinitely
-                channel.reject(message, false);
+                    // Acknowledge the message to remove it from the queue
+                    channel.ack(message);
+                } catch (error) {
+
+                    console.error('Error processing message from RabbitMQ:', error);
+
+                    // Reject and requeue the message
+                    channel.nack(message);
+                }
             }
         });
     } catch (error) {
-        console.error('Error connecting to RabbitMQ:', error);
+
+        console.error('Error consuming messages from RabbitMQ:', error);
+        
         throw error;
     }
 }

@@ -83,8 +83,8 @@ export class Loader {
             // Loader._notificationService = container.resolve(NotificationService);
             // Loader._notificationService.init();
 
-            // Loader._messagingService = container.resolve(MessagingService);
-            // Loader._messagingService.init();
+            Loader._messagingService = container.resolve(MessagingService);
+            Loader._messagingService.init();
 
             // await CareplanHandler.init();
 

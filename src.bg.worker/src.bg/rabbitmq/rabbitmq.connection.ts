@@ -1,6 +1,6 @@
 import * as amqp from 'amqplib';
 import { rabbitmqConfig } from '../../../src/rabbitmq/config';
-import { consumeMedicationFactToQueue } from './rabbitmq.consumer';
+import { consumeMedicationFactsFromQueue } from './rabbitmq.consumer';
 let connection: amqp.Connection;
 
 // Function to initialize RabbitMQ connection
@@ -8,7 +8,7 @@ export async function initializeBackgroundRabbitMQ() {
     try {
         connection = await amqp.connect(rabbitmqConfig);
         console.log('Connected to BG RabbitMQ');
-        await consumeMedicationFactToQueue()
+        await consumeMedicationFactsFromQueue()
     } catch (error) {
         console.error('Error connecting to RabbitMQ:', error);
         throw error;

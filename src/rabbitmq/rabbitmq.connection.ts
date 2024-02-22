@@ -1,6 +1,6 @@
 import * as amqp from 'amqplib';
 import { rabbitmqConfig } from './config';
-import { publishMedicationFactToQueue } from './rabbitmq.publisher';
+// import { publishMedicationFactToQueue } from './rabbitmq.publisher';
 let connection: amqp.Connection;
 
 // Function to initialize RabbitMQ connection
@@ -10,7 +10,7 @@ export async function initializeRabbitMQ() {
         connection = await amqp.connect(rabbitmqConfig);
         // log the connection
         console.log('Connected to RabbitMQ');
-        await publishMedicationFactToQueue()
+        // await publishMedicationFactToQueue()
     } catch (error) {
         console.error('Error connecting to RabbitMQ:', error);
         throw error;
