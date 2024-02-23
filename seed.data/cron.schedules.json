@@ -9,7 +9,7 @@
         "ScheduleDailyCareplanPushTasks": "*/15 * * * *",
         "ScheduleHsSurvey": "0 11 * * *",
         "ReminderOnNoActionToDonationRequest": "30 12 * * *",
-        "Reminders": "*/10 * * * *",
+        "Reminders": "*/5 * * * *",
         "CareplanRegistrationReminder": "0 13 * * *",
         "ScheduleFetchDataFromDevices": "0 * * * *",
         "CareplanRegistrationReminderForOldUsers": "0 15 * * *",
