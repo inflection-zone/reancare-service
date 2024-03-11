@@ -14,6 +14,7 @@ import axios from 'axios';
 import { IUserDeviceDetailsRepo } from "../../database/repository.interfaces/users/user/user.device.details.repo.interface ";
 import { INotificationService } from "../../modules/communication/notification.service/notification.service.interface";
 import { TimeHelper } from "../../common/time.helper";
+import { publishSendEmailNotificationToQueue } from "../../../src/rabbitmq/rabbitmq.communication.publisher";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -117,8 +118,7 @@ export class ReminderSenderService {
     };
 
     private static sendReminderByEmail = async (user, reminder, schedule): Promise<boolean> => {
-        const { emailService, emailDetails }
-            = await ReminderSenderService.getUserEmailDetails(user, reminder, schedule);
+        const { emailService, emailDetails }= await ReminderSenderService.getUserEmailDetails(user, reminder, schedule);
         const sent = await emailService.sendEmail(emailDetails, false);
         await ReminderSenderService.markAsDelivered(sent, schedule.id);
         return true;

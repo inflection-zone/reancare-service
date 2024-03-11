@@ -9,8 +9,8 @@ import { FoodConsumptionDto, FoodConsumptionEventDto, FoodConsumptionForDayDto }
 import { FoodConsumptionSearchResults,
     FoodConsumptionSearchFilters
 } from '../../../domain.types/wellness/nutrition/food.consumption/food.consumption.search.types';
-import { EHRAnalyticsHandler } from "../../../modules/ehr.analytics/ehr.analytics.handler";
-import { EHRRecordTypes } from "../../../modules/ehr.analytics/ehr.record.types";
+import { EHRAnalyticsHandler } from "../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler";
+import { EHRRecordTypes } from "../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.record.types";
 import { uuid } from "../../../domain.types/miscellaneous/system.types";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -13,11 +13,11 @@ import { PatientDetailsDto, PatientDto } from '../../../domain.types/users/patie
 import { PatientDetailsSearchResults, PatientSearchFilters, PatientSearchResults } from '../../../domain.types/users/patient/patient/patient.search.types';
 import { PersonDetailsDto } from '../../../domain.types/person/person.dto';
 import { Roles } from '../../../domain.types/role/role.types';
-import { PatientStore } from '../../../modules/ehr/services/patient.store';
+import { PatientStore } from '../../../../src.bg.worker/src.bg/modules/ehr/services/patient.store';
 import { Loader } from '../../../startup/loader';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import { PersonDomainModel } from '../../../domain.types/person/person.domain.model';
-import { EHRAnalyticsHandler } from '../../../modules/ehr.analytics/ehr.analytics.handler';
+import { EHRAnalyticsHandler } from '../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler';
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 

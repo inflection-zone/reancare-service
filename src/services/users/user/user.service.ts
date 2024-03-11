@@ -27,6 +27,7 @@ import { IPatientRepo } from '../../../database/repository.interfaces/users/pati
 import { IAssessmentTemplateRepo } from '../../../database/repository.interfaces/clinical/assessment/assessment.template.repo.interface';
 import { IAssessmentRepo } from '../../../database/repository.interfaces/clinical/assessment/assessment.repo.interface';
 import { IUserTaskRepo } from '../../../database/repository.interfaces/users/user/user.task.repo.interface';
+import { produceGenerateOtpToQueue } from '../../../../src/rabbitmq/rabbitmq.communication.publisher';
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -237,7 +238,12 @@ export class UserService {
             userFirstName = user.Person.FirstName;
         }
         const message = `Dear ${userFirstName}, ${otp} is OTP for your ${systemIdentifier} account and will expire in 3 minutes.`;
-        const sendStatus = await Loader.messagingService.sendSMS(user.Person.Phone, message);
+        //const sendStatus = await Loader.messagingService.sendSMS(user.Person.Phone, message);
+        const comm_message = {
+            PhoneNumber: user.Person,
+            Message: message
+        }
+        const sendStatus = await produceGenerateOtpToQueue(comm_message)
         if (sendStatus) {
             Logger.instance().log('Otp sent successfully.\n ' + JSON.stringify(otpDto, null, 2));
         }

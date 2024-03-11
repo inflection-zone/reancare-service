@@ -1,6 +1,6 @@
 import { uuid } from "../../../domain.types/miscellaneous/system.types";
-import { EHRAnalyticsHandler } from "../../../modules/ehr.analytics/ehr.analytics.handler";
-import { EHRRecordTypes } from "../../../modules/ehr.analytics/ehr.record.types";
+import { EHRAnalyticsHandler } from "../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler";
+import { EHRRecordTypes } from "../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.record.types";
 import { inject, injectable } from "tsyringe";
 import { IPhysicalActivityRepo } from "../../../database/repository.interfaces/wellness/exercise/physical.activity.repo.interface";
 import { PhysicalActivityDomainModel } from '../../../domain.types/wellness/exercise/physical.activity/physical.activity.domain.model';

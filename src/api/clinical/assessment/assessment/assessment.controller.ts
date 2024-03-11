@@ -14,11 +14,12 @@ import { AssessmentHelperRepo } from '../../../../database/sql/sequelize/reposit
 import { CustomActionsHandler } from '../../../../custom/custom.actions.handler';
 import { AssessmentDto } from '../../../../domain.types/clinical/assessment/assessment.dto';
 import { Logger } from '../../../../common/logger';
-import { EHRAnalyticsHandler } from '../../../../modules/ehr.analytics/ehr.analytics.handler';
+import { EHRAnalyticsHandler } from '../../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler';
+import { publishAnswerQuestionListEHRToQueue } from '../../../../rabbitmq/rabbitmq.publisher'
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-export class AssessmentController extends BaseController{
+export class AssessmentController extends BaseController {
 
     //#region member variables and constructors
 
@@ -58,7 +59,7 @@ export class AssessmentController extends BaseController{
             }
 
             ResponseHandler.success(request, response, 'Assessment record created successfully!', 201, {
-                Assessment : assessment,
+                Assessment: assessment,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -77,7 +78,7 @@ export class AssessmentController extends BaseController{
             }
 
             ResponseHandler.success(request, response, 'Assessment record retrieved successfully!', 200, {
-                Assessment : assessment,
+                Assessment: assessment,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -100,7 +101,8 @@ export class AssessmentController extends BaseController{
                     : `Total ${count} assessment records retrieved successfully!`;
 
             ResponseHandler.success(request, response, message, 200, {
-                AssessmentRecords : searchResults });
+                AssessmentRecords: searchResults
+            });
 
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -125,7 +127,7 @@ export class AssessmentController extends BaseController{
             }
 
             ResponseHandler.success(request, response, 'Assessment record updated successfully!', 200, {
-                Assessment : updated,
+                Assessment: updated,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -149,7 +151,7 @@ export class AssessmentController extends BaseController{
             }
 
             ResponseHandler.success(request, response, 'Assessment record deleted successfully!', 200, {
-                Deleted : true,
+                Deleted: true,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -169,7 +171,7 @@ export class AssessmentController extends BaseController{
             const next = await this._service.startAssessment(id);
 
             ResponseHandler.success(request, response, 'Assessment started successfully!', 200, {
-                Next : next,
+                Next: next,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -189,9 +191,9 @@ export class AssessmentController extends BaseController{
             if (assessment.ScoringApplicable) {
                 var { score, reportUrl } = await this.generateScoreReport(assessment);
                 ResponseHandler.success(request, response, 'Assessment started successfully!', 200, {
-                    AssessmentId : assessment.id,
-                    Score        : score,
-                    ReportUrl    : reportUrl,
+                    AssessmentId: assessment.id,
+                    Score: score,
+                    ReportUrl: reportUrl,
                 });
             }
             else {
@@ -216,7 +218,7 @@ export class AssessmentController extends BaseController{
             if (progressStatus === ProgressStatus.Pending) {
                 const next = await this._service.startAssessment(id);
                 ResponseHandler.success(request, response, 'Assessment next question retrieved successfully!', 200, {
-                    Next : next,
+                    Next: next,
                 });
             }
             else if (progressStatus === ProgressStatus.InProgress) {
@@ -227,7 +229,7 @@ export class AssessmentController extends BaseController{
                     return;
                 }
                 ResponseHandler.success(request, response, 'Assessment next question retrieved successfully!', 200, {
-                    Next : next,
+                    Next: next,
                 });
             }
             else if (progressStatus === ProgressStatus.Completed) {
@@ -261,7 +263,7 @@ export class AssessmentController extends BaseController{
                 throw new ApiError(404, 'Assessment question not found.');
             }
             ResponseHandler.success(request, response, 'Assessment question retrieved successfully!', 200, {
-                Question : question,
+                Question: question,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -298,15 +300,15 @@ export class AssessmentController extends BaseController{
             var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(answerResponse.Parent.PatientUserId);
             var options = await this._service.getQuestionById(assessment.id, answerResponse.Answer.NodeId);
             if (eligibleAppNames.length > 0) {
-                for await (var appName of eligibleAppNames) { 
-                    this._service.addEHRRecord(answerResponse, assessment, options, appName);   
+                for await (var appName of eligibleAppNames) {
+                    this._service.addEHRRecord(answerResponse, assessment, options, appName);
                 }
             } else {
                 Logger.instance().log(`Skip adding details to EHR database as device is not eligible:${answerResponse.Parent.PatientUserId}`);
             }
 
             const isAssessmentCompleted = answerResponse === null || answerResponse?.Next === null;
-            if ( isAssessmentCompleted) {
+            if (isAssessmentCompleted) {
                 //Assessment has no more questions left and is completed successfully!
                 await this.completeAssessmentTask(id);
                 //If the assessment has scoring enabled, score the assessment
@@ -319,19 +321,19 @@ export class AssessmentController extends BaseController{
                 }
                 if (eligibleAppNames.length > 0) {
                     var updatedAssessment = await this._service.getById(assessment.id);
-                    for await (var appName of eligibleAppNames) { 
+                    for await (var appName of eligibleAppNames) {
                         this._service.addEHRRecord(null, updatedAssessment, null, appName);
                     }
                 } else {
                     Logger.instance().log(`Skip adding details to EHR database as device is not eligible:${answerResponse.Parent.PatientUserId}`);
                 }
                 ResponseHandler.success(request, response, 'Assessment has completed successfully!', 200, {
-                    AnswerResponse : answerResponse,
+                    AnswerResponse: answerResponse,
                 });
                 return;
             }
             ResponseHandler.success(request, response, 'Assessment question answered successfully!', 200, {
-                AnswerResponse : answerResponse,
+                AnswerResponse: answerResponse,
             });
 
         } catch (error) {
@@ -386,9 +388,16 @@ export class AssessmentController extends BaseController{
                 for await (var appName of eligibleAppNames) {
                     for await (var ar of answerResponse.Answer) {
                         ar = JSON.parse(JSON.stringify(ar));
-                        ar.Answer['SubQuestion']  = ar.Answer.Title;
+                        ar.Answer['SubQuestion'] = ar.Answer.Title;
                         ar.Answer.Title = listNode.Title;
-                        this._service.addEHRRecord(ar, assessment, ar.Parent, appName);
+                        //this._service.addEHRRecord(ar, assessment, ar.Parent, appName);
+                        const ehrMessage = {
+                            AR: ar,
+                            Assessment: assessment,
+                            ArParent: ar.Parent,
+                            AppName: appName
+                        };
+                        await publishAnswerQuestionListEHRToQueue(ehrMessage);
                     }
                 }
             } else {
@@ -397,7 +406,7 @@ export class AssessmentController extends BaseController{
             answerResponse['AssessmentScore'] = null;
 
             const isAssessmentCompleted = answerResponse === null || answerResponse?.Next === null;
-            if ( isAssessmentCompleted) {
+            if (isAssessmentCompleted) {
                 //Assessment has no more questions left and is completed successfully!
                 await this.completeAssessmentTask(id);
 
@@ -419,13 +428,13 @@ export class AssessmentController extends BaseController{
                     Logger.instance().log(`Skip adding details to EHR database as device is not eligible:${answerResponse.Parent.PatientUserId}`);
                 }
                 ResponseHandler.success(request, response, 'Assessment has completed successfully!', 200, {
-                    AnswerResponse : answerResponse,
+                    AnswerResponse: answerResponse,
                 });
                 return;
             }
 
             ResponseHandler.success(request, response, 'Assessment question list answered successfully!', 200, {
-                AnswerResponse : answerResponse,
+                AnswerResponse: answerResponse,
             });
 
         } catch (error) {
@@ -476,8 +485,8 @@ export class AssessmentController extends BaseController{
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const updatedAssessment = await this._service.update(assessment.id, {
-            ScoreDetails : scoreStr,
-            ReportUrl    : reportUrl
+            ScoreDetails: scoreStr,
+            ReportUrl: reportUrl
         });
 
         return { score, reportUrl };

@@ -1,6 +1,6 @@
 import express from 'express';
-import { EHRAnalyticsHandler } from '../../../../modules/ehr.analytics/ehr.analytics.handler';
-import { AwardsFactsService } from '../../../../modules/awards.facts/awards.facts.service';
+import { EHRAnalyticsHandler } from '../../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler';
+import { AwardsFactsService } from '../../../../../src.bg.worker/src.bg/modules/awards.facts/awards.facts.service';
 import { Authorizer } from '../../../../auth/authorizer';
 import { ApiError } from '../../../../common/api.error';
 import { ResponseHandler } from '../../../../common/response.handler';
@@ -15,9 +15,12 @@ import { HelperRepo } from '../../../../database/sql/sequelize/repositories/comm
 import { DurationType } from '../../../../domain.types/miscellaneous/time.types';
 import { TimeHelper } from '../../../../common/time.helper';
 import { Logger } from '../../../../common/logger';
-import { publishMedicationFactToQueue } from '../../../../rabbitmq/rabbitmq.publisher'
-import { getRabbitMQConnection } from '../../../../../src/rabbitmq/rabbitmq.connection';
-
+import {
+    publishMarkListAsMissedMedicationFactToQueue,
+    publishMarkListAsTakenMedicationFactToQueue,
+    publishMarkAsTakenMedicationFactToQueue,
+    publishMarkAsMissedMedicationFactToQueue
+} from '../../../../rabbitmq/rabbitmq.publisher'
 ///////////////////////////////////////////////////////////////////////////////////////
 
 export class MedicationConsumptionController {
@@ -101,7 +104,7 @@ export class MedicationConsumptionController {
                     RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(dto.TimeScheduleEnd),
                     RecordTimeZone: currentTimeZone,
                 };
-                await publishMedicationFactToQueue(message);
+                await publishMarkListAsTakenMedicationFactToQueue(message);
             }
 
             ResponseHandler.success(request, response, 'Medication consumptions marked as taken successfully!', 200, {
@@ -142,7 +145,19 @@ export class MedicationConsumptionController {
             const offsetMinutes = await HelperRepo.getPatientTimezoneOffsets(patientUserId);
             for (var dto of dtos) {
                 const tempDate = TimeHelper.addDuration(dto.TimeScheduleEnd, offsetMinutes, DurationType.Minute);
-                AwardsFactsService.addOrUpdateMedicationFact({
+                // AwardsFactsService.addOrUpdateMedicationFact({
+                //     PatientUserId: dto.PatientUserId,
+                //     Facts: {
+                //         DrugName: dto.DrugName,
+                //         Taken: false,
+                //         Missed: true,
+                //     },
+                //     RecordId: dto.id,
+                //     RecordDate: tempDate,
+                //     RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(dto.TimeScheduleEnd),
+                //     RecordTimeZone: currentTimeZone,
+                // });
+                const message = {
                     PatientUserId: dto.PatientUserId,
                     Facts: {
                         DrugName: dto.DrugName,
@@ -153,7 +168,8 @@ export class MedicationConsumptionController {
                     RecordDate: tempDate,
                     RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(dto.TimeScheduleEnd),
                     RecordTimeZone: currentTimeZone,
-                });
+                }
+                await publishMarkListAsMissedMedicationFactToQueue(message)
             }
 
             ResponseHandler.success(request, response, 'Medication consumptions marked as missed successfully!', 200, {
@@ -189,7 +205,19 @@ export class MedicationConsumptionController {
             const offsetMinutes = await HelperRepo.getPatientTimezoneOffsets(patientUserId);
             const tempDateStr = await TimeHelper.formatDateToLocal_YYYY_MM_DD(dto.TimeScheduleEnd);
             const tempDate = TimeHelper.addDuration(dto.TimeScheduleEnd, offsetMinutes, DurationType.Minute);
-            AwardsFactsService.addOrUpdateMedicationFact({
+            // AwardsFactsService.addOrUpdateMedicationFact({
+            //     PatientUserId: dto.PatientUserId,
+            //     Facts: {
+            //         DrugName: dto.DrugName,
+            //         Taken: true,
+            //         Missed: false,
+            //     },
+            //     RecordId: dto.id,
+            //     RecordDate: tempDate,
+            //     RecordDateStr: tempDateStr,
+            //     RecordTimeZone: currentTimeZone,
+            // });
+            const message = {
                 PatientUserId: dto.PatientUserId,
                 Facts: {
                     DrugName: dto.DrugName,
@@ -200,7 +228,8 @@ export class MedicationConsumptionController {
                 RecordDate: tempDate,
                 RecordDateStr: tempDateStr,
                 RecordTimeZone: currentTimeZone,
-            });
+            }
+            await publishMarkAsTakenMedicationFactToQueue(message)
 
             ResponseHandler.success(request, response, 'Medication consumptions marked as taken successfully!', 200, {
                 MedicationConsumption: dto,
@@ -235,7 +264,19 @@ export class MedicationConsumptionController {
             const currentTimeZone = await HelperRepo.getPatientTimezone(patientUserId);
             const offsetMinutes = await HelperRepo.getPatientTimezoneOffsets(patientUserId);
             const tempDate = TimeHelper.addDuration(dto.TimeScheduleEnd, offsetMinutes, DurationType.Minute);
-            AwardsFactsService.addOrUpdateMedicationFact({
+            // AwardsFactsService.addOrUpdateMedicationFact({
+            //     PatientUserId: dto.PatientUserId,
+            //     Facts: {
+            //         DrugName: dto.DrugName,
+            //         Taken: false,
+            //         Missed: true,
+            //     },
+            //     RecordId: dto.id,
+            //     RecordDate: tempDate,
+            //     RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(dto.TimeScheduleEnd),
+            //     RecordTimeZone: currentTimeZone,
+            // });
+            const message = {
                 PatientUserId: dto.PatientUserId,
                 Facts: {
                     DrugName: dto.DrugName,
@@ -246,7 +287,8 @@ export class MedicationConsumptionController {
                 RecordDate: tempDate,
                 RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(dto.TimeScheduleEnd),
                 RecordTimeZone: currentTimeZone,
-            });
+            }
+            await publishMarkAsMissedMedicationFactToQueue(message)
 
             ResponseHandler.success(request, response, 'Medication consumptions marked as missed successfully!', 200, {
                 MedicationConsumption: dto,

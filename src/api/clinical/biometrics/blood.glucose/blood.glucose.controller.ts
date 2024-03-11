@@ -6,13 +6,19 @@ import { BloodGlucoseService } from '../../../../services/clinical/biometrics/bl
 import { Loader } from '../../../../startup/loader';
 import { BloodGlucoseValidator } from './blood.glucose.validator';
 import { BaseController } from '../../../base.controller';
-import { EHRAnalyticsHandler } from '../../../../modules/ehr.analytics/ehr.analytics.handler';
+import { EHRAnalyticsHandler } from '../../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler';
 import { HelperRepo } from '../../../../database/sql/sequelize/repositories/common/helper.repo';
 import { TimeHelper } from '../../../../common/time.helper';
 import { DurationType } from '../../../../domain.types/miscellaneous/time.types';
-import { AwardsFactsService } from '../../../../modules/awards.facts/awards.facts.service';
+import { AwardsFactsService } from '../../../../../src.bg.worker/src.bg/modules/awards.facts/awards.facts.service';
 import { Logger } from '../../../../common/logger';
-import { EHRVitalService } from '../../../../modules/ehr.analytics/ehr.vital.service';
+import { EHRVitalService } from '../../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.vital.service';
+import { publishAddBodyGlucoseToQueue, 
+        publishUpdateBodyGlucoseToQueue,  
+        publishAddBloodGlucoseEHRToQueue, 
+        publishUpdateBloodGlucoseEHRToQueue,
+        publishDeleteBloodGlucoseEHRToQueue
+ } from '../../../../../src/rabbitmq/rabbitmq.publisher';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -50,8 +56,16 @@ export class BloodGlucoseController extends BaseController {
             // get user details to add records in ehr database
             var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(bloodGlucose.PatientUserId);
             if (eligibleAppNames.length > 0) {
-                for await (var appName of eligibleAppNames) { 
-                    this._service.addEHRRecord(model.PatientUserId, bloodGlucose.id, bloodGlucose.Provider, model, appName);
+                for await (var appName of eligibleAppNames) {
+                    //this._service.addEHRRecord(model.PatientUserId, bloodGlucose.id, bloodGlucose.Provider, model, appName);
+                    const ehrMessage = {
+                        PatientUserId: model.PatientUserId,
+                        BloodGlucoseId: bloodGlucose.id,
+                        Provider: bloodGlucose.Provider,
+                        Model: model,
+                        AppName: appName
+                    };
+                    await publishAddBloodGlucoseEHRToQueue(ehrMessage);
                 }
             } else {
                 Logger.instance().log(`Skip adding details to EHR database as device is not eligible:${bloodGlucose.PatientUserId}`);
@@ -66,21 +80,34 @@ export class BloodGlucoseController extends BaseController {
                 const offsetMinutes = await HelperRepo.getPatientTimezoneOffsets(bloodGlucose.PatientUserId);
                 const tempDate = TimeHelper.addDuration(timestamp, offsetMinutes, DurationType.Minute);
 
-                AwardsFactsService.addOrUpdateVitalFact({
-                    PatientUserId : bloodGlucose.PatientUserId,
-                    Facts         : {
-                        VitalName         : "BloodGlucose",
-                        VitalPrimaryValue : bloodGlucose.BloodGlucose,
-                        Unit              : bloodGlucose.Unit,
+                // AwardsFactsService.addOrUpdateVitalFact({
+                //     PatientUserId : bloodGlucose.PatientUserId,
+                //     Facts         : {
+                //         VitalName         : "BloodGlucose",
+                //         VitalPrimaryValue : bloodGlucose.BloodGlucose,
+                //         Unit              : bloodGlucose.Unit,
+                //     },
+                //     RecordId       : bloodGlucose.id,
+                //     RecordDate     : tempDate,
+                //     RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                //     RecordTimeZone : currentTimeZone,
+                // });
+                const message = {
+                    PatientUserId: bloodGlucose.PatientUserId,
+                    Facts: {
+                        VitalName: "BloodGlucose",
+                        VitalPrimaryValue: bloodGlucose.BloodGlucose,
+                        Unit: bloodGlucose.Unit,
                     },
-                    RecordId       : bloodGlucose.id,
-                    RecordDate     : tempDate,
-                    RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
-                    RecordTimeZone : currentTimeZone,
-                });
+                    RecordId: bloodGlucose.id,
+                    RecordDate: tempDate,
+                    RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                    RecordTimeZone: currentTimeZone,
+                }
+                await publishAddBodyGlucoseToQueue(message)
             }
             ResponseHandler.success(request, response, 'Blood glucose record created successfully!', 201, {
-                BloodGlucose : bloodGlucose,
+                BloodGlucose: bloodGlucose,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -99,7 +126,7 @@ export class BloodGlucoseController extends BaseController {
             }
 
             ResponseHandler.success(request, response, 'Blood Glucose record retrieved successfully!', 200, {
-                BloodGlucose : bloodGlucose,
+                BloodGlucose: bloodGlucose,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -122,7 +149,8 @@ export class BloodGlucoseController extends BaseController {
                     : `Total ${count} blood glucose records retrieved successfully!`;
 
             ResponseHandler.success(request, response, message, 200, {
-                BloodGlucoseRecords : searchResults });
+                BloodGlucoseRecords: searchResults
+            });
 
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -147,8 +175,16 @@ export class BloodGlucoseController extends BaseController {
             }
             var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(updated.PatientUserId);
             if (eligibleAppNames.length > 0) {
-                for await (var appName of eligibleAppNames) { 
-                    this._service.addEHRRecord(model.PatientUserId, id, updated.Provider, model, appName);
+                for await (var appName of eligibleAppNames) {
+                    //this._service.addEHRRecord(model.PatientUserId, id, updated.Provider, model, appName);
+                    const ehrMessage = {
+                        PatientUserId: model.PatientUserId,
+                        Id: id,
+                        Provider: updated.Provider,
+                        Model: model,
+                        AppName: appName
+                    };
+                    await publishUpdateBloodGlucoseEHRToQueue(ehrMessage);
                 }
             } else {
                 Logger.instance().log(`Skip adding details to EHR database as device is not eligible:${updated.PatientUserId}`);
@@ -163,21 +199,34 @@ export class BloodGlucoseController extends BaseController {
                 const offsetMinutes = await HelperRepo.getPatientTimezoneOffsets(updated.PatientUserId);
                 const tempDate = TimeHelper.addDuration(timestamp, offsetMinutes, DurationType.Minute);
 
-                AwardsFactsService.addOrUpdateVitalFact({
-                    PatientUserId : updated.PatientUserId,
-                    Facts         : {
-                        VitalName    : "BloodGlucose",
-                        BloodGlucose : updated.BloodGlucose,
-                        Unit         : updated.Unit,
+                // AwardsFactsService.addOrUpdateVitalFact({
+                //     PatientUserId: updated.PatientUserId,
+                //     Facts: {
+                //         VitalName: "BloodGlucose",
+                //         BloodGlucose: updated.BloodGlucose,
+                //         Unit: updated.Unit,
+                //     },
+                //     RecordId: updated.id,
+                //     RecordDate: tempDate,
+                //     RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                //     RecordTimeZone: currentTimeZone,
+                // });
+                const message = {
+                    PatientUserId: updated.PatientUserId,
+                    Facts: {
+                        VitalName: "BloodGlucose",
+                        BloodGlucose: updated.BloodGlucose,
+                        Unit: updated.Unit,
                     },
-                    RecordId       : updated.id,
-                    RecordDate     : tempDate,
-                    RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
-                    RecordTimeZone : currentTimeZone,
-                });
+                    RecordId: updated.id,
+                    RecordDate: tempDate,
+                    RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                    RecordTimeZone: currentTimeZone,
+                }
+                await publishUpdateBodyGlucoseToQueue(message)
             }
             ResponseHandler.success(request, response, 'Blood glucose record updated successfully!', 200, {
-                BloodGlucose : updated,
+                BloodGlucose: updated,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -200,10 +249,12 @@ export class BloodGlucoseController extends BaseController {
             }
 
             // delete ehr record
-            this._ehrVitalService.deleteVitalEHRRecord(existingRecord.id);
+            //this._ehrVitalService.deleteVitalEHRRecord(existingRecord.id);
+            const message = existingRecord.id;
+            await publishDeleteBloodGlucoseEHRToQueue(message)
 
             ResponseHandler.success(request, response, 'Blood glucose record deleted successfully!', 200, {
-                Deleted : true,
+                Deleted: true,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);

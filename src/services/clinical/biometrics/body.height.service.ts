@@ -1,4 +1,4 @@
-import { BiometricsHeightStore } from "../../../modules/ehr/services/biometrics.height.store";
+import { BiometricsHeightStore } from "../../../../src.bg.worker/src.bg/modules/ehr/services/biometrics.height.store";
 import { Loader } from "../../../startup/loader";
 import { inject, injectable } from "tsyringe";
 import { IBodyHeightRepo } from "../../../database/repository.interfaces/clinical/biometrics/body.height.repo.interface";
@@ -7,8 +7,8 @@ import { BodyHeightDto } from '../../../domain.types/clinical/biometrics/body.he
 import { BodyHeightSearchFilters, BodyHeightSearchResults } from '../../../domain.types/clinical/biometrics/body.height/body.height.search.types';
 import { ConfigurationManager } from "../../../config/configuration.manager";
 import { uuid } from "../../../domain.types/miscellaneous/system.types";
-import { EHRAnalyticsHandler } from "../../../modules/ehr.analytics/ehr.analytics.handler";
-import { EHRRecordTypes } from "../../../modules/ehr.analytics/ehr.record.types";
+import { EHRAnalyticsHandler } from "../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler";
+import { EHRRecordTypes } from "../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.record.types";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 

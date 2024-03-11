@@ -14,7 +14,7 @@ import { Loader } from '../../../startup/loader';
 import { UserTaskValidator } from './user.task.validator';
 import { MedicationConsumptionService } from '../../../services/clinical/medication/medication.consumption.service';
 import { CareplanService } from '../../../services/clinical/careplan.service';
-import { EHRAnalyticsHandler } from '../../../modules/ehr.analytics/ehr.analytics.handler';
+import { EHRAnalyticsHandler } from '../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

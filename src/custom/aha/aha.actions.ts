@@ -20,6 +20,7 @@ import { PersonService } from '../../services/person/person.service';
 import { UserService } from '../../services/users/user/user.service';
 import { TimeHelper } from '../../common/time.helper';
 import { DurationType } from '../../domain.types/miscellaneous/time.types';
+import { produceSechudleHsSurveyToQueue, publishNotificationCarePlanRegistration, publishSendNotificationToDevice, publishSendStrokeSurveyNotification } from '../../../src/rabbitmq/rabbitmq.communication.publisher';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -127,7 +128,7 @@ export class AHAActions {
 
                         if (userAppRegistrations.length > 0 && this.eligibleForCareplanRegistartionReminder(userAppRegistrations)) {
                             Logger.instance().log(`Sending careplan registration reminder to :${patient.UserId}`);
-                            await this.sendCareplanRegistrationReminder(userDeviceTokens);        
+                            await this.sendCareplanRegistrationReminder(userDeviceTokens);
                         } else {
                             Logger.instance().log(`Skip sending careplan registration reminder as device is not eligible:${patient.UserId}`);
                         }
@@ -137,7 +138,7 @@ export class AHAActions {
                 } else {
                     Logger.instance().log(`Skip sending careplan registration reminder as patient is already enrolled:${patient.UserId}`);
                 }
-                
+
             }
         }
         catch (error) {
@@ -160,9 +161,9 @@ export class AHAActions {
                     today = new Date(today.setHours(0, 0, 0, 0));
 
                     const dayDiff = Math.floor(TimeHelper.dayDiff(today, referenceDate));
-                    
+
                     if (dayDiff === 3 || dayDiff === 10 || dayDiff === 30) {
-                    var userDevices = await this._userDeviceDetailsService.getByUserId(patient.UserId);
+                        var userDevices = await this._userDeviceDetailsService.getByUserId(patient.UserId);
                         var userAppRegistrations = [];
                         var userDeviceTokens = [];
                         userDevices.forEach(userDevice => {
@@ -170,18 +171,18 @@ export class AHAActions {
                             userDeviceTokens.push(userDevice.Token);
                         });
 
-                    if (userAppRegistrations.length > 0 && this.eligibleForCareplanRegistartionReminder(userAppRegistrations)) {
-                        Logger.instance().log(`Sending careplan registration reminder (old user) to :${patient.UserId}`);
-                        await this.sendCareplanRegistrationReminder(userDeviceTokens);        
+                        if (userAppRegistrations.length > 0 && this.eligibleForCareplanRegistartionReminder(userAppRegistrations)) {
+                            Logger.instance().log(`Sending careplan registration reminder (old user) to :${patient.UserId}`);
+                            await this.sendCareplanRegistrationReminder(userDeviceTokens);
+                        } else {
+                            Logger.instance().log(`Skip sending careplan registration reminder (old user) as device is not eligible:${patient.UserId}`);
+                        }
                     } else {
-                        Logger.instance().log(`Skip sending careplan registration reminder (old user) as device is not eligible:${patient.UserId}`);
-                    }               
+                        Logger.instance().log(`Skip sending careplan registration reminder (old user) as ineligible day:${patient.UserId}`);
+                    }
                 } else {
-                    Logger.instance().log(`Skip sending careplan registration reminder (old user) as ineligible day:${patient.UserId}`);
-                }
-            } else {
                     Logger.instance().log(`Skip sending careplan registration reminder (old user) as patient is already enrolled:${patient.UserId}`);
-                }          
+                }
             }
         }
         catch (error) {
@@ -246,7 +247,7 @@ export class AHAActions {
                         patient, assessment, score);
 
                     const updates: AssessmentDomainModel = {
-                        ReportUrl : reportUrl
+                        ReportUrl: reportUrl
                     };
 
                     const updatedAssessment = await this._assessmentService.update(assessmentId, updates);
@@ -274,8 +275,8 @@ export class AHAActions {
                 }
 
                 const filters = {
-                    Task   : 'Cholesterol Health Behaviors',
-                    UserId : careplanEnrollment.PatientUserId,
+                    Task: 'Cholesterol Health Behaviors',
+                    UserId: careplanEnrollment.PatientUserId,
                 };
                 var userTasks = await this._userTaskService.search(filters);
                 var tasks = userTasks.Items;
@@ -297,7 +298,7 @@ export class AHAActions {
                             Logger.instance().log(`[HsCron] Start sending SMS and creating custom task for patient Survey.
                                 for patient:${patientDetails.UserId}`);
                             const patient =
-                                    await this._patientService.getByUserId(careplanEnrollment.PatientUserId);
+                                await this._patientService.getByUserId(careplanEnrollment.PatientUserId);
                             const phoneNumber = patient.User.Person.Phone;
                             const person = await this._personService.getById(patient.User.PersonId);
                             var userFirstName = 'user';
@@ -305,7 +306,12 @@ export class AHAActions {
                                 userFirstName = person.FirstName;
                             }
                             const message = `Dear ${userFirstName}, Tell us what you thought about the Heart & Stroke Helper app! You will receive a $10 Amazon gift card as a token of appreciation for completing the full survey. Follow the link to share your thoughts: https://tinyurl.com/HSHCholesterol`;
-                            const sendStatus = await Loader.messagingService.sendSMS(phoneNumber, message);
+                            //const sendStatus = await Loader.messagingService.sendSMS(phoneNumber, message);
+                            const comm_message = {
+                                PhoneNumber: phoneNumber,
+                                Message: message
+                            }
+                            const sendStatus = await produceSechudleHsSurveyToQueue(comm_message)
                             if (sendStatus) {
                                 Logger.instance().log(`Message sent successfully`);
                                 await this.createHsPatientSurveyTask(patient);
@@ -343,10 +349,10 @@ export class AHAActions {
 
                 if (userAppRegistrations.length > 0 && this.eligibleForStrokeSurvey(userAppRegistrations)) {
                     Logger.instance().log(`[StrokeCron] Sending Stroke survey notification to user:${patient.UserId}`);
-                    await this.sendStrokeSurveyNotification(userDeviceTokens);        
+                    await this.sendStrokeSurveyNotification(userDeviceTokens);
                 } else {
                     Logger.instance().log(`[StrokeCron] Skip sending Stroke survey notification as device is not eligible:${patient.UserId}`);
-                }  
+                }
             }
             Logger.instance().log(`[StrokeCron] Cron completed successfully.`);
         }
@@ -394,15 +400,15 @@ export class AHAActions {
 
         //Adding survey task for AHA patients
         const domainModel: CustomTaskDomainModel = {
-            UserId      : userId,
-            Task        : "Survey",
-            Description : "Take a survey to help us understand you better!",
-            Category    : UserTaskCategory.Custom,
-            Details     : {
-                Link : "https://americanheart.co1.qualtrics.com/jfe/form/SV_b1anZr9DUmEOsce",
+            UserId: userId,
+            Task: "Survey",
+            Description: "Take a survey to help us understand you better!",
+            Category: UserTaskCategory.Custom,
+            Details: {
+                Link: "https://americanheart.co1.qualtrics.com/jfe/form/SV_b1anZr9DUmEOsce",
             },
-            ScheduledStartTime : new Date(),
-            ScheduledEndTime   : new Date("2022-10-31 23:59:59")
+            ScheduledStartTime: new Date(),
+            ScheduledEndTime: new Date("2022-10-31 23:59:59")
         };
 
         const task = await this._commonActions.createCustomTask(domainModel);
@@ -417,15 +423,15 @@ export class AHAActions {
         const userId = patient.User.id;
 
         const domainModel: CustomTaskDomainModel = {
-            UserId      : userId,
-            Task        : "Patient Satisfaction Survey",
-            Description : "Take a survey to help us understand you better!",
-            Category    : UserTaskCategory.Custom,
-            Details     : {
-                Link : "https://tinyurl.com/HSHCholesterol",
+            UserId: userId,
+            Task: "Patient Satisfaction Survey",
+            Description: "Take a survey to help us understand you better!",
+            Category: UserTaskCategory.Custom,
+            Details: {
+                Link: "https://tinyurl.com/HSHCholesterol",
             },
-            ScheduledStartTime : new Date(),
-            ScheduledEndTime   : new Date("2023-12-31 23:59:59")
+            ScheduledStartTime: new Date(),
+            ScheduledEndTime: new Date("2023-12-31 23:59:59")
         };
 
         const task = await this._commonActions.createCustomTask(domainModel);
@@ -449,9 +455,9 @@ export class AHAActions {
     private eligibleForCareplanRegistartionReminder = (userAppRegistrations) => {
 
         const eligibleForCareplanRegistartionReminder =
-        userAppRegistrations.indexOf('Heart &amp; Stroke Helper™') >= 0 ||
-        userAppRegistrations.indexOf('REAN HealthGuru') >= 0 ||
-        userAppRegistrations.indexOf('HF Helper') >= 0;
+            userAppRegistrations.indexOf('Heart &amp; Stroke Helper™') >= 0 ||
+            userAppRegistrations.indexOf('REAN HealthGuru') >= 0 ||
+            userAppRegistrations.indexOf('HF Helper') >= 0;
 
         return eligibleForCareplanRegistartionReminder;
     };
@@ -459,9 +465,9 @@ export class AHAActions {
     private eligibleForStrokeSurvey = (userAppRegistrations) => {
 
         const eligibleForStrokeSurvey =
-        userAppRegistrations.indexOf('Heart &amp; Stroke Helper™') >= 0 ||
-        (process.env.NODE_ENV === 'development' && userAppRegistrations.indexOf('REAN HealthGuru') >= 0 ) ||
-        (process.env.NODE_ENV === 'uat' && userAppRegistrations.indexOf('REAN HealthGuru') >= 0 );
+            userAppRegistrations.indexOf('Heart &amp; Stroke Helper™') >= 0 ||
+            (process.env.NODE_ENV === 'development' && userAppRegistrations.indexOf('REAN HealthGuru') >= 0) ||
+            (process.env.NODE_ENV === 'uat' && userAppRegistrations.indexOf('REAN HealthGuru') >= 0);
         return eligibleForStrokeSurvey;
     };
 
@@ -475,13 +481,23 @@ export class AHAActions {
 
         Logger.instance().log(`Notification template: ${JSON.stringify(MessageTemplates['CareplanRegistrationReminder'])}`);
 
-        var message = Loader.notificationService.formatNotificationMessage(
-            MessageTemplates['CareplanRegistrationReminder'].NotificationType, title, body
-        );
-        for await (var deviceToken of userDeviceTokens) {
-            await Loader.notificationService.sendNotificationToDevice(deviceToken, message);
+        // var message = Loader.notificationService.formatNotificationMessage(
+        //     MessageTemplates['CareplanRegistrationReminder'].NotificationType, title, body
+        // );
+        const message = {
+            MessageTemplates: MessageTemplates['CareplanRegistrationReminder'].NotificationType,
+            Title: title,
+            Body: body
         }
-
+        await publishNotificationCarePlanRegistration(message)
+        for await (var deviceToken of userDeviceTokens) {
+            //await Loader.notificationService.sendNotificationToDevice(deviceToken, message);
+            const data = {
+                DeviceToken: deviceToken,
+                Message: message
+            }
+            await publishSendNotificationToDevice(data)
+        }
     };
 
     private sendStrokeSurveyNotification = async (userDeviceTokens) => {
@@ -496,12 +512,24 @@ export class AHAActions {
 
         Logger.instance().log(`Notification template: ${JSON.stringify(MessageTemplates['StrokeSurveyNotification'])}`);
 
-        var message = Loader.notificationService.formatNotificationMessage(
-            MessageTemplates['StrokeSurveyNotification'].NotificationType, title, body, url
-        );
+        // var message = Loader.notificationService.formatNotificationMessage(
+        //     MessageTemplates['StrokeSurveyNotification'].NotificationType, title, body, url
+        // );
+        const message = {
+            MessageTemplates: MessageTemplates['StrokeSurveyNotification'].NotificationType,
+            Title: title,
+            Body: body,
+            Url: url
+        }
+        await publishSendStrokeSurveyNotification(message)
         Logger.instance().log(`[StrokeCron] Notification Paylod: ${JSON.stringify(message)}`);
         for await (var deviceToken of userDeviceTokens) {
-            await Loader.notificationService.sendNotificationToDevice(deviceToken, message);
+            //await Loader.notificationService.sendNotificationToDevice(deviceToken, message);
+            const data = {
+                DeviceToken: deviceToken,
+                Message: message
+            }
+            await publishSendNotificationToDevice(data)
         }
 
     };

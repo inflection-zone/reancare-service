@@ -10,8 +10,8 @@ import { LabRecordSearchFilters } from "../../../domain.types/clinical/lab.recor
 import { LabRecordSearchResults } from "../../../domain.types/clinical/lab.record/lab.record/lab.record.search.types";
 import { LabRecordTypeSearchFilters, LabRecordTypeSearchResults }
     from "../../../domain.types/clinical/lab.record/lab.recod.type/lab.record.type.search.types";
-import { EHRAnalyticsHandler } from "../../../modules/ehr.analytics/ehr.analytics.handler";
-import { EHRRecordTypes } from "../../../modules/ehr.analytics/ehr.record.types";
+import { EHRAnalyticsHandler } from "../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler";
+import { EHRRecordTypes } from "../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.record.types";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -31,9 +31,10 @@ import { UserTaskDomainModel } from "../../domain.types/users/user.task/user.tas
 import { Loader } from "../../startup/loader";
 import { IDonorRepo } from "./../../database/repository.interfaces/users/donor.repo.interface";
 import { IDonationCommunicationRepo } from "../../database/repository.interfaces/clinical/donation/donation.communication.repo.interface";
-import { EHRAnalyticsHandler } from "../../modules/ehr.analytics/ehr.analytics.handler";
+import { EHRAnalyticsHandler } from "../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler";
 import { x } from "pdfkit";
 import { PatientDetailsDto } from "../../domain.types/users/patient/patient/patient.dto";
+import { produceSechudleDailyCarePlanToQueue } from "../../../src/rabbitmq/rabbitmq.communication.publisher";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -175,8 +176,15 @@ export class CareplanService implements IUserActionService {
                 }
 
                 let response = null;
-                response = await Loader.messagingService.sendWhatsappWithReanBot(phoneNumber, message,
-                    activity.Provider, activity.Type, activity.PlanCode, payload);
+                //response = await Loader.messagingService.sendWhatsappWithReanBot(phoneNumber, message,activity.Provider, activity.Type, activity.PlanCode, payload);
+                response = await produceSechudleDailyCarePlanToQueue({
+                    PhoneNumber: phoneNumber,
+                    Message: message,
+                    provider: activity.Provider,
+                    type: activity.Type,
+                    planCode: activity.PlanCode,
+                    Payload: payload
+                });
                 if (response === true) {
                     await this._careplanRepo.updateActivity(activity.id, "Completed", new Date());
                     Logger.instance().log(`Successfully whatsapp message send to ${phoneNumber}`);

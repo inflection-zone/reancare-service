@@ -1,5 +1,5 @@
 import express from 'express';
-import { EHRAnalyticsHandler } from '../../../../modules/ehr.analytics/ehr.analytics.handler';
+import { EHRAnalyticsHandler } from '../../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler';
 import { ApiError } from '../../../../common/api.error';
 import { ResponseHandler } from '../../../../common/response.handler';
 import { uuid } from '../../../../domain.types/miscellaneous/system.types';
@@ -10,9 +10,10 @@ import { BaseController } from '../../../base.controller';
 import { HelperRepo } from '../../../../database/sql/sequelize/repositories/common/helper.repo';
 import { TimeHelper } from '../../../../common/time.helper';
 import { DurationType } from '../../../../domain.types/miscellaneous/time.types';
-import { AwardsFactsService } from '../../../../modules/awards.facts/awards.facts.service';
+import { AwardsFactsService } from '../../../../../src.bg.worker/src.bg/modules/awards.facts/awards.facts.service';
 import { Logger } from '../../../../common/logger';
-import { EHRVitalService } from '../../../../modules/ehr.analytics/ehr.vital.service';
+import { EHRVitalService } from '../../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.vital.service';
+import { publishAddBodyWeightToQueue, publishUpdateBodyWeightToQueue } from '../../../../../src/rabbitmq/rabbitmq.publisher';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -49,8 +50,8 @@ export class BodyWeightController extends BaseController {
             }
             var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(bodyWeight.PatientUserId);
             if (eligibleAppNames.length > 0) {
-                for await (var appName of eligibleAppNames) { 
-                    this._service.addEHRRecord(model.PatientUserId, bodyWeight.id, null , model, appName);
+                for await (var appName of eligibleAppNames) {
+                    this._service.addEHRRecord(model.PatientUserId, bodyWeight.id, null, model, appName);
                 }
             } else {
                 Logger.instance().log(`Skip adding details to EHR database as device is not eligible:${bodyWeight.PatientUserId}`);
@@ -65,21 +66,34 @@ export class BodyWeightController extends BaseController {
                 const offsetMinutes = await HelperRepo.getPatientTimezoneOffsets(bodyWeight.PatientUserId);
                 const tempDate = TimeHelper.addDuration(timestamp, offsetMinutes, DurationType.Minute);
 
-                AwardsFactsService.addOrUpdateVitalFact({
-                    PatientUserId : bodyWeight.PatientUserId,
-                    Facts         : {
-                        VitalName         : "BodyWeight",
-                        VitalPrimaryValue : bodyWeight.BodyWeight,
-                        Unit              : bodyWeight.Unit,
+                // AwardsFactsService.addOrUpdateVitalFact({
+                //     PatientUserId : bodyWeight.PatientUserId,
+                //     Facts         : {
+                //         VitalName         : "BodyWeight",
+                //         VitalPrimaryValue : bodyWeight.BodyWeight,
+                //         Unit              : bodyWeight.Unit,
+                //     },
+                //     RecordId       : bodyWeight.id,
+                //     RecordDate     : tempDate,
+                //     RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                //     RecordTimeZone : currentTimeZone,
+                // });
+                const message = {
+                    PatientUserId: bodyWeight.PatientUserId,
+                    Facts: {
+                        VitalName: "BodyWeight",
+                        VitalPrimaryValue: bodyWeight.BodyWeight,
+                        Unit: bodyWeight.Unit,
                     },
-                    RecordId       : bodyWeight.id,
-                    RecordDate     : tempDate,
-                    RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
-                    RecordTimeZone : currentTimeZone,
-                });
+                    RecordId: bodyWeight.id,
+                    RecordDate: tempDate,
+                    RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                    RecordTimeZone: currentTimeZone,
+                }
+                await publishAddBodyWeightToQueue(message)
             }
             ResponseHandler.success(request, response, 'Weight record created successfully!', 201, {
-                BodyWeight : bodyWeight,
+                BodyWeight: bodyWeight,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -98,7 +112,7 @@ export class BodyWeightController extends BaseController {
             }
 
             ResponseHandler.success(request, response, 'Weight record retrieved successfully!', 200, {
-                BodyWeight : bodyWeight,
+                BodyWeight: bodyWeight,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -144,7 +158,7 @@ export class BodyWeightController extends BaseController {
             }
             var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(updated.PatientUserId);
             if (eligibleAppNames.length > 0) {
-                for await (var appName of eligibleAppNames) { 
+                for await (var appName of eligibleAppNames) {
                     this._service.addEHRRecord(model.PatientUserId, id, null, model, appName);
                 }
             } else {
@@ -160,21 +174,34 @@ export class BodyWeightController extends BaseController {
                 const offsetMinutes = await HelperRepo.getPatientTimezoneOffsets(updated.PatientUserId);
                 const tempDate = TimeHelper.addDuration(timestamp, offsetMinutes, DurationType.Minute);
 
-                AwardsFactsService.addOrUpdateVitalFact({
-                    PatientUserId : updated.PatientUserId,
-                    Facts         : {
-                        VitalName         : "BodyWeight",
-                        VitalPrimaryValue : updated.BodyWeight,
-                        Unit              : updated.Unit,
+                // AwardsFactsService.addOrUpdateVitalFact({
+                //     PatientUserId : updated.PatientUserId,
+                //     Facts         : {
+                //         VitalName         : "BodyWeight",
+                //         VitalPrimaryValue : updated.BodyWeight,
+                //         Unit              : updated.Unit,
+                //     },
+                //     RecordId       : updated.id,
+                //     RecordDate     : tempDate,
+                //     RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                //     RecordTimeZone : currentTimeZone,
+                // });
+                const message = {
+                    PatientUserId: updated.PatientUserId,
+                    Facts: {
+                        VitalName: "BodyWeight",
+                        VitalPrimaryValue: updated.BodyWeight,
+                        Unit: updated.Unit,
                     },
-                    RecordId       : updated.id,
-                    RecordDate     : tempDate,
-                    RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
-                    RecordTimeZone : currentTimeZone,
-                });
+                    RecordId: updated.id,
+                    RecordDate: tempDate,
+                    RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                    RecordTimeZone: currentTimeZone,
+                }
+                await publishUpdateBodyWeightToQueue(message)
             }
             ResponseHandler.success(request, response, 'Weight record updated successfully!', 200, {
-                BodyWeight : updated,
+                BodyWeight: updated,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -201,7 +228,7 @@ export class BodyWeightController extends BaseController {
             this._ehrVitalService.deleteVitalEHRRecord(existingRecord.id);
 
             ResponseHandler.success(request, response, 'Weight record deleted successfully!', 200, {
-                Deleted : true,
+                Deleted: true,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);

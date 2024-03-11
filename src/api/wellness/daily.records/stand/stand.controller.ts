@@ -6,7 +6,7 @@ import { StandService } from '../../../../services/wellness/daily.records/stand.
 import { Loader } from '../../../../startup/loader';
 import { StandValidator } from './stand.validator';
 import { BaseController } from '../../../base.controller';
-import { EHRAnalyticsHandler } from '../../../../modules/ehr.analytics/ehr.analytics.handler';
+import { EHRAnalyticsHandler } from '../../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler';
 import { Logger } from '../../../../common/logger';
 
 ///////////////////////////////////////////////////////////////////////////////////////

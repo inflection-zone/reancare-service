@@ -24,6 +24,7 @@ import { VolunteerService } from "../../services/users/volunteer.service";
 import { IDonationRecordRepo } from "../../database/repository.interfaces/clinical/donation/donation.record.repo.interface";
 import { PatientService } from "../../services/users/patient/patient.service";
 import { IDonationCommunicationRepo } from "../../database/repository.interfaces/clinical/donation/donation.communication.repo.interface";
+import { produceReminderOnNoActionToDonationToQueue } from "../../../src/rabbitmq/rabbitmq.communication.publisher";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -50,9 +51,11 @@ export class CommunityNetworkService {
         @inject('IPatientDonorsRepo') private _patientDonorsRepo: IPatientDonorsRepo,
         @inject('IDonationRecordRepo') private _donationRecordRepo: IDonationRecordRepo,
         @inject('IDonationCommunicationRepo') private _donationCommunicationRepo: IDonationCommunicationRepo,
-    ) { this._patientHealthProfileService = Loader.container.resolve(HealthProfileService);
+    ) {
+        this._patientHealthProfileService = Loader.container.resolve(HealthProfileService);
         this._volunteerService = Loader.container.resolve(VolunteerService);
-        this._patientService = Loader.container.resolve(PatientService); }
+        this._patientService = Loader.container.resolve(PatientService);
+    }
 
     public enroll = async (enrollmentDetails: EnrollmentDomainModel): Promise<EnrollmentDto> => {
 
@@ -105,7 +108,7 @@ export class CommunityNetworkService {
         enrollmentDetails.ParticipantId = participant.ParticipantId;
         enrollmentDetails.Gender = patient.User.Person.Gender;
         enrollmentDetails.EnrollmentId = participant.ParticipantId;
-        
+
         var dto = await this._careplanRepo.enrollPatient(enrollmentDetails);
 
         if (enrollmentDetails.PlanCode === 'Patient-Reminders') {
@@ -117,29 +120,29 @@ export class CommunityNetworkService {
                 enrollmentDetails.PlanCode, enrollmentDetails.ParticipantId, enrollmentDetails.EnrollmentId,
                 enrollmentDetails.StartDate, enrollmentDetails.EndDate);
         }
-        
+
         Logger.instance().log(`Activities: ${JSON.stringify(activities)}`);
 
         const activityModels = activities.map(x => {
 
             var a: CareplanActivityDomainModel = {
-                PatientUserId    : enrollmentDetails.PatientUserId,
-                EnrollmentId     : enrollmentDetails.EnrollmentId,
-                ParticipantId    : enrollmentDetails.ParticipantId,
-                Provider         : enrollmentDetails.Provider,
-                PlanName         : enrollmentDetails.PlanName,
-                PlanCode         : enrollmentDetails.PlanCode,
-                Type             : x.Type,
-                Category         : x.Category,
-                ProviderActionId : x.ProviderActionId,
-                Title            : x.Title,
-                Description      : JSON.stringify(x.Description),
-                Url              : x.Url,
-                Language         : x.Language,
-                ScheduledAt      : x.ScheduledAt,
-                Sequence         : x.Sequence,
-                Frequency        : x.Frequency,
-                Status           : x.Status
+                PatientUserId: enrollmentDetails.PatientUserId,
+                EnrollmentId: enrollmentDetails.EnrollmentId,
+                ParticipantId: enrollmentDetails.ParticipantId,
+                Provider: enrollmentDetails.Provider,
+                PlanName: enrollmentDetails.PlanName,
+                PlanCode: enrollmentDetails.PlanCode,
+                Type: x.Type,
+                Category: x.Category,
+                ProviderActionId: x.ProviderActionId,
+                Title: x.Title,
+                Description: JSON.stringify(x.Description),
+                Url: x.Url,
+                Language: x.Language,
+                ScheduledAt: x.ScheduledAt,
+                Sequence: x.Sequence,
+                Frequency: x.Frequency,
+                Status: x.Status
             };
 
             return a;
@@ -161,7 +164,7 @@ export class CommunityNetworkService {
 
         return dto;
     };
-    
+
     public fetchTasks = async (careplanId: uuid): Promise<boolean> => {
 
         var enrollment = await this._careplanRepo.getCareplanEnrollment(careplanId);
@@ -180,29 +183,29 @@ export class CommunityNetworkService {
 
             var existing: boolean = await this._careplanRepo.activityExists(
                 x.Provider, x.EnrollmentId, x.ProviderActionId, x.Sequence, x.ScheduledAt);
-            
+
             if (existing) {
                 continue;
             }
 
             var activityModel: CareplanActivityDomainModel = {
-                PatientUserId    : enrollment.PatientUserId,
-                EnrollmentId     : enrollmentId,
-                ParticipantId    : enrollment.ParticipantId.toString(),
-                Provider         : enrollment.Provider,
-                PlanName         : enrollment.PlanName,
-                PlanCode         : enrollment.PlanCode,
-                Type             : x.Type,
-                Category         : x.Category,
-                ProviderActionId : x.ProviderActionId,
-                Title            : x.Title,
-                Description      : x.Description,
-                Url              : x.Url,
-                Language         : x.Language,
-                ScheduledAt      : x.ScheduledAt,
-                Sequence         : x.Sequence,
-                Frequency        : x.Frequency,
-                Status           : x.Status
+                PatientUserId: enrollment.PatientUserId,
+                EnrollmentId: enrollmentId,
+                ParticipantId: enrollment.ParticipantId.toString(),
+                Provider: enrollment.Provider,
+                PlanName: enrollment.PlanName,
+                PlanCode: enrollment.PlanCode,
+                Type: x.Type,
+                Category: x.Category,
+                ProviderActionId: x.ProviderActionId,
+                Title: x.Title,
+                Description: x.Description,
+                Url: x.Url,
+                Language: x.Language,
+                ScheduledAt: x.ScheduledAt,
+                Sequence: x.Sequence,
+                Frequency: x.Frequency,
+                Status: x.Status
             };
 
             var careplanActivity = await this._careplanRepo.addActivity(
@@ -212,13 +215,13 @@ export class CommunityNetworkService {
                 enrollment.PatientUserId,
                 enrollmentId,
                 activityModel);
-    
+
             careplanActivities.push(careplanActivity);
 
         }
 
         await this.createScheduledUserTasks(enrollment.PatientUserId, careplanActivities);
-    
+
         return true;
     };
 
@@ -242,25 +245,28 @@ export class CommunityNetworkService {
                         const bloodBridge = await this._patientDonorsRepo.search({ "PatientUserId": patient.UserId });
                         volunteerUserId = bloodBridge.Items[0].VolunteerUserId;
                     }
-                    const volunteer = await this._volunteerService.getByUserId( volunteerUserId );
+                    const volunteer = await this._volunteerService.getByUserId(volunteerUserId);
                     const phoneNumber = volunteer.User.Person.Phone;
                     const message = {
-                        Variables  : [],
-                        ButtonsIds : [
+                        Variables: [],
+                        ButtonsIds: [
                             "Donation_Request_Yes",
                             "Send_OneTimeDonor"
                         ]
                     };
                     let response = null;
-                    response = await Loader.messagingService.sendWhatsappWithReanBot(phoneNumber, JSON.stringify(message),
-                        "REAN_BW", "donor_request_ignored", "Volunteer-Reminders");
+                    //response = await Loader.messagingService.sendWhatsappWithReanBot(phoneNumber, JSON.stringify(message),"REAN_BW", "donor_request_ignored", "Volunteer-Reminders");
+                    response = await produceReminderOnNoActionToDonationToQueue({
+                        phoneNumber,
+                        message: JSON.stringify(message)
+                    });
 
                     if (response === true) {
-                        await this._patientRepo.updateByUserId( patient.UserId ,{ "DonorAcceptance": "NotSend" });
+                        await this._patientRepo.updateByUserId(patient.UserId, { "DonorAcceptance": "NotSend" });
                         Logger.instance().log(`Successfully whatsapp message send to volunteer ${phoneNumber}`);
                     }
                 }
-                
+
             } else {
                 Logger.instance().log(`Donation request not found or Donor has responded to request.`);
             }
@@ -278,37 +284,40 @@ export class CommunityNetworkService {
                 for (const donationCommunication of donationCommunications.Items) {
                     if (donationCommunication.FifthDayReminderFlag === true) {
 
-                        const patient = await this._patientService.getByUserId( donationCommunication.PatientUserId );
+                        const patient = await this._patientService.getByUserId(donationCommunication.PatientUserId);
 
                         const bloodBridge = await this._patientDonorsRepo.search({ "PatientUserId": patient.UserId });
                         const volunteerUserId = bloodBridge.Items[0].VolunteerUserId;
-                        const volunteer = await this._volunteerService.getByUserId( volunteerUserId );
+                        const volunteer = await this._volunteerService.getByUserId(volunteerUserId);
                         const phoneNumber = volunteer.User.Person.Phone;
                         const message = {
-                            Variables : [{
-                                "type" : "text",
-                                "text" : volunteer.User.Person.DisplayName
+                            Variables: [{
+                                "type": "text",
+                                "text": volunteer.User.Person.DisplayName
                             },
                             {
-                                "type" : "text",
-                                "text" : patient.HealthProfile.BloodTransfusionDate.toDateString(),
+                                "type": "text",
+                                "text": patient.HealthProfile.BloodTransfusionDate.toDateString(),
                             },
                             {
-                                "type" : "text",
-                                "text" : patient.User.Person.DisplayName
+                                "type": "text",
+                                "text": patient.User.Person.DisplayName
                             }]
                         };
                         let response = null;
-                        response = await Loader.messagingService.sendWhatsappWithReanBot(phoneNumber,JSON.stringify(message),
-                            "REAN_BW", "patient_fifthday_ignored_volunteer", "Volunteer-Reminders");
+                        //response = await Loader.messagingService.sendWhatsappWithReanBot(phoneNumber, JSON.stringify(message),"REAN_BW", "patient_fifthday_ignored_volunteer", "Volunteer-Reminders");
+                        response = await produceReminderOnNoActionToDonationToQueue({
+                            phoneNumber,
+                            message: JSON.stringify(message)
+                        });
 
                         if (response === true) {
-                            await this._donationCommunicationRepo.update( donationCommunication.id ,{ "FifthDayReminderFlag": false });
+                            await this._donationCommunicationRepo.update(donationCommunication.id, { "FifthDayReminderFlag": false });
                             Logger.instance().log(`Successfully whatsapp message send to patient ${phoneNumber}`);
                         }
                     }
                 }
-                
+
             } else {
                 Logger.instance().log(`Fifth day reminder not found or Patient has responded to reminder.`);
             }
@@ -375,7 +384,7 @@ export class CommunityNetworkService {
                 return a.Sequence - b.Sequence;
             });
 
-            activities.forEach( async (activity) => {
+            activities.forEach(async (activity) => {
                 var dayStartStr = activity.ScheduledAt.toISOString();
                 var dayStart = TimeHelper.getDateWithTimezone(dayStartStr, timezoneOffset);
                 dayStart = TimeHelper.addDuration(dayStart, 7, DurationType.Hour); // Start at 7:00 AM
@@ -384,15 +393,15 @@ export class CommunityNetworkService {
                 var endTime = TimeHelper.addDuration(dayStart, 16, DurationType.Hour);       // End at 11:00 PM
 
                 var userTaskModel: UserTaskDomainModel = {
-                    UserId             : activity.PatientUserId,
-                    DisplayId          : activity.PlanName + '-' + activity.ProviderActionId,
-                    Task               : activity.Title,
-                    Category           : activity.Category,
-                    Description        : activity.Description,
-                    ActionType         : UserActionType.Careplan,
-                    ActionId           : activity.id,
-                    ScheduledStartTime : startTime,
-                    ScheduledEndTime   : endTime
+                    UserId: activity.PatientUserId,
+                    DisplayId: activity.PlanName + '-' + activity.ProviderActionId,
+                    Task: activity.Title,
+                    Category: activity.Category,
+                    Description: activity.Description,
+                    ActionType: UserActionType.Careplan,
+                    ActionId: activity.id,
+                    ScheduledStartTime: startTime,
+                    ScheduledEndTime: endTime
                 };
 
                 var userTask = await this._userTaskRepo.create(userTaskModel);
@@ -406,7 +415,7 @@ export class CommunityNetworkService {
     }
 
     public updateActivityUserResponse = async (activityId: uuid, userResponse: string):
-    Promise<CareplanActivityDto> => {
+        Promise<CareplanActivityDto> => {
 
         return await this._careplanRepo.updateActivityUserResponse(activityId, userResponse);
     };

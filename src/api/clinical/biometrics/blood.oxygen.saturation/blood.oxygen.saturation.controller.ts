@@ -6,13 +6,20 @@ import { BloodOxygenSaturationService } from '../../../../services/clinical/biom
 import { Loader } from '../../../../startup/loader';
 import { BloodOxygenSaturationValidator } from './blood.oxygen.saturation.validator';
 import { BaseController } from '../../../base.controller';
-import { EHRAnalyticsHandler } from '../../../../modules/ehr.analytics/ehr.analytics.handler';
+import { EHRAnalyticsHandler } from '../../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler';
 import { HelperRepo } from '../../../../database/sql/sequelize/repositories/common/helper.repo';
 import { TimeHelper } from '../../../../common/time.helper';
 import { DurationType } from '../../../../domain.types/miscellaneous/time.types';
-import { AwardsFactsService } from '../../../../modules/awards.facts/awards.facts.service';
+import { AwardsFactsService } from '../../../../../src.bg.worker/src.bg/modules/awards.facts/awards.facts.service';
 import { Logger } from '../../../../common/logger';
-import { EHRVitalService } from '../../../../modules/ehr.analytics/ehr.vital.service';
+import { EHRVitalService } from '../../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.vital.service';
+import {
+    publishAddBloodOxygenSaturationToQueue,
+    publishUpdateBloodOxygenSaturationToQueue,
+    publishAddOxygenSaturationEHRToQueue,
+    publishUpdateOxygenSaturationEHRToQueue,
+    publishDeleteBloodOxygenSaturationEHRToQueue
+} from '../../../../../src/rabbitmq/rabbitmq.publisher';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -50,8 +57,16 @@ export class BloodOxygenSaturationController extends BaseController {
             }
             var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(bloodOxygenSaturation.PatientUserId);
             if (eligibleAppNames.length > 0) {
-                for await (var appName of eligibleAppNames) { 
-                    this._service.addEHRRecord(model.PatientUserId, bloodOxygenSaturation.id, bloodOxygenSaturation.Provider, model, appName);
+                for await (var appName of eligibleAppNames) {
+                    //this._service.addEHRRecord(model.PatientUserId, bloodOxygenSaturation.id, bloodOxygenSaturation.Provider, model, appName);
+                    const ehrMessage = {
+                        PatientUserId: model.PatientUserId,
+                        Id: bloodOxygenSaturation.id,
+                        Provider: bloodOxygenSaturation.Provider,
+                        Model: model,
+                        AppName: appName
+                    };
+                    await publishAddOxygenSaturationEHRToQueue(ehrMessage);
                 }
             } else {
                 Logger.instance().log(`Skip adding details to EHR database as device is not eligible:${bloodOxygenSaturation.PatientUserId}`);
@@ -67,21 +82,34 @@ export class BloodOxygenSaturationController extends BaseController {
                 const offsetMinutes = await HelperRepo.getPatientTimezoneOffsets(bloodOxygenSaturation.PatientUserId);
                 const tempDate = TimeHelper.addDuration(timestamp, offsetMinutes, DurationType.Minute);
 
-                AwardsFactsService.addOrUpdateVitalFact({
-                    PatientUserId : bloodOxygenSaturation.PatientUserId,
-                    Facts         : {
-                        VitalName         : "BloodOxygenSaturation",
-                        VitalPrimaryValue : bloodOxygenSaturation.BloodOxygenSaturation,
-                        Unit              : bloodOxygenSaturation.Unit,
+                // AwardsFactsService.addOrUpdateVitalFact({
+                //     PatientUserId : bloodOxygenSaturation.PatientUserId,
+                //     Facts         : {
+                //         VitalName         : "BloodOxygenSaturation",
+                //         VitalPrimaryValue : bloodOxygenSaturation.BloodOxygenSaturation,
+                //         Unit              : bloodOxygenSaturation.Unit,
+                //     },
+                //     RecordId       : bloodOxygenSaturation.id,
+                //     RecordDate     : tempDate,
+                //     RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                //     RecordTimeZone : currentTimeZone,
+                // });
+                const message = {
+                    PatientUserId: bloodOxygenSaturation.PatientUserId,
+                    Facts: {
+                        VitalName: "BloodOxygenSaturation",
+                        VitalPrimaryValue: bloodOxygenSaturation.BloodOxygenSaturation,
+                        Unit: bloodOxygenSaturation.Unit,
                     },
-                    RecordId       : bloodOxygenSaturation.id,
-                    RecordDate     : tempDate,
-                    RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
-                    RecordTimeZone : currentTimeZone,
-                });
+                    RecordId: bloodOxygenSaturation.id,
+                    RecordDate: tempDate,
+                    RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                    RecordTimeZone: currentTimeZone,
+                }
+                await publishAddBloodOxygenSaturationToQueue(message)
             }
             ResponseHandler.success(request, response, 'Blood oxygen saturation record created successfully!', 201, {
-                BloodOxygenSaturation : bloodOxygenSaturation,
+                BloodOxygenSaturation: bloodOxygenSaturation,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -100,7 +128,7 @@ export class BloodOxygenSaturationController extends BaseController {
             }
 
             ResponseHandler.success(request, response, 'Blood oxygen saturation record retrieved successfully!', 200, {
-                BloodOxygenSaturation : bloodOxygenSaturation,
+                BloodOxygenSaturation: bloodOxygenSaturation,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -123,7 +151,8 @@ export class BloodOxygenSaturationController extends BaseController {
                     : `Total ${count} blood oxygen saturation records retrieved successfully!`;
 
             ResponseHandler.success(request, response, message, 200, {
-                BloodOxygenSaturationRecords : searchResults });
+                BloodOxygenSaturationRecords: searchResults
+            });
 
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -150,8 +179,16 @@ export class BloodOxygenSaturationController extends BaseController {
 
             var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(updated.PatientUserId);
             if (eligibleAppNames.length > 0) {
-                for await (var appName of eligibleAppNames) { 
-                    this._service.addEHRRecord(model.PatientUserId, id, updated.Provider, model, appName);
+                for await (var appName of eligibleAppNames) {
+                    //this._service.addEHRRecord(model.PatientUserId, id, updated.Provider, model, appName);
+                    const ehrMessage = {
+                        PatientUserId: model.PatientUserId,
+                        Id: id,
+                        Provider: updated.Provider,
+                        Model: model,
+                        AppName: appName
+                    };
+                    await publishUpdateOxygenSaturationEHRToQueue(ehrMessage);
                 }
             } else {
                 Logger.instance().log(`Skip adding details to EHR database as device is not eligible:${updated.PatientUserId}`);
@@ -167,21 +204,34 @@ export class BloodOxygenSaturationController extends BaseController {
                 const offsetMinutes = await HelperRepo.getPatientTimezoneOffsets(updated.PatientUserId);
                 const tempDate = TimeHelper.addDuration(timestamp, offsetMinutes, DurationType.Minute);
 
-                AwardsFactsService.addOrUpdateVitalFact({
-                    PatientUserId : updated.PatientUserId,
-                    Facts         : {
-                        VitalName         : "BloodOxygenSaturation",
-                        VitalPrimaryValue : updated.BloodOxygenSaturation,
-                        Unit              : updated.Unit,
+                // AwardsFactsService.addOrUpdateVitalFact({
+                //     PatientUserId: updated.PatientUserId,
+                //     Facts: {
+                //         VitalName: "BloodOxygenSaturation",
+                //         VitalPrimaryValue: updated.BloodOxygenSaturation,
+                //         Unit: updated.Unit,
+                //     },
+                //     RecordId: updated.id,
+                //     RecordDate: tempDate,
+                //     RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                //     RecordTimeZone: currentTimeZone,
+                // });
+                const message = {
+                    PatientUserId: updated.PatientUserId,
+                    Facts: {
+                        VitalName: "BloodOxygenSaturation",
+                        VitalPrimaryValue: updated.BloodOxygenSaturation,
+                        Unit: updated.Unit,
                     },
-                    RecordId       : updated.id,
-                    RecordDate     : tempDate,
-                    RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
-                    RecordTimeZone : currentTimeZone,
-                });
+                    RecordId: updated.id,
+                    RecordDate: tempDate,
+                    RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                    RecordTimeZone: currentTimeZone,
+                }
+                await publishUpdateBloodOxygenSaturationToQueue(message)
             }
             ResponseHandler.success(request, response, 'Blood oxygen saturation record updated successfully!', 200, {
-                BloodOxygenSaturation : updated,
+                BloodOxygenSaturation: updated,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -205,10 +255,12 @@ export class BloodOxygenSaturationController extends BaseController {
             }
 
             // delete ehr record
-            this._ehrVitalService.deleteVitalEHRRecord(existingRecord.id);
+            //this._ehrVitalService.deleteVitalEHRRecord(existingRecord.id);
+            const message = existingRecord.id;
+            await publishDeleteBloodOxygenSaturationEHRToQueue(message)
 
             ResponseHandler.success(request, response, 'Blood oxygen saturation record deleted successfully!', 200, {
-                Deleted : true,
+                Deleted: true,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);

@@ -16,6 +16,7 @@ import { DateStringFormat } from '../../../../domain.types/miscellaneous/time.ty
 import * as path from 'path';
 import { PersonService } from '../../../../services/person/person.service';
 import { ConfigurationManager } from '../../../../config/configuration.manager';
+import { produceMessagesForReportUpdateToQueue } from '../../../../../src/rabbitmq/rabbitmq.communication.publisher';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -138,10 +139,20 @@ export class StatisticsController {
         Logger.instance().log(`Report URL for Patient ${reportModel.PatientUserId} : ${url}`);
         if (url) {
             const message = `Hi ${userFirstName}, This message is from ${systemIdentifier} App. Your health report has been generated successfully, please check in the medical records.`;
-            sendStatus = await Loader.messagingService.sendSMS(phoneNumber, message);
+            //sendStatus = await Loader.messagingService.sendSMS(phoneNumber, message);
+            const comm_message = {
+                PhoneNumber: phoneNumber,
+                Message: message
+            }
+            sendStatus = await produceMessagesForReportUpdateToQueue(comm_message)
         } else {
             const message = `Hi ${userFirstName}, This message is from ${systemIdentifier} App. There was some issue while generating your health report, please try again!`;
-            sendStatus = await Loader.messagingService.sendSMS(phoneNumber, message);
+            //sendStatus = await Loader.messagingService.sendSMS(phoneNumber, message);
+            const comm_message = {
+                PhoneNumber: phoneNumber,
+                Message: message
+            }
+            sendStatus = await produceMessagesForReportUpdateToQueue(comm_message)
         }
         if (sendStatus) {
             Logger.instance().log(`Message sent successfully`);

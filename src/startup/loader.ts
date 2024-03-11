@@ -6,9 +6,9 @@ import { Authorizer } from '../auth/authorizer';
 import { Logger } from '../common/logger';
 import { MessagingService } from '../modules/communication/messaging.service/messaging.service';
 import { NotificationService } from '../modules/communication/notification.service/notification.service';
-import { StorageService } from '../modules/ehr/services/storage.service';
+import { StorageService } from '../../src.bg.worker/src.bg/modules/ehr/services/storage.service';
 import { Injector } from './injector';
-import { Scheduler } from './scheduler';
+import { Scheduler } from '../../src.bg.worker/src.bg/startup/scheduler';
 import { Seeder } from './seeder';
 import { ConfigurationManager } from '../config/configuration.manager';
 

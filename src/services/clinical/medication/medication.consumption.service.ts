@@ -19,12 +19,13 @@ import { UserTaskDomainModel } from "../../../domain.types/users/user.task/user.
 import { IUserActionService } from "../../users/user/user.action.service.interface";
 import { Loader } from "../../../startup/loader";
 import { uuid } from "../../../domain.types/miscellaneous/system.types";
-import { MedicationConsumptionStore } from "../../../modules/ehr/services/medication.consumption.store";
+import { MedicationConsumptionStore } from "../../../../src.bg.worker/src.bg/modules/ehr/services/medication.consumption.store";
 import { ConfigurationManager } from "../../../config/configuration.manager";
 import { IPersonRepo } from "../../../database/repository.interfaces/person/person.repo.interface";
 import * as MessageTemplates from '../../../modules/communication/message.template/message.templates.json';
 import { MedicationConsumptionSearchFilters } from "../../../domain.types/clinical/medication/medication.consumption/medication.consumption.search.types";
-import { EHRAnalyticsHandler } from "../../../modules/ehr.analytics/ehr.analytics.handler";
+import { EHRAnalyticsHandler } from "../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler";
+import { publishMedicationReminderNotification, publishSendNotificationToDevice } from "../../../../src/rabbitmq/rabbitmq.communication.publisher";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -46,7 +47,7 @@ export class MedicationConsumptionService implements IUserActionService {
     }
 
     create = async (medication: MedicationDto, customStartDate = null)
-        :Promise<MedicationConsumptionStatsDto> => {
+        : Promise<MedicationConsumptionStatsDto> => {
 
         var timeZone = await this.getPatientTimeZone(medication.PatientUserId);
         if (timeZone == null) {
@@ -94,14 +95,14 @@ export class MedicationConsumptionService implements IUserActionService {
                 var end = TimeHelper.addDuration(day, end_minutes, DurationType.Minute);
 
                 var domainModel: MedicationConsumptionDomainModel = {
-                    PatientUserId     : medication.PatientUserId,
-                    MedicationId      : medication.id,
-                    DrugName          : medication.DrugName,
-                    DrugId            : medication.DrugId,
-                    Dose              : dose,
-                    Details           : details,
-                    TimeScheduleStart : start,
-                    TimeScheduleEnd   : end,
+                    PatientUserId: medication.PatientUserId,
+                    MedicationId: medication.id,
+                    DrugName: medication.DrugName,
+                    DrugId: medication.DrugId,
+                    Dose: dose,
+                    Details: details,
+                    TimeScheduleStart: start,
+                    TimeScheduleEnd: end,
                 };
 
                 var savedRecord = await this._medicationConsumptionRepo.create(domainModel);
@@ -125,8 +126,8 @@ export class MedicationConsumptionService implements IUserActionService {
         }
 
         var creationSummary: MedicationConsumptionStatsDto = {
-            TotalConsumptionCount   : totalCount,
-            PendingConsumptionCount : pendingCount
+            TotalConsumptionCount: totalCount,
+            PendingConsumptionCount: pendingCount
         };
 
         return creationSummary;
@@ -139,8 +140,8 @@ export class MedicationConsumptionService implements IUserActionService {
         var pendingCount = await this._medicationConsumptionRepo.getPendingConsumptionCountForMedication(medicationId);
 
         var creationSummary: MedicationConsumptionStatsDto = {
-            TotalConsumptionCount   : totalCount,
-            PendingConsumptionCount : pendingCount
+            TotalConsumptionCount: totalCount,
+            PendingConsumptionCount: pendingCount
         };
 
         return creationSummary;
@@ -298,7 +299,7 @@ export class MedicationConsumptionService implements IUserActionService {
         return await this._medicationConsumptionRepo.getAllTakenBefore(patientUserId, date);
     };
 
-    getAllTakenBetween = async (patientUserId: uuid, dateFrom: Date, dateTo: Date) : Promise<any[]> => {
+    getAllTakenBetween = async (patientUserId: uuid, dateFrom: Date, dateTo: Date): Promise<any[]> => {
         return await this._medicationConsumptionRepo.getAllTakenBetween(patientUserId, dateFrom, dateTo);
     };
 
@@ -349,21 +350,21 @@ export class MedicationConsumptionService implements IUserActionService {
     getSchedulesForDay = async (patientUserId: string, date: Date)
         : Promise<SchedulesForDayDto> => {
         var consumptions = await this._medicationConsumptionRepo.getSchedulesForDay(patientUserId, date);
-        var schedules : SchedulesForDayDto = {
-            Day       : date,
-            Schedules : consumptions
+        var schedules: SchedulesForDayDto = {
+            Day: date,
+            Schedules: consumptions
         };
         return schedules;
     };
 
     getSchedulesForDayByDrugs = async (patientUserId: string, date: Date)
-    : Promise<SummaryForDayDto> => {
+        : Promise<SummaryForDayDto> => {
 
         var consumptions = await this._medicationConsumptionRepo.getSchedulesForDay(patientUserId, date);
         var classifiedList = this.classifyByDrugs(consumptions);
         var summary: SummaryForDayDto = {
-            Day           : date,
-            SummaryForDay : classifiedList
+            Day: date,
+            SummaryForDay: classifiedList
         };
         return summary;
     };
@@ -402,9 +403,9 @@ export class MedicationConsumptionService implements IUserActionService {
 
             var classified = this.classifyByDrugs(medConsumptionsForMonth);
             var summaryForMonth: SummaryForMonthDto = {
-                Month           : monthName,
-                DaysInMonth     : daysInMonth,
-                SummaryForMonth : classified
+                Month: monthName,
+                DaysInMonth: daysInMonth,
+                SummaryForMonth: classified
             };
             consumptionSummaryForMonths.push(summaryForMonth);
         }
@@ -438,8 +439,7 @@ export class MedicationConsumptionService implements IUserActionService {
         var to = TimeHelper.addDuration(from, upcomingInMinutes, DurationType.Minute);
         var schedules = await this._medicationConsumptionRepo.getSchedulesForDuration(from, to, false);
         for await (var a of schedules) {
-            if (true === await this.createMedicationTaskForSchedule(a))
-            {
+            if (true === await this.createMedicationTaskForSchedule(a)) {
                 count++;
             }
         }
@@ -457,15 +457,15 @@ export class MedicationConsumptionService implements IUserActionService {
 
         const displayId = Helper.generateDisplayId('TSK');
         const domainModel: UserTaskDomainModel = {
-            Task               : consumption.Details,
-            DisplayId          : displayId,
-            UserId             : consumption.PatientUserId,
-            Category           : UserTaskCategory.Medication,
-            ActionId           : consumption.id,
-            ActionType         : UserActionType.Medication,
-            ScheduledStartTime : consumption.TimeScheduleStart,
-            ScheduledEndTime   : consumption.TimeScheduleEnd,
-            IsRecurrent        : false,
+            Task: consumption.Details,
+            DisplayId: displayId,
+            UserId: consumption.PatientUserId,
+            Category: UserTaskCategory.Medication,
+            ActionId: consumption.id,
+            ActionType: UserActionType.Medication,
+            ScheduledStartTime: consumption.TimeScheduleStart,
+            ScheduledEndTime: consumption.TimeScheduleEnd,
+            IsRecurrent: false,
         };
         await this._userTaskRepo.create(domainModel);
 
@@ -512,16 +512,16 @@ export class MedicationConsumptionService implements IUserActionService {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    cancelAction = async(actionId: string): Promise<boolean> => {
+    cancelAction = async (actionId: string): Promise<boolean> => {
         return await this._medicationConsumptionRepo.cancelSchedule(actionId);
     };
 
-    getAction = async(actionId: string): Promise<any> => {
+    getAction = async (actionId: string): Promise<any> => {
         return await this.getById(actionId);
     };
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    updateAction = async(actionId: string): Promise<any> => {
+    updateAction = async (actionId: string): Promise<any> => {
         return await this.getById(actionId);
     };
 
@@ -574,7 +574,7 @@ export class MedicationConsumptionService implements IUserActionService {
 
     };
 
-    private getPatientTimeZone = async(patientUserId) => {
+    private getPatientTimeZone = async (patientUserId) => {
         var user = await this._userRepo.getById(patientUserId);
         if (user != null) {
             return user.CurrentTimeZone;
@@ -600,9 +600,9 @@ export class MedicationConsumptionService implements IUserActionService {
             medication.FrequencyUnit === MedicationFrequencyUnits.Monthly) {
             scheduleSlots.push(
                 {
-                    schedule : MedicationTimeSchedules.Afternoon,
-                    start    : (11 * 60) + 30,
-                    end      : (60 * 13) + 30
+                    schedule: MedicationTimeSchedules.Afternoon,
+                    start: (11 * 60) + 30,
+                    end: (60 * 13) + 30
                 });
             return scheduleSlots;
         }
@@ -613,9 +613,9 @@ export class MedicationConsumptionService implements IUserActionService {
                 //7:30 am to 9:30 am
                 scheduleSlots.push(
                     {
-                        schedule : MedicationTimeSchedules.Morning,
-                        start    : (7 * 60) + 30,
-                        end      : (60 * 9) + 30
+                        schedule: MedicationTimeSchedules.Morning,
+                        start: (7 * 60) + 30,
+                        end: (60 * 9) + 30
                     });
             }
             if (s === MedicationTimeSchedules.Afternoon) {
@@ -623,9 +623,9 @@ export class MedicationConsumptionService implements IUserActionService {
                 //11:30 am to 1:30 pm
                 scheduleSlots.push(
                     {
-                        schedule : MedicationTimeSchedules.Afternoon,
-                        start    : (11 * 60) + 30,
-                        end      : (60 * 13) + 30
+                        schedule: MedicationTimeSchedules.Afternoon,
+                        start: (11 * 60) + 30,
+                        end: (60 * 13) + 30
                     });
             }
             if (s === MedicationTimeSchedules.Evening) {
@@ -633,9 +633,9 @@ export class MedicationConsumptionService implements IUserActionService {
                 //5:00 pm to 7:00 pm
                 scheduleSlots.push(
                     {
-                        schedule : MedicationTimeSchedules.Evening,
-                        start    : (17 * 60),
-                        end      : (60 * 19)
+                        schedule: MedicationTimeSchedules.Evening,
+                        start: (17 * 60),
+                        end: (60 * 19)
                     });
             }
             if (s === MedicationTimeSchedules.Night) {
@@ -643,9 +643,9 @@ export class MedicationConsumptionService implements IUserActionService {
                 //8:30 pm to 10:30 pm
                 scheduleSlots.push(
                     {
-                        schedule : MedicationTimeSchedules.Night,
-                        start    : (20 * 60) + 30,
-                        end      : (60 * 22) + 30
+                        schedule: MedicationTimeSchedules.Night,
+                        start: (20 * 60) + 30,
+                        end: (60 * 22) + 30
                     });
             }
         }
@@ -690,11 +690,11 @@ export class MedicationConsumptionService implements IUserActionService {
     private getSummary = (medConsumptions: MedicationConsumptionDetailsDto[]) => {
 
         var summary = {
-            Missed   : 0,
-            Taken    : 0,
-            Unknown  : 0,
-            Upcoming : 0,
-            Overdue  : 0
+            Missed: 0,
+            Taken: 0,
+            Unknown: 0,
+            Upcoming: 0,
+            Overdue: 0
         };
 
         for (var i = 0; i < medConsumptions.length; i++) {
@@ -729,10 +729,10 @@ export class MedicationConsumptionService implements IUserActionService {
             var drug = key;
             var consumptions = listByDrugName[key];
             var summary = this.getSummary(consumptions);
-            var summarizedSchedule : SummarizedScheduleDto = {
-                Drug           : drug,
-                SummaryForDrug : summary,
-                Schedules      : consumptions
+            var summarizedSchedule: SummarizedScheduleDto = {
+                Drug: drug,
+                SummaryForDrug: summary,
+                Schedules: consumptions
             };
             arrangedByDrugList.push(summarizedSchedule);
         }
@@ -783,18 +783,29 @@ export class MedicationConsumptionService implements IUserActionService {
         Logger.instance().log(`Notification Title: ${title}`);
         Logger.instance().log(`Notification Body: ${body}`);
 
-        var message = Loader.notificationService.formatNotificationMessage(
-            MessageTemplates.MedicationReminder.NotificationType, title, body
-        );
+        // var message = Loader.notificationService.formatNotificationMessage(
+        //     MessageTemplates.MedicationReminder.NotificationType, title, body
+        // );
+        var message = {
+            MessageTemplates: MessageTemplates.MedicationReminder.NotificationType,
+            Title: title,
+            Body: body
+        }
+        await publishMedicationReminderNotification(message)
         for await (var device of deviceList) {
-            await Loader.notificationService.sendNotificationToDevice(device.Token, message);
+            //await Loader.notificationService.sendNotificationToDevice(device.Token, message);
+            const data = {
+                DeviceToken: device.Token,
+                Message: message
+            }
+            await publishSendNotificationToDevice(data)
         }
 
     };
 
     public addEHRRecord = (patientUserId: uuid, recordId: uuid, model: MedicationConsumptionDetailsDto, appName?: string) => {
-        
-        if (model.IsTaken == false &&  model.IsMissed == false) {
+
+        if (model.IsTaken == false && model.IsMissed == false) {
             EHRAnalyticsHandler.addMedicationRecord(
                 appName,
                 model.id,
@@ -808,7 +819,7 @@ export class MedicationConsumptionService implements IUserActionService {
                 model.IsTaken,
                 model.IsMissed,
                 model.IsCancelled,
-                model.CreatedAt ? new Date (model.CreatedAt) : null
+                model.CreatedAt ? new Date(model.CreatedAt) : null
             );
         }
 
@@ -826,7 +837,7 @@ export class MedicationConsumptionService implements IUserActionService {
                 model.IsTaken,
                 model.IsMissed,
                 model.IsCancelled,
-                model.CreatedAt ? new Date (model.CreatedAt) : null
+                model.CreatedAt ? new Date(model.CreatedAt) : null
             );
         }
 

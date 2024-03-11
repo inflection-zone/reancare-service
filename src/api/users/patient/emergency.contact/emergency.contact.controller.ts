@@ -14,7 +14,7 @@ import { UserService } from '../../../../services/users/user/user.service';
 import { Loader } from '../../../../startup/loader';
 import { EmergencyContactValidator } from './emergency.contact.validator';
 import { BaseController } from '../../../base.controller';
-import { EHRAnalyticsHandler } from '../../../../modules/ehr.analytics/ehr.analytics.handler';
+import { EHRAnalyticsHandler } from '../../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler';
 import { HospitalService } from '../../../../services/hospitals/hospital.service';
 import { HealthSystemService } from '../../../../services/hospitals/health.system.service';
 import { Logger } from '../../../../common/logger';

@@ -4,11 +4,11 @@ import { IBodyWeightRepo } from "../../../database/repository.interfaces/clinica
 import { BodyWeightDomainModel } from '../../../domain.types/clinical/biometrics/body.weight/body.weight.domain.model';
 import { BodyWeightDto } from '../../../domain.types/clinical/biometrics/body.weight/body.weight.dto';
 import { BodyWeightSearchFilters, BodyWeightSearchResults } from '../../../domain.types/clinical/biometrics/body.weight/body.weight.search.types';
-import { BodyWeightStore } from "../../../modules/ehr/services/body.weight.store";
+import { BodyWeightStore } from "../../../../src.bg.worker/src.bg/modules/ehr/services/body.weight.store";
 import { Loader } from "../../../startup/loader";
 import { ConfigurationManager } from "../../../config/configuration.manager";
-import { EHRRecordTypes } from "../../../modules/ehr.analytics/ehr.record.types";
-import { EHRAnalyticsHandler } from "../../../modules/ehr.analytics/ehr.analytics.handler";
+import { EHRRecordTypes } from "../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.record.types";
+import { EHRAnalyticsHandler } from "../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 

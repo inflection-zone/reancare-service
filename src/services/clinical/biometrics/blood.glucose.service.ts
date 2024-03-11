@@ -1,4 +1,4 @@
-import { BloodGlucoseStore } from "../../../modules/ehr/services/blood.glucose.store";
+import { BloodGlucoseStore } from "../../../../src.bg.worker/src.bg/modules/ehr/services/blood.glucose.store";
 import { inject, injectable } from "tsyringe";
 import { IBloodGlucoseRepo } from "../../../database/repository.interfaces/clinical/biometrics/blood.glucose.repo.interface";
 import { BloodGlucoseDomainModel } from '../../../domain.types/clinical/biometrics/blood.glucose/blood.glucose.domain.model';
@@ -6,8 +6,8 @@ import { BloodGlucoseDto } from '../../../domain.types/clinical/biometrics/blood
 import { BloodGlucoseSearchFilters, BloodGlucoseSearchResults } from '../../../domain.types/clinical/biometrics/blood.glucose/blood.glucose.search.types';
 import { Loader } from "../../../startup/loader";
 import { ConfigurationManager } from "../../../config/configuration.manager";
-import { EHRAnalyticsHandler } from "../../../modules/ehr.analytics/ehr.analytics.handler";
-import { EHRRecordTypes } from "../../../modules/ehr.analytics/ehr.record.types";
+import { EHRAnalyticsHandler } from "../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler";
+import { EHRRecordTypes } from "../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.record.types";
 import { uuid } from "../../../domain.types/miscellaneous/system.types";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////

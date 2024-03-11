@@ -4,8 +4,8 @@ import { ISleepRepo } from "../../../database/repository.interfaces/wellness/dai
 import { SleepDomainModel } from '../../../domain.types/wellness/daily.records/sleep/sleep.domain.model';
 import { SleepDto } from '../../../domain.types/wellness/daily.records/sleep/sleep.dto';
 import { SleepSearchFilters, SleepSearchResults } from '../../../domain.types/wellness/daily.records/sleep/sleep.search.types';
-import { EHRAnalyticsHandler } from "../../../modules/ehr.analytics/ehr.analytics.handler";
-import { EHRRecordTypes } from "../../../modules/ehr.analytics/ehr.record.types";
+import { EHRAnalyticsHandler } from "../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler";
+import { EHRRecordTypes } from "../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.record.types";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 

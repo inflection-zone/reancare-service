@@ -5,7 +5,7 @@ import { BloodGroupList, EthnicityTypeList, MaritalStatusList, RaceTypeList, Sev
 import { TypesService } from '../../../services/general/types.service';
 import { Loader } from '../../../startup/loader';
 import { BaseController } from '../../base.controller';
-import { AwardsFactsService } from '../../../modules/awards.facts/awards.facts.service';
+import { AwardsFactsService } from '../../../../src.bg.worker/src.bg/modules/awards.facts/awards.facts.service';
 import { ReminderTypeList, RepeatAfterEveryUnitList } from '../../../domain.types/general/reminder/reminder.domain.model';
 import { TypesValidator } from './types.validator';
 import { UserEngagementCategoryList } from '../../../domain.types/statistics/user.engagement.types';

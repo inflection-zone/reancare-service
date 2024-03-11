@@ -9,11 +9,11 @@ import { Router } from './api/router';
 import { Helper } from './common/helper';
 import { Logger } from './common/logger';
 import { ConfigurationManager } from "./config/configuration.manager";
-import { EHRDbConnector } from './modules/ehr.analytics/ehr.db.connector';
-import { AwardsFactsDBConnector } from './modules/awards.facts/awards.facts.db.connector';
+import { EHRDbConnector } from '../src.bg.worker/src.bg/modules/ehr.analytics/ehr.db.connector';
+import { AwardsFactsDBConnector } from '../src.bg.worker/src.bg/modules/awards.facts/awards.facts.db.connector';
 import { PrimaryDatabaseConnector } from './database/database.connector';
 import { Loader } from './startup/loader';
-import { AwardsFactsService } from './modules/awards.facts/awards.facts.service';
+import { AwardsFactsService } from '../src.bg.worker/src.bg/modules/awards.facts/awards.facts.service';
 import { DatabaseClient } from './common/database.utils/dialect.clients/database.client';
 import { DatabaseSchemaType } from './common/database.utils/database.config';
 import { initializeRabbitMQ } from '../src/rabbitmq/rabbitmq.connection'
@@ -116,7 +116,7 @@ export default class MainApplication {
             }
         });
     };
-    // trail 1
+
     private listen = () => {
         return new Promise((resolve, reject) => {
             try {

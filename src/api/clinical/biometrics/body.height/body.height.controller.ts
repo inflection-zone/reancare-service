@@ -1,5 +1,5 @@
 import express from 'express';
-import { EHRAnalyticsHandler } from '../../../../modules/ehr.analytics/ehr.analytics.handler';
+import { EHRAnalyticsHandler } from '../../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler';
 import { Authorizer } from '../../../../auth/authorizer';
 import { ApiError } from '../../../../common/api.error';
 import { ResponseHandler } from '../../../../common/response.handler';
@@ -7,7 +7,8 @@ import { BodyHeightService } from '../../../../services/clinical/biometrics/body
 import { Loader } from '../../../../startup/loader';
 import { BodyHeightValidator } from './body.height.validator';
 import { Logger } from '../../../../common/logger';
-import { EHRVitalService } from '../../../../modules/ehr.analytics/ehr.vital.service';
+import { EHRVitalService } from '../../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.vital.service';
+import { publishAddBodyHeightEHRToQueue, publishDeleteBodyHeightEHRToQueue, publishUpdateBodyHeightEHRToQueue } from '../../../../../src/rabbitmq/rabbitmq.publisher';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -48,6 +49,13 @@ export class BodyHeightController {
             if (eligibleAppNames.length > 0) {
                 for await (var appName of eligibleAppNames) { 
                     this._service.addEHRRecord(model.PatientUserId, bodyHeight.id, null, model, appName);
+                    const ehrMessage = {
+                        PatientUserId: model.PatientUserId,
+                        Id: bodyHeight.id,
+                        Model: model,
+                        AppName: appName
+                    };
+                    await publishAddBodyHeightEHRToQueue(ehrMessage);
                 }
             } else {
                 Logger.instance().log(`Skip adding details to EHR database as device is not eligible:${bodyHeight.PatientUserId}`);
@@ -126,7 +134,14 @@ export class BodyHeightController {
             var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(updated.PatientUserId);
             if (eligibleAppNames.length > 0) {
                 for await (var appName of eligibleAppNames) { 
-                    this._service.addEHRRecord(model.PatientUserId, model.id, null, model, appName);
+                    //this._service.addEHRRecord(model.PatientUserId, model.id, null, model, appName);
+                    const ehrMessage = {
+                        PatientUserId: model.PatientUserId,
+                        Id: model.id,
+                        Model: model,
+                        AppName: appName
+                    };
+                    await publishUpdateBodyHeightEHRToQueue(ehrMessage);
                 }
             } else {
                 Logger.instance().log(`Skip adding details to EHR database as device is not eligible:${updated.PatientUserId}`);
@@ -157,7 +172,9 @@ export class BodyHeightController {
             }
 
             // delete ehr record
-            this._ehrVitalService.deleteVitalEHRRecord(existing.id);
+            //this._ehrVitalService.deleteVitalEHRRecord(existing.id);
+            const message = existing.id;
+            await publishDeleteBodyHeightEHRToQueue(message)
 
             ResponseHandler.success(request, response, 'Height record deleted successfully!', 200, {
                 Deleted : true,

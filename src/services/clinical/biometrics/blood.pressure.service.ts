@@ -4,7 +4,7 @@ import { IBloodPressureRepo } from "../../../database/repository.interfaces/clin
 import { BloodPressureDomainModel } from '../../../domain.types/clinical/biometrics/blood.pressure/blood.pressure.domain.model';
 import { BloodPressureDto } from '../../../domain.types/clinical/biometrics/blood.pressure/blood.pressure.dto';
 import { BloodPressureSearchFilters, BloodPressureSearchResults } from '../../../domain.types/clinical/biometrics/blood.pressure/blood.pressure.search.types';
-import { BloodPressureStore } from "../../../modules/ehr/services/blood.pressure.store";
+import { BloodPressureStore } from "../../../../src.bg.worker/src.bg/modules/ehr/services/blood.pressure.store";
 import { Loader } from "../../../startup/loader";
 import { ConfigurationManager } from "../../../config/configuration.manager";
 import * as MessageTemplates from '../../../modules/communication/message.template/message.templates.json';
@@ -12,8 +12,9 @@ import { Logger } from "../../../common/logger";
 import { IUserDeviceDetailsRepo } from "../../../database/repository.interfaces/users/user/user.device.details.repo.interface ";
 import { IUserRepo } from "../../../database/repository.interfaces/users/user/user.repo.interface";
 import { IPersonRepo } from "../../../database/repository.interfaces/person/person.repo.interface";
-import { EHRAnalyticsHandler } from "../../../modules/ehr.analytics/ehr.analytics.handler";
-import { EHRRecordTypes } from "../../../modules/ehr.analytics/ehr.record.types";
+import { EHRAnalyticsHandler } from "../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler";
+import { EHRRecordTypes } from "../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.record.types";
+import { publishSendNotificationToDevice, publishBPNotification } from "../../../../src/rabbitmq/rabbitmq.communication.publisher";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -34,7 +35,7 @@ export class BloodPressureService {
     }
 
     create = async (bloodPressureDomainModel: BloodPressureDomainModel):
-    Promise<BloodPressureDto> => {
+        Promise<BloodPressureDto> => {
 
         if (this._ehrBloodPressureStore) {
             const ehrId = await this._ehrBloodPressureStore.add(bloodPressureDomainModel);
@@ -54,7 +55,7 @@ export class BloodPressureService {
     };
 
     update = async (id: uuid, bloodPressureDomainModel: BloodPressureDomainModel):
-    Promise<BloodPressureDto> => {
+        Promise<BloodPressureDto> => {
         var dto = await this._bloodPressureRepo.update(id, bloodPressureDomainModel);
         if (this._ehrBloodPressureStore) {
             await this._ehrBloodPressureStore.update(dto.EhrId, dto);
@@ -78,16 +79,27 @@ export class BloodPressureService {
         title = title.replace("{{PatientName}}", person.FirstName ?? "there");
         var body = MessageTemplates['BPNotification'].Body;
         body = body.replace("{{Systolic}}", model.Systolic.toString());
-        body = body.replace("{{Diastolic}}",model.Diastolic.toString());
+        body = body.replace("{{Diastolic}}", model.Diastolic.toString());
 
         Logger.instance().log(`Notification Title: ${title}`);
         Logger.instance().log(`Notification Body: ${body}`);
 
-        var message = Loader.notificationService.formatNotificationMessage(
-            MessageTemplates.BPNotification.NotificationType, title, body
-        );
+        // var message = Loader.notificationService.formatNotificationMessage(
+        //     MessageTemplates.BPNotification.NotificationType, title, body
+        // );
+        const message = {
+            MessageTemplates: MessageTemplates.BPNotification.NotificationType,
+            Title: title,
+            Body: body
+        }
+        await publishBPNotification(message)
         for await (var device of deviceList) {
-            await Loader.notificationService.sendNotificationToDevice(device.Token, message);
+            //await Loader.notificationService.sendNotificationToDevice(device.Token, message);
+            const data = {
+                DeviceToken: device.Token,
+                Message: message
+            }
+            await publishSendNotificationToDevice(data)
         }
     };
 

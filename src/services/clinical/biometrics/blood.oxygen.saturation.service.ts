@@ -5,10 +5,10 @@ import { BloodOxygenSaturationDomainModel } from '../../../domain.types/clinical
 import { BloodOxygenSaturationDto } from '../../../domain.types/clinical/biometrics/blood.oxygen.saturation/blood.oxygen.saturation.dto';
 import { BloodOxygenSaturationSearchFilters, BloodOxygenSaturationSearchResults } from '../../../domain.types/clinical/biometrics/blood.oxygen.saturation/blood.oxygen.saturation.search.types';
 import { Loader } from "../../../startup/loader";
-import { BloodOxygenSaturationStore } from "../../../modules/ehr/services/blood.oxygen.saturation.store";
+import { BloodOxygenSaturationStore } from "../../../../src.bg.worker/src.bg/modules/ehr/services/blood.oxygen.saturation.store";
 import { ConfigurationManager } from "../../../config/configuration.manager";
-import { EHRAnalyticsHandler } from "../../../modules/ehr.analytics/ehr.analytics.handler";
-import { EHRRecordTypes } from "../../../modules/ehr.analytics/ehr.record.types";
+import { EHRAnalyticsHandler } from "../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler";
+import { EHRRecordTypes } from "../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.record.types";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -84,5 +84,4 @@ export class BloodOxygenSaturationService {
             );
         }
     };
-
 }

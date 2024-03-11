@@ -6,13 +6,14 @@ import { BodyTemperatureService } from '../../../../services/clinical/biometrics
 import { Loader } from '../../../../startup/loader';
 import { BodyTemperatureValidator } from './body.temperature.validator';
 import { BaseController } from '../../../base.controller';
-import { EHRAnalyticsHandler } from '../../../../modules/ehr.analytics/ehr.analytics.handler';
+import { EHRAnalyticsHandler } from '../../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler';
 import { HelperRepo } from '../../../../database/sql/sequelize/repositories/common/helper.repo';
 import { TimeHelper } from '../../../../common/time.helper';
 import { DurationType } from '../../../../domain.types/miscellaneous/time.types';
-import { AwardsFactsService } from '../../../../modules/awards.facts/awards.facts.service';
+import { AwardsFactsService } from '../../../../../src.bg.worker/src.bg/modules/awards.facts/awards.facts.service';
 import { Logger } from '../../../../common/logger';
-import { EHRVitalService } from '../../../../modules/ehr.analytics/ehr.vital.service';
+import { EHRVitalService } from '../../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.vital.service';
+import { publishAddBodyTemperatureToQueue, publishUpdateBodyTemperatureToQueue } from '../../../../../src/rabbitmq/rabbitmq.publisher';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -50,7 +51,7 @@ export class BodyTemperatureController extends BaseController {
             }
             var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(bodyTemperature.PatientUserId);
             if (eligibleAppNames.length > 0) {
-                for await (var appName of eligibleAppNames) { 
+                for await (var appName of eligibleAppNames) {
                     this._service.addEHRRecord(model.PatientUserId, bodyTemperature.id, bodyTemperature.Provider, model, appName);
                 }
             } else {
@@ -66,21 +67,35 @@ export class BodyTemperatureController extends BaseController {
                 const offsetMinutes = await HelperRepo.getPatientTimezoneOffsets(bodyTemperature.PatientUserId);
                 const tempDate = TimeHelper.addDuration(timestamp, offsetMinutes, DurationType.Minute);
 
-                AwardsFactsService.addOrUpdateVitalFact({
-                    PatientUserId : bodyTemperature.PatientUserId,
-                    Facts         : {
-                        VitalName         : "BodyTemperature",
-                        VitalPrimaryValue : bodyTemperature.BodyTemperature,
-                        Unit              : bodyTemperature.Unit,
+                // AwardsFactsService.addOrUpdateVitalFact({
+                //     PatientUserId : bodyTemperature.PatientUserId,
+                //     Facts         : {
+                //         VitalName         : "BodyTemperature",
+                //         VitalPrimaryValue : bodyTemperature.BodyTemperature,
+                //         Unit              : bodyTemperature.Unit,
+                //     },
+                //     RecordId       : bodyTemperature.id,
+                //     RecordDate     : tempDate,
+                //     RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                //     RecordTimeZone : currentTimeZone,
+                // });
+                const message = {
+                    PatientUserId: bodyTemperature.PatientUserId,
+                    Facts: {
+                        VitalName: "BodyTemperature",
+                        VitalPrimaryValue: bodyTemperature.BodyTemperature,
+                        Unit: bodyTemperature.Unit,
                     },
-                    RecordId       : bodyTemperature.id,
-                    RecordDate     : tempDate,
-                    RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
-                    RecordTimeZone : currentTimeZone,
-                });
+                    RecordId: bodyTemperature.id,
+                    RecordDate: tempDate,
+                    RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                    RecordTimeZone: currentTimeZone,
+                }
+                await publishAddBodyTemperatureToQueue(message)
+
             }
             ResponseHandler.success(request, response, 'Body temperature record created successfully!', 201, {
-                BodyTemperature : bodyTemperature,
+                BodyTemperature: bodyTemperature,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -99,7 +114,7 @@ export class BodyTemperatureController extends BaseController {
             }
 
             ResponseHandler.success(request, response, 'Body temperature record retrieved successfully!', 200, {
-                BodyTemperature : bodyTemperature,
+                BodyTemperature: bodyTemperature,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -120,7 +135,8 @@ export class BodyTemperatureController extends BaseController {
                     : `Total ${count} body temperature records retrieved successfully!`;
 
             ResponseHandler.success(request, response, message, 200, {
-                BodyTemperatureRecords : searchResults });
+                BodyTemperatureRecords: searchResults
+            });
 
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -161,21 +177,34 @@ export class BodyTemperatureController extends BaseController {
                 const offsetMinutes = await HelperRepo.getPatientTimezoneOffsets(updated.PatientUserId);
                 const tempDate = TimeHelper.addDuration(timestamp, offsetMinutes, DurationType.Minute);
 
-                AwardsFactsService.addOrUpdateVitalFact({
-                    PatientUserId : updated.PatientUserId,
-                    Facts         : {
-                        VitalName         : "BodyTemperature",
-                        VitalPrimaryValue : updated.BodyTemperature,
-                        Unit              : updated.Unit,
+                // AwardsFactsService.addOrUpdateVitalFact({
+                //     PatientUserId : updated.PatientUserId,
+                //     Facts         : {
+                //         VitalName         : "BodyTemperature",
+                //         VitalPrimaryValue : updated.BodyTemperature,
+                //         Unit              : updated.Unit,
+                //     },
+                //     RecordId       : updated.id,
+                //     RecordDate     : tempDate,
+                //     RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                //     RecordTimeZone : currentTimeZone,
+                // });
+                const message = {
+                    PatientUserId: updated.PatientUserId,
+                    Facts: {
+                        VitalName: "BodyTemperature",
+                        VitalPrimaryValue: updated.BodyTemperature,
+                        Unit: updated.Unit,
                     },
-                    RecordId       : updated.id,
-                    RecordDate     : tempDate,
-                    RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
-                    RecordTimeZone : currentTimeZone,
-                });
+                    RecordId: updated.id,
+                    RecordDate: tempDate,
+                    RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                    RecordTimeZone: currentTimeZone,
+                }
+                await publishUpdateBodyTemperatureToQueue(message)
             }
             ResponseHandler.success(request, response, 'Body temperature record updated successfully!', 200, {
-                BodyTemperature : updated,
+                BodyTemperature: updated,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -202,7 +231,7 @@ export class BodyTemperatureController extends BaseController {
             this._ehrVitalService.deleteVitalEHRRecord(existingRecord.id);
 
             ResponseHandler.success(request, response, 'Body temperature record deleted successfully!', 200, {
-                Deleted : true,
+                Deleted: true,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);

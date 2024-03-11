@@ -16,10 +16,11 @@ import { UserDeviceDetailsService } from '../../../../services/users/user/user.d
 import { PersonService } from '../../../../services/person/person.service';
 import { UserService } from '../../../../services/users/user/user.service';
 import { CustomActionsHandler } from '../../../../custom/custom.actions.handler';
-import { EHRAnalyticsHandler } from '../../../../modules/ehr.analytics/ehr.analytics.handler';
+import { EHRAnalyticsHandler } from '../../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler';
 import { HealthProfileDomainModel } from '../../../../domain.types/users/patient/health.profile/health.profile.domain.model';
 import { RoleDto } from '../../../../domain.types/role/role.dto';
 import { Roles } from '../../../../domain.types/role/role.types';
+import { publishAddUpdatePatientToQueue, publishDeletePatientToQueue } from '../../../../../src/rabbitmq/rabbitmq.publisher';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -295,7 +296,8 @@ export class PatientController extends BaseUserController {
             }
 
             // delete static ehr record
-            this._ehrAnalyticsHandler.deleteStaticEHRRecord(userId);
+            //this._ehrAnalyticsHandler.deleteStaticEHRRecord(userId);
+            await publishDeletePatientToQueue(userId)
 
             ResponseHandler.success(request, response, 'Patient records deleted successfully!', 200, {
                 Deleted : true,
@@ -309,8 +311,9 @@ export class PatientController extends BaseUserController {
 
     //#region Privates
 
-    private addPatientToEHRRecords = (patientUserId: uuid, appName?: string) => {
-        EHRAnalyticsHandler.addOrUpdatePatient(patientUserId, {}, appName,);
+    private addPatientToEHRRecords = async (patientUserId: uuid, appName?: string) => {
+        //EHRAnalyticsHandler.addOrUpdatePatient(patientUserId, {}, appName,);
+        await publishAddUpdatePatientToQueue(patientUserId, {}, appName,)
     };
 
     private addPatientToCohort = async (patientUserId: uuid, cohortId: uuid) => {

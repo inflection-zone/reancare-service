@@ -6,3 +6,11 @@ export const rabbitmqConfig = {
   username: 'guest', // RabbitMQ username
   password: 'guest', // RabbitMQ password
 };
+export default {
+  rabbitMQ: {
+    url: "amqp://localhost",
+    queues: {
+      rpcQueue: "send_bp_message_queue",
+    },
+  },
+};

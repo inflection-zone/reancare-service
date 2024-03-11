@@ -7,8 +7,9 @@ import { DailyAssessmentValidator } from './daily.assessment.validator';
 import { BaseController } from '../../base.controller';
 import { PatientService } from '../../../services/users/patient/patient.service';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
-import { EHRAnalyticsHandler } from '../../../modules/ehr.analytics/ehr.analytics.handler';
+import { EHRAnalyticsHandler } from '../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler';
 import { Logger } from '../../../common/logger';
+import { publishAddDailyAssessmentEHRToQueue } from '../../../../src/rabbitmq/rabbitmq.publisher';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -50,7 +51,16 @@ export class DailyAssessmentController extends BaseController{
             var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(dailyAssessment.PatientUserId);
             if (eligibleAppNames.length > 0) {
                 for await (var appName of eligibleAppNames) { 
-                    this._service.addEHRRecord(model.PatientUserId, dailyAssessment.id, null, model, appName);
+                    //this._service.addEHRRecord(model.PatientUserId, dailyAssessment.id, null, model, appName);
+                    const ehrMessage = {
+                        PatientUserId: model.PatientUserId,
+                        DailyAssessment: dailyAssessment.id,
+                        Provider: null,
+                        Model: model,
+                        AppName: appName
+                    };
+                    await publishAddDailyAssessmentEHRToQueue(ehrMessage);
+
                 }
             } else {
                 Logger.instance().log(`Skip adding details to EHR database as device is not eligible:${dailyAssessment.PatientUserId}`);

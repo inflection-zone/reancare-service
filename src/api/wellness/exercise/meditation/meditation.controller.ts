@@ -6,16 +6,17 @@ import { MeditationService } from '../../../../services/wellness/exercise/medita
 import { Loader } from '../../../../startup/loader';
 import { MeditationValidator } from './meditation.validator';
 import { BaseController } from '../../../base.controller';
-import { AwardsFactsService } from '../../../../modules/awards.facts/awards.facts.service';
+import { AwardsFactsService } from '../../../../../src.bg.worker/src.bg/modules/awards.facts/awards.facts.service';
 import { HelperRepo } from '../../../../database/sql/sequelize/repositories/common/helper.repo';
 import { TimeHelper } from '../../../../common/time.helper';
 import { DurationType } from '../../../../domain.types/miscellaneous/time.types';
-import { EHRAnalyticsHandler } from '../../../../modules/ehr.analytics/ehr.analytics.handler';
+import { EHRAnalyticsHandler } from '../../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler';
 import { Logger } from '../../../../common/logger';
+import { publishAddMedicationToQueue } from '../../../../../src/rabbitmq/rabbitmq.publisher';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-export class MeditationController extends BaseController{
+export class MeditationController extends BaseController {
 
     //#region member variables and constructors
 
@@ -27,7 +28,7 @@ export class MeditationController extends BaseController{
 
     constructor() {
         super();
-        this._service = Loader.container.resolve(MeditationService); 
+        this._service = Loader.container.resolve(MeditationService);
     }
 
     //#endregion
@@ -47,7 +48,7 @@ export class MeditationController extends BaseController{
 
             var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(meditation.PatientUserId);
             if (eligibleAppNames.length > 0) {
-                for await (var appName of eligibleAppNames) { 
+                for await (var appName of eligibleAppNames) {
                     this._service.addEHRRecord(model.PatientUserId, meditation.id, null, meditation, appName);
                 }
             } else {
@@ -63,22 +64,35 @@ export class MeditationController extends BaseController{
                 const offsetMinutes = await HelperRepo.getPatientTimezoneOffsets(meditation.PatientUserId);
                 const tempDate = TimeHelper.addDuration(timestamp, offsetMinutes, DurationType.Minute);
 
-                AwardsFactsService.addOrUpdateMentalHealthResponseFact({
-                    PatientUserId : meditation.PatientUserId,
-                    Facts         : {
-                        Name     : 'Meditation',
-                        Duration : meditation.DurationInMins,
-                        Unit     : 'mins'
+                // AwardsFactsService.addOrUpdateMentalHealthResponseFact({
+                //     PatientUserId: meditation.PatientUserId,
+                //     Facts: {
+                //         Name: 'Meditation',
+                //         Duration: meditation.DurationInMins,
+                //         Unit: 'mins'
+                //     },
+                //     RecordId: meditation.id,
+                //     RecordDate: tempDate,
+                //     RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                //     RecordTimeZone: currentTimeZone,
+                // });
+                const message = {
+                    PatientUserId: meditation.PatientUserId,
+                    Facts: {
+                        Name: 'Meditation',
+                        Duration: meditation.DurationInMins,
+                        Unit: 'mins'
                     },
-                    RecordId       : meditation.id,
-                    RecordDate     : tempDate,
-                    RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
-                    RecordTimeZone : currentTimeZone,
-                });
+                    RecordId: meditation.id,
+                    RecordDate: tempDate,
+                    RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                    RecordTimeZone: currentTimeZone,
+                }
+                await publishAddMedicationToQueue(message)
             }
 
             ResponseHandler.success(request, response, 'Meditation record created successfully!', 201, {
-                Meditation : meditation,
+                Meditation: meditation,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -97,7 +111,7 @@ export class MeditationController extends BaseController{
             }
 
             ResponseHandler.success(request, response, 'Meditation record retrieved successfully!', 200, {
-                Meditation : meditation,
+                Meditation: meditation,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -119,7 +133,8 @@ export class MeditationController extends BaseController{
                     : `Total ${count} meditation records retrieved successfully!`;
 
             ResponseHandler.success(request, response, message, 200, {
-                MeditationRecords : searchResults });
+                MeditationRecords: searchResults
+            });
 
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -145,7 +160,7 @@ export class MeditationController extends BaseController{
 
             var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(updated.PatientUserId);
             if (eligibleAppNames.length > 0) {
-                for await (var appName of eligibleAppNames) { 
+                for await (var appName of eligibleAppNames) {
                     this._service.addEHRRecord(domainModel.PatientUserId, id, null, updated, appName);
                 }
             } else {
@@ -153,7 +168,7 @@ export class MeditationController extends BaseController{
             }
 
             ResponseHandler.success(request, response, 'Meditation record updated successfully!', 200, {
-                Meditation : updated,
+                Meditation: updated,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -177,7 +192,7 @@ export class MeditationController extends BaseController{
             }
 
             ResponseHandler.success(request, response, 'Meditation record deleted successfully!', 200, {
-                Deleted : true,
+                Deleted: true,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);

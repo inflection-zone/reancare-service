@@ -3,12 +3,18 @@ import dotenv from 'dotenv';
 dotenv.config();
 import "reflect-metadata";
 import { ConfigurationManager } from "../../src/config/configuration.manager";
-import { EHRDbConnector } from '../../src/modules/ehr.analytics/ehr.db.connector';
-import { AwardsFactsDBConnector } from '../../src/modules/awards.facts/awards.facts.db.connector';
+import { EHRDbConnector } from '../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.db.connector';
+import { AwardsFactsDBConnector } from '../src.bg/modules/awards.facts/awards.facts.db.connector';
 import { Loader } from '../../src/startup/loader';
-import { AwardsFactsService } from '../../src/modules/awards.facts/awards.facts.service';
-import * as amqp from 'amqplib';
+import { AwardsFactsService } from '../src.bg/modules/awards.facts/awards.facts.service';
 import { initializeBackgroundRabbitMQ } from '../src.bg/rabbitmq/rabbitmq.connection'
+import { Router } from '../../src/api/router';
+import { Helper } from '../../src/common/helper';
+import { Logger } from '../../src/common/logger';
+import { PrimaryDatabaseConnector } from '../../src/database/database.connector';
+import { DatabaseClient } from '../../src/common/database.utils/dialect.clients/database.client';
+import { DatabaseSchemaType } from '../../src/common/database.utils/database.config';
+
 ///////////////////////////////////////////////////////////////////////// 
 
 export default class MainApplication {
@@ -36,6 +42,9 @@ export default class MainApplication {
 
         //Load the modules
         await Loader.init();
+
+        //Connect databases
+        await connectDatabase_Primary();
 
         if (ConfigurationManager.EHRAnalyticsEnabled()) {
             await connectDatabase_EHRInsights();
@@ -66,6 +75,14 @@ export default class MainApplication {
             }
         });
     }
+}
+async function connectDatabase_Primary() {
+    if (process.env.NODE_ENV === 'test') {
+        const databaseClient = Loader.container.resolve(DatabaseClient);
+        await databaseClient.dropDb(DatabaseSchemaType.Primary);
+    }
+    const primaryDatabaseConnector = Loader.container.resolve(PrimaryDatabaseConnector);
+    await primaryDatabaseConnector.init();
 }
 
 async function connectDatabase_EHRInsights() {

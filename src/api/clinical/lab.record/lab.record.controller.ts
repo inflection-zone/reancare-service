@@ -6,9 +6,10 @@ import { BaseController } from '../../base.controller';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import { LabRecordService } from '../../../services/clinical/lab.record/lab.record.service';
 import { LabRecordValidator } from './lab.record.validator';
-import { EHRAnalyticsHandler } from '../../../modules/ehr.analytics/ehr.analytics.handler';
+import { EHRAnalyticsHandler } from '../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler';
 import { Logger } from '../../../common/logger';
-import { EHRLabService } from '../../../modules/ehr.analytics/ehr.lab.service';
+import { EHRLabService } from '../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.lab.service';
+import { publishAddLabRecordEHRToQueue, publishUpdateLabRecordEHRToQueue, publishDeleteLabRecordEHRToQueue } from '../../../../src/rabbitmq/rabbitmq.publisher';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -46,15 +47,23 @@ export class LabRecordController extends BaseController {
             // get user details to add records in ehr database
             var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(labRecord.PatientUserId);
             if (eligibleAppNames.length > 0) {
-                for await (var appName of eligibleAppNames) { 
-                    this._service.addEHRRecord(model.PatientUserId, labRecord.id, null, model, appName);
+                for await (var appName of eligibleAppNames) {
+                    //this._service.addEHRRecord(model.PatientUserId, labRecord.id, null, model, appName);
+                    const ehrMessage = {
+                        PatientUserId: model.PatientUserId,
+                        LabRecord: labRecord.id,
+                        Provider: null,
+                        Model: model,
+                        AppName: appName
+                    };
+                    await publishAddLabRecordEHRToQueue(ehrMessage);
                 }
             } else {
                 Logger.instance().log(`Skip adding details to EHR database as device is not eligible:${labRecord.PatientUserId}`);
             }
 
             ResponseHandler.success(request, response, `${labRecord.DisplayName} record created successfully!`, 201, {
-                LabRecord : labRecord,
+                LabRecord: labRecord,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -72,7 +81,7 @@ export class LabRecordController extends BaseController {
                 throw new ApiError(404, 'Lab record not found.');
             }
             ResponseHandler.success(request, response, `${labRecord.DisplayName} record retrieved successfully!`, 200, {
-                LabRecord : labRecord,
+                LabRecord: labRecord,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -93,7 +102,8 @@ export class LabRecordController extends BaseController {
                     : `Total ${count} lab records retrieved successfully!`;
 
             ResponseHandler.success(request, response, message, 200, {
-                LabRecordRecords : searchResults });
+                LabRecordRecords: searchResults
+            });
 
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -120,14 +130,22 @@ export class LabRecordController extends BaseController {
             // get user details to add records in ehr database
             var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(updated.PatientUserId);
             if (eligibleAppNames.length > 0) {
-                for await (var appName of eligibleAppNames) { 
-                    this._service.addEHRRecord(model.PatientUserId, model.id, null, model, appName);
+                for await (var appName of eligibleAppNames) {
+//                    this._service.addEHRRecord(model.PatientUserId, model.id, null, model, appName);
+                    const ehrMessage = {
+                        PatientUserId: model.PatientUserId,
+                        Id: model.id,
+                        Provider: null,
+                        Model: model,
+                        AppName: appName
+                    };
+                    await publishUpdateLabRecordEHRToQueue(ehrMessage);
                 }
             } else {
                 Logger.instance().log(`Skip adding details to EHR database as device is not eligible:${updated.PatientUserId}`);
             }
             ResponseHandler.success(request, response, `${updated.DisplayName} record updated successfully!`, 200, {
-                LabRecord : updated,
+                LabRecord: updated,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -152,9 +170,11 @@ export class LabRecordController extends BaseController {
 
             // delete ehr record
             this._ehrLabService.deleteLabEHRRecord(existingRecord.id);
+            const message = existingRecord.id;
+            await publishDeleteLabRecordEHRToQueue(message)
 
             ResponseHandler.success(request, response, `${existingRecord.DisplayName} record deleted successfully!`, 200, {
-                Deleted : true,
+                Deleted: true,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);

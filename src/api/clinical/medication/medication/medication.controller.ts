@@ -17,9 +17,9 @@ import { PatientService } from '../../../../services/users/patient/patient.servi
 import { UserService } from '../../../../services/users/user/user.service';
 import { Loader } from '../../../../startup/loader';
 import { MedicationValidator } from './medication.validator';
-import { EHRMedicationService } from '../../../../modules/ehr.analytics/ehr.medication.service';
+import { EHRMedicationService } from '../../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.medication.service';
 import { Logger } from '../../../../common/logger';
-import { EHRAnalyticsHandler } from '../../../../modules/ehr.analytics/ehr.analytics.handler';
+import { EHRAnalyticsHandler } from '../../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

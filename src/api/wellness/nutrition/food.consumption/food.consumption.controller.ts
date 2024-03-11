@@ -6,12 +6,13 @@ import { FoodConsumptionService } from '../../../../services/wellness/nutrition/
 import { Loader } from '../../../../startup/loader';
 import { FoodConsumptionValidator } from './food.consumption.validator';
 import { BaseController } from '../../../base.controller';
-import { EHRAnalyticsHandler } from '../../../../modules/ehr.analytics/ehr.analytics.handler';
-import { AwardsFactsService } from '../../../../modules/awards.facts/awards.facts.service';
+import { EHRAnalyticsHandler } from '../../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler';
+import { AwardsFactsService } from '../../../../../src.bg.worker/src.bg/modules/awards.facts/awards.facts.service';
 import { HelperRepo } from '../../../../database/sql/sequelize/repositories/common/helper.repo';
 import { TimeHelper } from '../../../../common/time.helper';
 import { DurationType } from '../../../../domain.types/miscellaneous/time.types';
 import { Logger } from '../../../../common/logger';
+import { publishAddFoodConsumptionToQueue, publishUpdateFoodConsumptionToQueue } from '../../../../../src/rabbitmq/rabbitmq.publisher';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -48,7 +49,7 @@ export class FoodConsumptionController extends BaseController {
             // get user details to add records in ehr database
             var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(foodConsumption.PatientUserId);
             if (eligibleAppNames.length > 0) {
-                for await (var appName of eligibleAppNames) { 
+                for await (var appName of eligibleAppNames) {
                     this._service.addEHRRecord(model.PatientUserId, foodConsumption.id, foodConsumption.Provider, foodConsumption, appName);
                 }
             } else {
@@ -63,20 +64,31 @@ export class FoodConsumptionController extends BaseController {
                 const tempDate = TimeHelper.addDuration(timestamp, offsetMinutes, DurationType.Minute);
                 const currentTimeZone = await HelperRepo.getPatientTimezone(foodConsumption.PatientUserId);
 
-                AwardsFactsService.addOrUpdateNutritionResponseFact({
-                    PatientUserId : foodConsumption.PatientUserId,
-                    Facts         : {
-                        UserResponse : foodConsumption.UserResponse,
+                // AwardsFactsService.addOrUpdateNutritionResponseFact({
+                //     PatientUserId : foodConsumption.PatientUserId,
+                //     Facts         : {
+                //         UserResponse : foodConsumption.UserResponse,
+                //     },
+                //     RecordId       : foodConsumption.id,
+                //     RecordDate     : tempDate,
+                //     RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                //     RecordTimeZone : currentTimeZone,
+                // });
+                const message = {
+                    PatientUserId: foodConsumption.PatientUserId,
+                    Facts: {
+                        UserResponse: foodConsumption.UserResponse,
                     },
-                    RecordId       : foodConsumption.id,
-                    RecordDate     : tempDate,
-                    RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
-                    RecordTimeZone : currentTimeZone,
-                });
+                    RecordId: foodConsumption.id,
+                    RecordDate: tempDate,
+                    RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                    RecordTimeZone: currentTimeZone,
+                }
+                await publishAddFoodConsumptionToQueue(message)
             }
 
             ResponseHandler.success(request, response, 'Nutrition record created successfully!', 201, {
-                FoodConsumption : foodConsumption,
+                FoodConsumption: foodConsumption,
             });
 
         } catch (error) {
@@ -96,7 +108,7 @@ export class FoodConsumptionController extends BaseController {
             }
 
             ResponseHandler.success(request, response, 'Nutrition record retrieved successfully!', 200, {
-                FoodConsumption : foodConsumption,
+                FoodConsumption: foodConsumption,
             });
 
         } catch (error) {
@@ -117,7 +129,7 @@ export class FoodConsumptionController extends BaseController {
             }
 
             ResponseHandler.success(request, response, 'Nutrition records retrieved successfully!', 200, {
-                FoodConsumptionEvent : foodConsumptionEvent,
+                FoodConsumptionEvent: foodConsumptionEvent,
             });
 
         } catch (error) {
@@ -138,7 +150,7 @@ export class FoodConsumptionController extends BaseController {
             }
 
             ResponseHandler.success(request, response, 'Nutrition record retrieved successfully!', 200, {
-                FoodConsumptionForDay : foodConsumptionForDay,
+                FoodConsumptionForDay: foodConsumptionForDay,
             });
 
         } catch (error) {
@@ -156,7 +168,7 @@ export class FoodConsumptionController extends BaseController {
             }
 
             ResponseHandler.success(request, response, 'Fetched nutrition questionnaire successfully!', 201, {
-                NutritionQuestionnaire : questionnaire,
+                NutritionQuestionnaire: questionnaire,
             });
 
         } catch (error) {
@@ -178,7 +190,8 @@ export class FoodConsumptionController extends BaseController {
                     : `Total ${count} nutrition records retrieved successfully!`;
 
             ResponseHandler.success(request, response, message, 200, {
-                FoodConsumptionRecords : searchResults });
+                FoodConsumptionRecords: searchResults
+            });
 
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -199,7 +212,7 @@ export class FoodConsumptionController extends BaseController {
             const updated = await this._service.update(id, model);
             if (updated == null) {
                 throw new ApiError(400, 'Unable to update nutrition record!');
-                
+
             }
             if (updated.UserResponse !== null) {
                 var timestamp = updated.CreatedAt ?? updated.EndTime ?? updated.StartTime;
@@ -208,19 +221,29 @@ export class FoodConsumptionController extends BaseController {
                 }
                 //const offsetMinutes = await HelperRepo.getPatientTimezoneOffsets(updated.PatientUserId);
                 //const tempDate = TimeHelper.addDuration(timestamp, offsetMinutes, DurationType.Minute);
-                
-                AwardsFactsService.addOrUpdateNutritionResponseFact({
-                    PatientUserId : updated.PatientUserId,
-                    Facts         : {
-                        UserResponse : updated.UserResponse,
+
+                // AwardsFactsService.addOrUpdateNutritionResponseFact({
+                //     PatientUserId : updated.PatientUserId,
+                //     Facts         : {
+                //         UserResponse : updated.UserResponse,
+                //     },
+                //     RecordId      : updated.id,
+                //     RecordDate    : timestamp,
+                //     RecordDateStr : await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp)
+                // });
+                const message = {
+                    PatientUserId: updated.PatientUserId,
+                    Facts: {
+                        UserResponse: updated.UserResponse,
                     },
-                    RecordId      : updated.id,
-                    RecordDate    : timestamp,
-                    RecordDateStr : await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp)
-                });
+                    RecordId: updated.id,
+                    RecordDate: timestamp,
+                    RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp)
+                }
+                await publishUpdateFoodConsumptionToQueue(message)
             }
             ResponseHandler.success(request, response, 'Nutrition record updated successfully!', 200, {
-                FoodConsumption : updated,
+                FoodConsumption: updated,
             });
 
         } catch (error) {
@@ -245,7 +268,7 @@ export class FoodConsumptionController extends BaseController {
             }
 
             ResponseHandler.success(request, response, 'Nutrition record deleted successfully!', 200, {
-                Deleted : true,
+                Deleted: true,
             });
 
         } catch (error) {

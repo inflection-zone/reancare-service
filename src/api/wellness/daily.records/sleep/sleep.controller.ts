@@ -9,13 +9,14 @@ import { BaseController } from '../../../base.controller';
 import { HelperRepo } from '../../../../database/sql/sequelize/repositories/common/helper.repo';
 import { TimeHelper } from '../../../../common/time.helper';
 import { DurationType } from '../../../../domain.types/miscellaneous/time.types';
-import { AwardsFactsService } from '../../../../modules/awards.facts/awards.facts.service';
-import { EHRAnalyticsHandler } from '../../../../modules/ehr.analytics/ehr.analytics.handler';
+import { AwardsFactsService } from '../../../../../src.bg.worker/src.bg/modules/awards.facts/awards.facts.service';
+import { EHRAnalyticsHandler } from '../../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler';
 import { Logger } from '../../../../common/logger';
+import { publishAddSleepToQueue } from '../../../../../src/rabbitmq/rabbitmq.publisher';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-export class SleepController extends BaseController{
+export class SleepController extends BaseController {
 
     //#region member variables and constructors
 
@@ -42,7 +43,7 @@ export class SleepController extends BaseController{
             const model = await this._validator.create(request);
             const recordDate = request.body.RecordDate;
             const patientUserId = request.body.PatientUserId;
-        
+
             var existingRecord = await this._service.getByRecordDate(recordDate, patientUserId);
             if (existingRecord !== null) {
                 var sleep = await this._service.update(existingRecord.id, model);
@@ -56,7 +57,7 @@ export class SleepController extends BaseController{
             // get user details to add records in ehr database
             var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(sleep.PatientUserId);
             if (eligibleAppNames.length > 0) {
-                for await (var appName of eligibleAppNames) { 
+                for await (var appName of eligibleAppNames) {
                     this._service.addEHRRecord(model.PatientUserId, sleep.id, null, model, appName);
                 }
             } else {
@@ -71,22 +72,35 @@ export class SleepController extends BaseController{
                 const offsetMinutes = await HelperRepo.getPatientTimezoneOffsets(sleep.PatientUserId);
                 const tempDate = TimeHelper.addDuration(timestamp, offsetMinutes, DurationType.Minute);
 
-                AwardsFactsService.addOrUpdateMentalHealthResponseFact({
-                    PatientUserId : sleep.PatientUserId,
-                    Facts         : {
-                        Name     : 'Sleep',
-                        Duration : sleep.SleepDuration,
-                        Unit     : sleep.Unit,
+                // AwardsFactsService.addOrUpdateMentalHealthResponseFact({
+                //     PatientUserId: sleep.PatientUserId,
+                //     Facts: {
+                //         Name: 'Sleep',
+                //         Duration: sleep.SleepDuration,
+                //         Unit: sleep.Unit,
+                //     },
+                //     RecordId: sleep.id,
+                //     RecordDate: tempDate,
+                //     RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                //     RecordTimeZone: currentTimeZone,
+                // });
+                const message = {
+                    PatientUserId: sleep.PatientUserId,
+                    Facts: {
+                        Name: 'Sleep',
+                        Duration: sleep.SleepDuration,
+                        Unit: sleep.Unit,
                     },
-                    RecordId       : sleep.id,
-                    RecordDate     : tempDate,
-                    RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
-                    RecordTimeZone : currentTimeZone,
-                });
+                    RecordId: sleep.id,
+                    RecordDate: tempDate,
+                    RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                    RecordTimeZone: currentTimeZone,
+                }
+                await publishAddSleepToQueue(message)
             }
 
             ResponseHandler.success(request, response, 'Sleep record created successfully!', 201, {
-                SleepRecord : sleep,
+                SleepRecord: sleep,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -105,7 +119,7 @@ export class SleepController extends BaseController{
             }
 
             ResponseHandler.success(request, response, 'Sleep record retrieved successfully!', 200, {
-                SleepRecord : sleepRecord,
+                SleepRecord: sleepRecord,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -152,7 +166,7 @@ export class SleepController extends BaseController{
             // get user details to add records in ehr database
             var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(updated.PatientUserId);
             if (eligibleAppNames.length > 0) {
-                for await (var appName of eligibleAppNames) { 
+                for await (var appName of eligibleAppNames) {
                     this._service.addEHRRecord(domainModel.PatientUserId, id, null, domainModel, appName);
                 }
             } else {
@@ -160,7 +174,7 @@ export class SleepController extends BaseController{
             }
 
             ResponseHandler.success(request, response, 'Sleep record updated successfully!', 200, {
-                SleepRecord : updated,
+                SleepRecord: updated,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -184,7 +198,7 @@ export class SleepController extends BaseController{
             }
 
             ResponseHandler.success(request, response, 'Sleep record deleted successfully!', 200, {
-                Deleted : true,
+                Deleted: true,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);

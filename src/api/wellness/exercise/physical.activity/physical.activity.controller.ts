@@ -7,13 +7,14 @@ import { PhysicalActivityService } from '../../../../services/wellness/exercise/
 import { Loader } from '../../../../startup/loader';
 import { PhysicalActivityValidator } from './physical.activity.validator';
 import { BaseController } from '../../../base.controller';
-import { EHRAnalyticsHandler } from '../../../../modules/ehr.analytics/ehr.analytics.handler';
-import { EHRRecordTypes } from '../../../../modules/ehr.analytics/ehr.record.types';
+import { EHRAnalyticsHandler } from '../../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler';
+import { EHRRecordTypes } from '../../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.record.types';
 import { HelperRepo } from '../../../../database/sql/sequelize/repositories/common/helper.repo';
 import { TimeHelper } from '../../../../common/time.helper';
-import { AwardsFactsService } from '../../../../modules/awards.facts/awards.facts.service';
+import { AwardsFactsService } from '../../../../../src.bg.worker/src.bg/modules/awards.facts/awards.facts.service';
 import { DurationType } from '../../../../domain.types/miscellaneous/time.types';
 import { Logger } from '../../../../common/logger';
+import { publishAddPhysicalActivityToQueue, publishUpdatePhysicalActivityToQueue } from '../../../../../src/rabbitmq/rabbitmq.publisher';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -59,7 +60,7 @@ export class PhysicalActivityController extends BaseController {
             // get user details to add records in ehr database
             var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(physicalActivity.PatientUserId);
             if (eligibleAppNames.length > 0) {
-                for await (var appName of eligibleAppNames) { 
+                for await (var appName of eligibleAppNames) {
                     this._service.addEHRRecord(domainModel.PatientUserId, physicalActivity.id, physicalActivity.Provider, physicalActivity, appName);
                 }
             } else {
@@ -76,19 +77,30 @@ export class PhysicalActivityController extends BaseController {
                 const tempDate = TimeHelper.addDuration(timestamp, offsetMinutes, DurationType.Minute);
                 const currentTimeZone = await HelperRepo.getPatientTimezone(physicalActivity.PatientUserId);
 
-                AwardsFactsService.addOrUpdatePhysicalActivityResponseFact({
-                    PatientUserId : physicalActivity.PatientUserId,
-                    Facts         : {
-                        PhysicalActivityQuestionAns : physicalActivity.PhysicalActivityQuestionAns,
+                // AwardsFactsService.addOrUpdatePhysicalActivityResponseFact({
+                //     PatientUserId: physicalActivity.PatientUserId,
+                //     Facts: {
+                //         PhysicalActivityQuestionAns: physicalActivity.PhysicalActivityQuestionAns,
+                //     },
+                //     RecordId: physicalActivity.id,
+                //     RecordDate: tempDate,
+                //     RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                //     RecordTimeZone: currentTimeZone,
+                // });
+                const message = {
+                    PatientUserId: physicalActivity.PatientUserId,
+                    Facts: {
+                        PhysicalActivityQuestionAns: physicalActivity.PhysicalActivityQuestionAns,
                     },
-                    RecordId       : physicalActivity.id,
-                    RecordDate     : tempDate,
-                    RecordDateStr  : await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
-                    RecordTimeZone : currentTimeZone,
-                });
+                    RecordId: physicalActivity.id,
+                    RecordDate: tempDate,
+                    RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                    RecordTimeZone: currentTimeZone,
+                }
+                await publishAddPhysicalActivityToQueue(message)
             }
             ResponseHandler.success(request, response, 'Physical activity record created successfully!', 201, {
-                PhysicalActivity : physicalActivity,
+                PhysicalActivity: physicalActivity,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -107,7 +119,7 @@ export class PhysicalActivityController extends BaseController {
             }
 
             ResponseHandler.success(request, response, 'Physical activity record retrieved successfully!', 200, {
-                PhysicalActivity : physicalActivity,
+                PhysicalActivity: physicalActivity,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -154,7 +166,7 @@ export class PhysicalActivityController extends BaseController {
 
             var eligibleAppNames = await this._ehrAnalyticsHandler.getEligibleAppNames(updated.PatientUserId);
             if (eligibleAppNames.length > 0) {
-                for await (var appName of eligibleAppNames) { 
+                for await (var appName of eligibleAppNames) {
                     this._service.addEHRRecord(updated.PatientUserId, id, updated.Provider, updated, appName);
                 }
             } else {
@@ -168,19 +180,29 @@ export class PhysicalActivityController extends BaseController {
                 }
                 //const offsetMinutes = await HelperRepo.getPatientTimezoneOffsets(updated.PatientUserId);
                 //const tempDate = TimeHelper.addDuration(timestamp, offsetMinutes, DurationType.Minute);
-                AwardsFactsService.addOrUpdatePhysicalActivityResponseFact({
-                    PatientUserId : updated.PatientUserId,
-                    Facts         : {
-                        PhysicalActivityQuestionAns : updated.PhysicalActivityQuestionAns,
+                // AwardsFactsService.addOrUpdatePhysicalActivityResponseFact({
+                //     PatientUserId: updated.PatientUserId,
+                //     Facts: {
+                //         PhysicalActivityQuestionAns: updated.PhysicalActivityQuestionAns,
+                //     },
+                //     RecordId: updated.id,
+                //     RecordDate: timestamp,
+                //     RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                // });
+                const message = {
+                    PatientUserId: updated.PatientUserId,
+                    Facts: {
+                        PhysicalActivityQuestionAns: updated.PhysicalActivityQuestionAns,
                     },
-                    RecordId      : updated.id,
-                    RecordDate    : timestamp,
-                    RecordDateStr : await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
-                });
+                    RecordId: updated.id,
+                    RecordDate: timestamp,
+                    RecordDateStr: await TimeHelper.formatDateToLocal_YYYY_MM_DD(timestamp),
+                }
+                await publishUpdatePhysicalActivityToQueue(message)
             }
 
             ResponseHandler.success(request, response, 'Physical activity record updated successfully!', 200, {
-                PhysicalActivity : updated,
+                PhysicalActivity: updated,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);
@@ -203,7 +225,7 @@ export class PhysicalActivityController extends BaseController {
             }
 
             ResponseHandler.success(request, response, 'Physical activity record deleted successfully!', 200, {
-                Deleted : true,
+                Deleted: true,
             });
         } catch (error) {
             ResponseHandler.handleError(request, response, error);

@@ -4,11 +4,11 @@ import { IBodyTemperatureRepo } from "../../../database/repository.interfaces/cl
 import { BodyTemperatureDomainModel } from '../../../domain.types/clinical/biometrics/body.temperature/body.temperature.domain.model';
 import { BodyTemperatureDto } from '../../../domain.types/clinical/biometrics/body.temperature/body.temperature.dto';
 import { BodyTemperatureSearchFilters, BodyTemperatureSearchResults } from '../../../domain.types/clinical/biometrics/body.temperature/body.temperature.search.types';
-import { TemperatureStore } from "../../../modules/ehr/services/body.temperature.store";
+import { TemperatureStore } from "../../../../src.bg.worker/src.bg/modules/ehr/services/body.temperature.store";
 import { Loader } from "../../../startup/loader";
 import { ConfigurationManager } from "../../../config/configuration.manager";
-import { EHRRecordTypes } from "../../../modules/ehr.analytics/ehr.record.types";
-import { EHRAnalyticsHandler } from "../../../modules/ehr.analytics/ehr.analytics.handler";
+import { EHRRecordTypes } from "../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.record.types";
+import { EHRAnalyticsHandler } from "../../../../src.bg.worker/src.bg/modules/ehr.analytics/ehr.analytics.handler";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
